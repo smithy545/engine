@@ -16,7 +16,6 @@
 
 
 class Renderer {
-VAR_GET(GLFWwindow*, window, public);
 public:
     struct Camera {
         glm::vec3 position{0, 0, 0};
@@ -74,6 +73,7 @@ private:
     bool init_glew();
 
     bool init_shaders();
+VAR_GET(GLFWwindow*, window, public);
 };
 
 

@@ -128,6 +128,7 @@ bool Renderer::init_shaders() {
 void Renderer::load_scene(const Scene &scene) {
     std::size_t sizeof_vec4 = sizeof(glm::vec4);
     for (auto instance_list: scene.instances) {
+        std::cout << "Instantiating " << instance_list.name << std::endl;
         // setup vertex data
         GLuint vao;
         glGenVertexArrays(1, &vao);
@@ -222,6 +223,7 @@ void Renderer::resize(int width, int height) {
 
 void Renderer::cleanup() {
     for (const auto &vao: vaos) {
+        std::cout << "Deleting " << vao.first << std::endl;
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
