@@ -18,10 +18,10 @@ bool Renderer::init(int width, int height) {
     screen_height = height;
 
     // cull triangles facing away from camera
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     // enable depth buffer
-    //glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     // background
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -195,8 +195,8 @@ void Renderer::load_scene(const Scene &scene) {
 void Renderer::render_current_scene() {
     auto vp_uniform = glGetUniformLocation(current_shader, "VP");
     glm::mat4 view = glm::lookAt(camera.position,camera.position + camera.forward, camera.up);
-    //glm::mat4 vp = glm::perspective(45.0f, screen_width / screen_height, 0.1f, 1000.0f) * view;
-    glm::mat4 vp = glm::ortho(-0.f*screen_width, 1.f*screen_width, 1.f*screen_height, -0.f*screen_height);
+    glm::mat4 vp = glm::perspective(45.0f, screen_width / screen_height, 0.1f, 1000.0f) * view;
+    //glm::mat4 vp = glm::ortho(-0.f*screen_width, 1.f*screen_width, 1.f*screen_height, -0.f*screen_height);
     glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
     for (const auto &vao: vaos) {
         glBindVertexArray(vao.second.vao);
