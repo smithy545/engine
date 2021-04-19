@@ -2,8 +2,8 @@
 // Created by Philip Smith on 10/18/2020.
 //
 
-#ifndef CIVILWAR_STATE_H
-#define CIVILWAR_STATE_H
+#ifndef CIVILWAR_WINDOWSTATE_H
+#define CIVILWAR_WINDOWSTATE_H
 
 
 #include <chrono>
@@ -12,11 +12,11 @@
 #include <utils/macros.h>
 
 
-class State {
+class WindowState {
 public:
-    PTR(State);
+    PTR(WindowState);
 
-    State();
+    WindowState();
 
     bool get_key(int key) const;
 
@@ -44,9 +44,16 @@ public:
 
     double enter_frame();
 
+    void resize(int width, int height);
+
+    bool check_resize_flag() const;
+
+    void clear_flags();
 private:
     bool keys[GLFW_KEY_LAST]{};
     bool buttons[3]{false, false, false}; // mouse button states in natural order: left, middle, right
+    bool resized{false};
+
 // game state
 BVAR(paused, public, private){true};
 BVAR(stopped, public, private){true};
@@ -57,8 +64,10 @@ VAR_GET(double, mouse_x, public){0};
 VAR_GET(double, mouse_y, public){0};
 VAR_GET(double, last_mouse_x, public){0};
 VAR_GET(double, last_mouse_y, public){0};
+VAR_GET(int, width, public){0};
+VAR_GET(int, height, public){0};
 VAR(double, mouse_scroll, public, public){0};
 };
 
 
-#endif //CIVILWAR_STATE_H
+#endif //CIVILWAR_WINDOWSTATE_H
