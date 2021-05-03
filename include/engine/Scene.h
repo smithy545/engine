@@ -7,7 +7,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <gl/glew.h>
+#include <GL/glew.h>
 #include <string>
 #include <vector>
 
