@@ -34,8 +34,11 @@ bool Renderer::init_glfw() {
         return false;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#if __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
     return true;
 }
@@ -64,7 +67,7 @@ bool Renderer::init_glew() {
 }
 
 bool Renderer::init_shaders() {
-    const char *vshader_src = "#version 430 core\n"
+    const char *vshader_src = "#version 400 core\n"
                               "\n"
                               "layout (location = 0) in vec3 inPos;\n"
                               "layout (location = 1) in vec3 inColor;\n"
@@ -89,7 +92,7 @@ bool Renderer::init_shaders() {
         std::cout << "Error on vertex compilation: " << infoLog << std::endl;
         return false;
     }
-    const char *fshader_src = "#version 430 core\n"
+    const char *fshader_src = "#version 400 core\n"
                               "\n"
                               "\n"
                               "in vec4 color;\n"
