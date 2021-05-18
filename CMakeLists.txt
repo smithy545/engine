@@ -3,12 +3,11 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(OpenGL REQUIRED)
 add_library(engine
-        src/Renderer.cpp
-        src/WindowState.cpp)
+        src/Renderer.cpp)
 target_link_directories(engine PRIVATE
         /opt/homebrew/Cellar/glew/2.2.0_1/lib
         /opt/homebrew/Cellar/glfw/3.3.4/lib)
-target_link_libraries(engine utils OpenGL::GL GLEW GLFW)
+target_link_libraries(engine utils OpenGL::GL GLEW GLFW EnTT)
 target_include_directories(engine
         PUBLIC
         /opt/homebrew/Cellar/glew/2.2.0_1/include
