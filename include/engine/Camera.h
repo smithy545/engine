@@ -2,8 +2,8 @@
 // Created by Philip Smith on 5/18/21.
 //
 
-#ifndef CIVILWAR_CAMERA_H
-#define CIVILWAR_CAMERA_H
+#ifndef ENGINE_CAMERA_H
+#define ENGINE_CAMERA_H
 
 #include <glm/glm.hpp>
 
@@ -15,4 +15,4 @@ struct Camera {
     float scale{1.0f};
 };
 
-#endif //CIVILWAR_CAMERA_H
+#endif //ENGINE_CAMERA_H

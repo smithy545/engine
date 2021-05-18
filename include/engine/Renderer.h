@@ -2,8 +2,8 @@
 // Created by Philip Smith on 10/17/2020.
 //
 
-#ifndef CIVILWAR_RENDERER_H
-#define CIVILWAR_RENDERER_H
+#ifndef ENGINE_RENDERER_H
+#define ENGINE_RENDERER_H
 
 #include <entt/entt.hpp>
 #include <glm/ext.hpp>
@@ -72,4 +72,4 @@ VAR_GET(GLFWwindow*, window, public){nullptr};
 };
 
 
-#endif //CIVILWAR_RENDERER_H
+#endif //ENGINE_RENDERER_H

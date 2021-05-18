@@ -2,8 +2,8 @@
 // Created by Philip Smith on 5/13/21.
 //
 
-#ifndef CIVILWAR_MESH_H
-#define CIVILWAR_MESH_H
+#ifndef ENGINE_MESH_H
+#define ENGINE_MESH_H
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -15,4 +15,4 @@ struct Mesh {
     std::vector<unsigned int> indices;
 };
 
-#endif //CIVILWAR_MESH_H
+#endif //ENGINE_MESH_H

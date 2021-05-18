@@ -2,8 +2,8 @@
 // Created by Philip Smith on 5/18/21.
 //
 
-#ifndef CIVILWAR_INSTANCELIST_H
-#define CIVILWAR_INSTANCELIST_H
+#ifndef ENGINE_INSTANCELIST_H
+#define ENGINE_INSTANCELIST_H
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -32,4 +32,4 @@ struct InstanceList {
     }
 };
 
-#endif //CIVILWAR_INSTANCELIST_H
+#endif //ENGINE_INSTANCELIST_H

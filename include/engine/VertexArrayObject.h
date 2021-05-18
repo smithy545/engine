@@ -2,8 +2,8 @@
 // Created by Philip Smith on 5/18/21.
 //
 
-#ifndef CIVILWAR_VERTEXARRAYOBJECT_H
-#define CIVILWAR_VERTEXARRAYOBJECT_H
+#ifndef ENGINE_VERTEXARRAYOBJECT_H
+#define ENGINE_VERTEXARRAYOBJECT_H
 
 #include <GL/glew.h>
 
@@ -16,4 +16,4 @@ struct VertexArrayObject {
     unsigned int num_indices;
 };
 
-#endif //CIVILWAR_VERTEXARRAYOBJECT_H
+#endif //ENGINE_VERTEXARRAYOBJECT_H
