@@ -7,12 +7,13 @@
 
 #include <glm/glm.hpp>
 
-
-struct Camera {
-    glm::vec3 position{0, 0, 0};
-    glm::vec3 forward{0, 0, 1};
-    glm::vec3 up{0, 1, 0};
-    float scale{1.0f};
-};
+namespace engine {
+    struct Camera {
+        glm::vec3 position{0, 0, 0};
+        glm::vec3 forward{0, 0, 1};
+        glm::vec3 up{0, 1, 0};
+        float scale{1.0f};
+    };
+} // namespace engine
 
 #endif //ENGINE_CAMERA_H

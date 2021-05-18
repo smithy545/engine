@@ -7,13 +7,14 @@
 
 #include <GL/glew.h>
 
-
-struct VertexArrayObject {
-    GLuint id;
-    GLuint vbo;
-    GLuint cbo;
-    GLuint ebo;
-    unsigned int num_indices;
-};
+namespace engine {
+    struct VertexArrayObject {
+        GLuint id;
+        GLuint vbo;
+        GLuint cbo;
+        GLuint ebo;
+        unsigned int num_indices;
+    };
+} // namespace engine
 
 #endif //ENGINE_VERTEXARRAYOBJECT_H

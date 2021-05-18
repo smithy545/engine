@@ -8,11 +8,12 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-
-struct Mesh {
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec3> colors;
-    std::vector<unsigned int> indices;
-};
+namespace engine {
+    struct Mesh {
+        std::vector<glm::vec3> vertices;
+        std::vector<glm::vec3> colors;
+        std::vector<unsigned int> indices;
+    };
+} // namespace engine
 
 #endif //ENGINE_MESH_H
