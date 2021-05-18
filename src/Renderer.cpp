@@ -29,7 +29,8 @@ bool Renderer::init(entt::registry &registry) {
 
     registry.on_construct<Mesh>().connect<&load_mesh>();
     registry.on_update<Mesh>().connect<&update_mesh>();
-    registry.on_destroy<Mesh>().connect<&destroy_mesh>();
+    registry.on_destroy<VertexArrayObject>().connect<&destroy_vao>();
+    registry.on_destroy<InstanceList>().connect<&destroy_instances>();
 
     return m_window;
 }
@@ -187,24 +188,15 @@ void Renderer::load_mesh(entt::registry &registry, entt::entity entity) {
             vbo, // Vertex Buffer Object
             cbo, // Color Buffer Object
             ebo, // Element Buffer Object
-            static_cast<unsigned int>(GL_TRIANGLES), // GL_POINTS, GL_LINES or GL_TRIANGLES
-            static_cast<unsigned int>(mesh.indices.size()), // Number of indices
-            static_cast<unsigned int>(0)   // Number of instances
+            static_cast<unsigned int>(mesh.indices.size()) // Number of indices
     );
     registry.emplace<InstanceList>(entity, ibo);
     glBindVertexArray(0);
 }
 
-void Renderer::update_mesh(entt::registry &registry, entt::entity entity) {
-    /*registry.replace<Scene::InstanceList>(
-            scene,
-            registry.get<Mesh>(scene),
-            registry.get<std::string>(scene),
-            registry.get<std::vector<glm::mat4>>(scene),
-            registry.get<Scene::InstanceList::RenderStrategy>(scene));*/
-}
+void Renderer::update_mesh(entt::registry &registry, entt::entity entity) {}
 
-void Renderer::destroy_mesh(entt::registry &registry, entt::entity entity) {
+void Renderer::destroy_vao(entt::registry &registry, entt::entity entity) {
     auto vao = registry.get<VertexArrayObject>(entity);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -214,6 +206,9 @@ void Renderer::destroy_mesh(entt::registry &registry, entt::entity entity) {
     glDeleteBuffers(1, &vao.vbo);
     glDeleteBuffers(1, &vao.cbo);
     glDeleteBuffers(1, &vao.ebo);
+}
+
+void Renderer::destroy_instances(entt::registry &registry, entt::entity entity) {
     auto instances = registry.get<InstanceList>(entity);
     glDeleteBuffers(1, &instances.id);
 }
@@ -223,11 +218,11 @@ void Renderer::render(entt::registry &registry) {
     glm::mat4 view_matrix = glm::lookAt(camera.position,camera.position + camera.forward, camera.up);
     glm::mat4 vp = glm::perspective(45.0f, m_width / m_height, 0.1f, 1000.0f) * view_matrix;
     glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
-    auto view = registry.view<VertexArrayObject>();
+    auto view = registry.view<VertexArrayObject, InstanceList>();
     for (const auto &entity: view) {
-        auto [vao] = view.get(entity);
+        auto [vao, ilist] = view.get(entity);
         glBindVertexArray(vao.id);
-        glDrawElementsInstanced(vao.strategy, vao.num_indices, GL_UNSIGNED_INT, 0, vao.num_instances);
+        glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0, ilist.instances.size());
     }
     //glm::mat4 vp = glm::ortho(-0.f*m_width, 1.f*m_width, 1.f*m_height, -0.f*m_height);
 }

@@ -13,9 +13,7 @@ struct VertexArrayObject {
     GLuint vbo;
     GLuint cbo;
     GLuint ebo;
-    GLuint strategy; // GL_POINTS, GL_TRIANGLES, GL_LINES etc.
     unsigned int num_indices;
-    unsigned int num_instances;
 };
 
 #endif //CIVILWAR_VERTEXARRAYOBJECT_H

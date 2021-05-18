@@ -28,7 +28,9 @@ public:
 
     static void update_mesh(entt::registry &registry, entt::entity entity);
 
-    static void destroy_mesh(entt::registry &registry, entt::entity entity);
+    static void destroy_vao(entt::registry &registry, entt::entity entity);
+
+    static void destroy_instances(entt::registry &registry, entt::entity entity);
 
     void resize(float width, float height);
 
