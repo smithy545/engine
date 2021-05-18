@@ -13,31 +13,16 @@
 #include <unordered_map>
 #include <utils/macros.h>
 
+#include "Camera.h"
 #include "Mesh.h"
+#include "VertexArrayObject.h"
 
 
 class Renderer {
 public:
-    struct Camera {
-        glm::vec3 position{0, 0, 0};
-        glm::vec3 forward{0, 0, 1};
-        glm::vec3 up{0, 1, 0};
-        float scale{1.0f};
-    };
-
-    struct VertexArrayObject {
-        GLuint id;
-        GLuint vbo;
-        GLuint cbo;
-        GLuint ebo;
-        GLuint strategy; // GL_POINTS, GL_TRIANGLES, GL_LINES etc.
-        unsigned int num_indices;
-        unsigned int num_instances;
-    };
-
     bool init(entt::registry &registry);
 
-    void render_scene(entt::registry &registry);
+    void render(entt::registry &registry);
 
     static void load_mesh(entt::registry &registry, entt::entity entity);
 

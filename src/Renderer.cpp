@@ -137,7 +137,7 @@ void Renderer::load_mesh(entt::registry &registry, entt::entity entity) {
     auto sizeof_vec4 = sizeof(glm::vec4);
     auto sizeof_vec3 = sizeof(glm::vec3);
     auto mesh = registry.get<Mesh>(entity);
-    // setup vertex data
+    // setup vertex array object
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -218,7 +218,7 @@ void Renderer::destroy_mesh(entt::registry &registry, entt::entity entity) {
     glDeleteBuffers(1, &instances.id);
 }
 
-void Renderer::render_scene(entt::registry &registry) {
+void Renderer::render(entt::registry &registry) {
     auto vp_uniform = glGetUniformLocation(current_shader, "VP");
     glm::mat4 view_matrix = glm::lookAt(camera.position,camera.position + camera.forward, camera.up);
     glm::mat4 vp = glm::perspective(45.0f, m_width / m_height, 0.1f, 1000.0f) * view_matrix;
