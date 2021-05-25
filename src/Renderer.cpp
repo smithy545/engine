@@ -4,10 +4,12 @@
 
 #include <engine/Renderer.h>
 
+#include <engine/InputHandler.h>
 #include <engine/InstanceList.h>
-#include <glm/gtx/rotate_vector.hpp>
+#include <engine/Camera.h>
 #include <iostream>
 #include <utils/file_util.h>
+
 
 namespace engine {
     bool Renderer::init(entt::registry &registry) {
@@ -31,6 +33,10 @@ namespace engine {
         registry.on_update<Mesh>().connect<&update_mesh>();
         registry.on_destroy<VertexArrayObject>().connect<&destroy_vao>();
         registry.on_destroy<InstanceList>().connect<&destroy_instances>();
+
+        // create camera
+        m_camera_entity = registry.create();
+        registry.emplace<Camera>(m_camera_entity);
 
         return m_window;
     }
@@ -215,8 +221,14 @@ namespace engine {
     }
 
     void Renderer::render(entt::registry &registry) {
+        if(InputHandler::has_resized()) {
+            resize(InputHandler::get_width(), InputHandler::get_height());
+            InputHandler::clear_resize();
+            glViewport(0, 0, m_width, m_height);
+        }
+        auto &camera = registry.get<Camera>(m_camera_entity);
         auto vp_uniform = glGetUniformLocation(current_shader, "VP");
-        glm::mat4 view_matrix = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
+        glm::mat4 view_matrix = camera.get_view();
         glm::mat4 vp = glm::perspective(45.0f, m_width / m_height, 0.1f, 1000.0f) * view_matrix;
         glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
         auto view = registry.view<VertexArrayObject, InstanceList>();
@@ -234,46 +246,12 @@ namespace engine {
     }
 
     void Renderer::resize(float width, float height) {
+        glViewport(0, 0, width, height);
         m_width = width;
         m_height = height;
     }
 
-    void Renderer::pan_horizontal(float diff) {
-        camera.forward = glm::normalize(glm::rotate(camera.forward, 0.001f * diff, camera.up));
-    }
-
-    void Renderer::pan_vertical(float diff) {
-        auto left = glm::cross(camera.up, camera.forward);
-        camera.forward = glm::normalize(glm::rotate(camera.forward, 0.001f * diff, left));
-    }
-
-    void Renderer::move_forward() {
-        camera.position.x += camera.scale * camera.forward.x;
-        camera.position.z += camera.scale * camera.forward.z;
-    }
-
-    void Renderer::move_backward() {
-        camera.position.x -= camera.scale * camera.forward.x;
-        camera.position.z -= camera.scale * camera.forward.z;
-    }
-
-    void Renderer::move_left() {
-        camera.position -= camera.scale * glm::cross(camera.forward, camera.up);
-    }
-
-    void Renderer::move_right() {
-        camera.position += camera.scale * glm::cross(camera.forward, camera.up);
-    }
-
-    void Renderer::move_up() {
-        camera.position += camera.scale * camera.up;
-    }
-
-    void Renderer::move_down() {
-        camera.position -= camera.scale * camera.up;
-    }
-
-    void Renderer::read_config(std::string filename) {
+    void Renderer::read_config(const std::string& filename) {
         try {
             auto config_json = utils::file::read_json_file(filename);
             if (config_json.contains("width"))
