@@ -31,13 +31,14 @@ namespace engine {
 
         static void load_mesh(entt::registry &registry, entt::entity entity);
 
-        static void update_mesh(entt::registry &registry, entt::entity entity);
+        static void load_sprite(entt::registry &registry, entt::entity entity);
 
         static void destroy_vao(entt::registry &registry, entt::entity entity);
 
         static void destroy_instances(entt::registry &registry, entt::entity entity);
     private:
-        GLuint current_shader;
+        GLuint shader2d;
+        GLuint shader3d;
 
         void read_config(const std::string& filename);
 

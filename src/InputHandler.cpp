@@ -55,9 +55,7 @@ namespace engine {
         for (auto &k: keys)
             k = false;
 
-        // Ensure we can capture the escape key being pressed below
-        glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-        // Set invisible, automatically recentered cursor
+        //glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetKeyCallback(window, key_cb);
         glfwSetCursorPosCallback(window, cursor_pos_cb);

@@ -11,8 +11,10 @@
 
 
 namespace engine {
-    class UIHandler : public StateHandler {
+    class InterfaceHandler : public StateHandler {
     public:
+        explicit InterfaceHandler(entt::registry &registry);
+
         void update(entt::registry &registry) override;
     };
 } // namespace engine
