@@ -66,20 +66,14 @@ namespace engine {
 
     void InputHandler::update(entt::registry &registry) {
         update_prev_mouse_coords();
-        for(auto [code, callback]: callbacks) {
+        for(auto [code, callback]: key_callbacks) {
             if(keys[code])
                 callback(code, registry);
         }
-        for(auto &callback: free_callbacks)
-            callback();
     }
 
-    void InputHandler::register_callback(int key, InputHandler::InputCallback callback) {
-        callbacks[key] = std::move(callback);
-    }
-
-    void InputHandler::register_free_callback(const InputHandler::FreeCallback& callback) {
-        free_callbacks.push_back(callback);
+    void InputHandler::register_key_callback(int key, InputHandler::KeyCallback callback) {
+        key_callbacks[key] = std::move(callback);
     }
 
     double InputHandler::get_mouse_x() {

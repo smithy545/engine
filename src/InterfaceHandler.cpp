@@ -6,27 +6,24 @@
 
 #include <engine/InputHandler.h>
 #include <engine/InstanceList.h>
-#include <engine/Sprite.h>
-#include <vector>
+#include <utils/math_util.h>
 
+
+using namespace entt::literals;
 
 namespace engine {
     InterfaceHandler::InterfaceHandler(entt::registry &registry) {
-        std::vector<glm::vec2> vertices{
-            glm::vec2(0,0),
-            glm::vec2(0, 100),
-            glm::vec2(100, 0)
-        };
-        auto white = glm::vec3(1,1,1);
-        std::vector<glm::vec3> colors{
-            white, white, white
-        };
-        std::vector<unsigned int> indices{0,1,2};
-        auto entity = registry.create();
-        registry.emplace<Sprite>(entity, vertices, colors, indices);
-        registry.patch<InstanceList>(entity, [](auto &instance_list) {
+        auto red_box = generate_colored_polygon({
+            glm::vec2(200, 200),
+            glm::vec2(200, 400),
+            glm::vec2(400, 400),
+            glm::vec2(400, 200)
+        }, glm::vec3(1,0,0));
+        auto box_entity = registry.create();
+        registry.emplace<Sprite>(box_entity, red_box);
+        registry.patch<InstanceList>(box_entity, [](auto &instance_list) {
             instance_list.set_models(std::vector<glm::mat4>{
-                glm::mat4(1)
+                    glm::mat4(1)
             });
         });
     }
@@ -50,5 +47,21 @@ namespace engine {
             ;//camera.pan_horizontal(InputHandler::get_prev_mouse_x() - InputHandler::get_mouse_x());
         if (InputHandler::get_mouse_y() != InputHandler::get_prev_mouse_y())
             ;//camera.pan_vertical(InputHandler::get_mouse_y() - InputHandler::get_prev_mouse_y());
+    }
+
+    Sprite InterfaceHandler::generate_colored_polygon(const std::vector<glm::vec2>& hull_points, glm::vec3 color) {
+        std::vector<double> coords;
+        for(auto v: hull_points) {
+            coords.push_back(v.x);
+            coords.push_back(v.y);
+        }
+        auto verts = utils::math::triangulate(coords);
+        std::vector<glm::vec3> colors;
+        std::vector<unsigned int> indices;
+        for(int i = 0; i < verts.size(); i++) {
+            colors.push_back(color);
+            indices.push_back(i);
+        }
+        return Sprite{verts, colors, indices};
     }
 } // namespace engine

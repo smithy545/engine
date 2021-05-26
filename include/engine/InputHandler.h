@@ -17,8 +17,7 @@
 namespace engine {
     class InputHandler : public StateHandler {
     public:
-        typedef std::function<void(int, entt::registry&)> InputCallback;
-        typedef std::function<void()> FreeCallback;
+        typedef std::function<void(int, entt::registry&)> KeyCallback;
 
         static constexpr entt::hashed_string MOUSE_X_KEY{"mouse_x"};
         static constexpr entt::hashed_string MOUSE_Y_KEY{"mouse_y"};
@@ -36,9 +35,7 @@ namespace engine {
 
         void update(entt::registry &registry) override;
 
-        void register_callback(int key, InputCallback callback);
-
-        void register_free_callback(const FreeCallback& callback);
+        void register_key_callback(int key, KeyCallback callback);
 
         static double get_mouse_x();
 
@@ -60,8 +57,7 @@ namespace engine {
 
         static void clear_resize();
     private:
-        std::unordered_map<int, InputCallback> callbacks;
-        std::vector<FreeCallback> free_callbacks;
+        std::unordered_map<int, KeyCallback> key_callbacks;
         static bool keys[GLFW_KEY_LAST];
 
         static void update_prev_mouse_coords();
