@@ -9,6 +9,8 @@
 #include <engine/InstanceList.h>
 #include <engine/Sprite.h>
 #include <engine/Mesh.h>
+#include <engine/VertexArrayObject.h>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <utils/file_util.h>
 
@@ -338,7 +340,6 @@ namespace engine {
         if(InputHandler::has_resized()) {
             resize(InputHandler::get_width(), InputHandler::get_height());
             InputHandler::clear_resize();
-            glViewport(0, 0, m_width, m_height);
         }
         auto &camera = registry.get<Camera>(m_camera_entity);
         auto vp_uniform = glGetUniformLocation(shader3d, "VP");

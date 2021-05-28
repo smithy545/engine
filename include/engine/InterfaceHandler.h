@@ -7,7 +7,9 @@
 
 #include <engine/Sprite.h>
 #include <entt/entt.hpp>
+#include <utils/file_util.h>
 #include <glm/glm.hpp>
+#include <unordered_map>
 #include <vector>
 
 #include "StateHandler.h"
@@ -21,7 +23,9 @@ namespace engine {
         void update(entt::registry &registry) override;
 
     private:
-        Sprite generate_colored_polygon(const std::vector<glm::vec2>& hull_points, glm::vec3 color);
+        std::unordered_map<std::string, json> interfaces;
+
+        static Sprite generate_colored_polygon(const std::vector<glm::vec2>& hull_points, glm::vec3 color);
     };
 } // namespace engine
 

@@ -5,15 +5,31 @@
 #include <engine/InterfaceHandler.h>
 
 #include <engine/InputHandler.h>
-#include <engine/InstanceList.h>
+#include <filesystem>
 #include <utils/math_util.h>
 
 
 using namespace entt::literals;
+namespace fs = std::filesystem;
 
 namespace engine {
     InterfaceHandler::InterfaceHandler(entt::registry &registry) {
-        auto red_box = generate_colored_polygon({
+        // load interfaces
+        auto interface_schema = utils::file::read_json_file("../res/schemas/interface.json");
+        std::vector<std::string> directories{"../res/interfaces"};
+        while(!directories.empty()) {
+            auto directory = directories.back();
+            directories.pop_back();
+            for (const auto &entry: fs::directory_iterator(directory)) {
+                auto path = entry.path();
+                if (entry.is_directory())
+                    directories.push_back(path);
+                else
+                    interfaces[path] = utils::file::read_json_file(path, interface_schema);
+            }
+        }
+
+        /*auto red_box = generate_colored_polygon({
             glm::vec2(200, 200),
             glm::vec2(200, 400),
             glm::vec2(400, 400),
@@ -22,10 +38,8 @@ namespace engine {
         auto box_entity = registry.create();
         registry.emplace<Sprite>(box_entity, red_box);
         registry.patch<InstanceList>(box_entity, [](auto &instance_list) {
-            instance_list.set_models(std::vector<glm::mat4>{
-                    glm::mat4(1)
-            });
-        });
+            instance_list.set_models(std::vector<glm::mat4>{glm::mat4(1)});
+        });*/
     }
 
     void InterfaceHandler::update(entt::registry &registry) {

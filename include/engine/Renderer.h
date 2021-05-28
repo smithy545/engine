@@ -6,16 +6,10 @@
 #define ENGINE_RENDERER_H
 
 #include <entt/entt.hpp>
-#include <glm/ext.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <string>
-#include <unordered_map>
 #include <utils/macros.h>
-
-#include "Camera.h"
-#include "Mesh.h"
-#include "VertexArrayObject.h"
 
 
 namespace engine {
