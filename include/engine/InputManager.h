@@ -11,14 +11,14 @@
 #include <GLFW/glfw3.h>
 #include <unordered_map>
 
-#include "StateHandler.h"
+#include "KeyHandler.h"
+#include "MouseButtonHandler.h"
+#include "MouseMotionHandler.h"
 
 
 namespace engine {
-    class InputHandler : public StateHandler {
+    class InputManager {
     public:
-        typedef std::function<void(int, entt::registry&)> KeyCallback;
-
         static constexpr entt::hashed_string MOUSE_X_KEY{"mouse_x"};
         static constexpr entt::hashed_string MOUSE_Y_KEY{"mouse_y"};
         static constexpr entt::hashed_string PREV_MOUSE_X_KEY{"prev_mouse_x"};
@@ -31,11 +31,19 @@ namespace engine {
         static constexpr entt::hashed_string WIDTH_KEY{"width"};
         static constexpr entt::hashed_string HEIGHT_KEY{"height"};
 
-        explicit InputHandler(GLFWwindow* window);
+        static void init(GLFWwindow* window);
 
-        void update(entt::registry &registry) override;
+        static void register_key_handler(KeyHandler* handler);
 
-        void register_key_callback(int key, KeyCallback callback);
+        static void unregister_key_handler(KeyHandler* handler);
+
+        static void register_mouse_button_handler(MouseButtonHandler* handler);
+
+        static void unregister_mouse_button_handler(MouseButtonHandler* handler);
+
+        static void register_mouse_motion_handler(MouseMotionHandler* handler);
+
+        static void unregister_mouse_motion_handler(MouseMotionHandler* handler);
 
         static double get_mouse_x();
 
@@ -44,6 +52,10 @@ namespace engine {
         static double get_prev_mouse_x();
 
         static double get_prev_mouse_y();
+
+        static void set_mouse_position(double x, double y);
+
+        static void set_mouse_button(int button, bool value);
 
         static bool get_key(int key);
 
@@ -56,11 +68,13 @@ namespace engine {
         static bool has_resized();
 
         static void clear_resize();
-    private:
-        std::unordered_map<int, KeyCallback> key_callbacks;
-        static bool keys[GLFW_KEY_LAST];
 
-        static void update_prev_mouse_coords();
+        static void reset_prev_mouse_coords();
+    private:
+        static bool keys[GLFW_KEY_LAST];
+        static KeyHandler* key_chain;
+        static MouseButtonHandler* mouse_button_chain;
+        static MouseMotionHandler* mouse_motion_chain;
     };
 } // namespace engine
 

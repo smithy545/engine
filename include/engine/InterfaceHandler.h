@@ -7,25 +7,41 @@
 
 #include <engine/Sprite.h>
 #include <entt/entt.hpp>
-#include <utils/file_util.h>
 #include <glm/glm.hpp>
-#include <unordered_map>
+#include <utils/file_util.h>
 #include <vector>
 
 #include "StateHandler.h"
+#include "KeyHandler.h"
+#include "MouseButtonHandler.h"
+#include "MouseMotionHandler.h"
 
 
 namespace engine {
-    class InterfaceHandler : public StateHandler {
+    class InterfaceHandler : public StateHandler, public KeyHandler, public MouseButtonHandler, public MouseMotionHandler {
     public:
         explicit InterfaceHandler(entt::registry &registry);
 
         void update(entt::registry &registry) override;
 
     private:
-        std::unordered_map<std::string, json> interfaces;
+        // TODO: find way to avoid hardcoding schema key name here and in schema file separately
+        static constexpr entt::hashed_string NAME_KEY{"name"};
+        static constexpr entt::hashed_string SHAPES_KEY{"shapes"};
+        static constexpr entt::hashed_string TRANSITIONS_KEY{"transitions"};
 
-        static Sprite generate_colored_polygon(const std::vector<glm::vec2>& hull_points, glm::vec3 color);
+        static void load_interface(const json& interface, entt::registry &registry);
+
+        static void load_shape_from_json(const json& shape, entt::registry &registry);
+
+        // mouse motion
+        bool trigger(double x, double y) override;
+
+        // mouse press
+        bool trigger(double x, double y, int button, bool value) override;
+
+        // key press
+        bool trigger(int code, bool value) override;
     };
 } // namespace engine
 

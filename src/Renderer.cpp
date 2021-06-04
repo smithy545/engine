@@ -5,7 +5,7 @@
 #include <engine/Renderer.h>
 
 #include <engine/Camera.h>
-#include <engine/InputHandler.h>
+#include <engine/InputManager.h>
 #include <engine/InstanceList.h>
 #include <engine/Sprite.h>
 #include <engine/Mesh.h>
@@ -337,9 +337,9 @@ namespace engine {
     }
 
     void Renderer::render(entt::registry &registry) {
-        if(InputHandler::has_resized()) {
-            resize(InputHandler::get_width(), InputHandler::get_height());
-            InputHandler::clear_resize();
+        if(InputManager::has_resized()) {
+            resize(InputManager::get_width(), InputManager::get_height());
+            InputManager::clear_resize();
         }
         auto &camera = registry.get<Camera>(m_camera_entity);
         auto vp_uniform = glGetUniformLocation(shader3d, "VP");
