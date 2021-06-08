@@ -136,6 +136,36 @@ namespace engine {
             mouse_button_chain->handle(get_mouse_x(), get_mouse_y(), button, value);
     }
 
+    void InputManager::start() {
+        entt::monostate<START_KEY>{} = true;
+        entt::monostate<STOP_KEY>{} = false;
+        entt::monostate<PAUSE_KEY>{} = false;
+    }
+
+    void InputManager::pause() {
+        entt::monostate<PAUSE_KEY>{} = true;
+    }
+
+    void InputManager::unpause() {
+        entt::monostate<PAUSE_KEY>{} = false;
+    }
+
+    void InputManager::stop() {
+        entt::monostate<STOP_KEY>{} = true;
+    }
+
+    bool InputManager::is_stopped() {
+        return entt::monostate<STOP_KEY>{};
+    }
+
+    bool InputManager::is_paused() {
+        return entt::monostate<PAUSE_KEY>{};
+    }
+
+    bool InputManager::has_started() {
+        return entt::monostate<START_KEY>{};
+    }
+
     void InputManager::register_key_handler(KeyHandler* handler) {
         if(key_chain == nullptr) {
             key_chain = handler;

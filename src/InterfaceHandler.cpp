@@ -50,6 +50,8 @@ namespace engine {
             auto &camera = view.get<Camera>(entity);
             if(!camera.filming)
                 continue;
+            if (InputManager::get_key(GLFW_KEY_SPACE))
+                InputManager::is_paused() ? InputManager::unpause() : InputManager::pause();
             if (InputManager::get_key(GLFW_KEY_W))
                 camera.move_forward();
             if (InputManager::get_key(GLFW_KEY_A))

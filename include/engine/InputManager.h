@@ -30,6 +30,9 @@ namespace engine {
         static constexpr entt::hashed_string RESIZED_KEY{"resized"};
         static constexpr entt::hashed_string WIDTH_KEY{"width"};
         static constexpr entt::hashed_string HEIGHT_KEY{"height"};
+        static constexpr entt::hashed_string PAUSE_KEY{"paused"};
+        static constexpr entt::hashed_string STOP_KEY{"stopped"};
+        static constexpr entt::hashed_string START_KEY{"started"};
 
         static void init(GLFWwindow* window);
 
@@ -70,6 +73,20 @@ namespace engine {
         static void clear_resize();
 
         static void reset_prev_mouse_coords();
+
+        static void start();
+
+        static void pause();
+
+        static void unpause();
+
+        static void stop();
+
+        static bool is_stopped();
+
+        static bool is_paused();
+
+        static bool has_started();
     private:
         static bool keys[GLFW_KEY_LAST];
         static KeyHandler* key_chain;
