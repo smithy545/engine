@@ -41,6 +41,9 @@ namespace engine {
         // create camera
         m_camera_entity = registry.create();
         registry.emplace<Camera>(m_camera_entity);
+        auto &camera = registry.get<Camera>(m_camera_entity);
+        camera.filming = true;
+        camera.position = glm::vec3(10, 10, 10);
 
         return m_window;
     }
@@ -341,7 +344,7 @@ namespace engine {
             resize(InputManager::get_width(), InputManager::get_height());
             InputManager::clear_resize();
         }
-        auto &camera = registry.get<Camera>(m_camera_entity);
+        auto const &camera = registry.get<Camera>(m_camera_entity);
         auto vp_uniform = glGetUniformLocation(shader3d, "VP");
         glm::mat4 view_matrix = camera.get_view();
         glm::mat4 vp = glm::perspective(45.0f, m_width / m_height, 0.1f, 1000.0f) * view_matrix;

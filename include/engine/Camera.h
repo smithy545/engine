@@ -14,6 +14,7 @@ namespace engine {
         glm::vec3 position{0, 10, 0};
         glm::vec3 forward{0, 0, 1};
         glm::vec3 up{0, 1, 0};
+        bool filming{false};
 
         void pan_horizontal(float diff) {
             forward = glm::normalize(glm::rotate(forward, 0.001f * diff, up));

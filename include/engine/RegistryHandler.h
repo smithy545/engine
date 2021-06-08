@@ -9,7 +9,7 @@
 
 
 namespace engine {
-    class StateHandler {
+    class RegistryHandler {
     public:
         virtual void update(entt::registry &registry) = 0;
     };

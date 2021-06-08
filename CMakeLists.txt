@@ -5,12 +5,16 @@ find_package(OpenGL REQUIRED)
 add_library(engine
         src/Renderer.cpp
         src/InputManager.cpp
-        src/InterfaceHandler.cpp)
+        src/InterfaceHandler.cpp
+        src/InterfaceContainer.cpp
+        src/ShapeElement.cpp)
 target_link_directories(engine PRIVATE
         /opt/homebrew/Cellar/glew/2.2.0_1/lib
         /opt/homebrew/Cellar/glfw/3.3.4/lib)
-target_link_libraries(engine utils OpenGL::GL GLEW GLFW EnTT)
+target_link_libraries(engine utils OpenGL::GL GLEW GLFW EnTT CGAL)
 target_include_directories(engine
+        PRIVATE
+        ../../external/cute_headers
         PUBLIC
         /opt/homebrew/Cellar/glew/2.2.0_1/include
         /opt/homebrew/Cellar/glm/0.9.9.8/include
