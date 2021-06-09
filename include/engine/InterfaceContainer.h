@@ -29,17 +29,32 @@ namespace engine {
 
         explicit InterfaceContainer(std::vector<InterfaceElement::Ptr>& initial_elements);
 
+        void register_with(entt::registry& registry) override;
+
+        void deregister(entt::registry& registry) override;
+
         bool handle_mouse_move(double x, double y) override;
+
         bool handle_mouse_down(double x, double y, int button) override;
+
         bool handle_mouse_up(double x, double y, int button) override;
+
         bool handle_key_down(int code) override;
+
         bool handle_key_up(int code) override;
+
         glm::vec2 get_center() override;
+
         bool collides(double x, double y) override;
+
         InterfaceElement::Ptr get_nearest_element(double x, double y);
+
         void insert_element(InterfaceElement::Ptr element);
+
         void remove_element(const InterfaceElement::Ptr& element);
+
         void clear();
+
     private:
         std::vector<Point_2> m_element_positions;
         std::unordered_map<std::string, InterfaceElement::Ptr> m_elements;

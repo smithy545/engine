@@ -27,11 +27,14 @@ namespace engine {
         m_collision_tree->refine(4, 10);
     }
 
-    glm::vec2 InterfaceContainer::get_center() {
-        if(m_collision_tree == nullptr)
-            return glm::vec2(0,0);
-        auto bounds = m_collision_tree->bbox(m_collision_tree->root());
-        return glm::vec2((bounds.ymin() + bounds.ymax())/2.0, (bounds.xmin() + bounds.xmax())/2.0);
+    void InterfaceContainer::register_with(entt::registry& registry) {
+        for(auto [key, element]: m_elements)
+            element->register_with(registry);
+    }
+
+    void InterfaceContainer::deregister(entt::registry &registry) {
+        for(auto [key, element]: m_elements)
+            element->deregister(registry);
     }
 
     InterfaceElement::Ptr InterfaceContainer::get_nearest_element(double x, double y) {
@@ -81,6 +84,13 @@ namespace engine {
     bool InterfaceContainer::handle_key_up(int code) {
 //        std::cout << code << " up" << std::endl;
         return true;
+    }
+
+    glm::vec2 InterfaceContainer::get_center() {
+        if(m_collision_tree == nullptr)
+            return glm::vec2(0,0);
+        auto bounds = m_collision_tree->bbox(m_collision_tree->root());
+        return glm::vec2((bounds.ymin() + bounds.ymax())/2.0, (bounds.xmin() + bounds.xmax())/2.0);
     }
 
     void InterfaceContainer::insert_element(InterfaceElement::Ptr element) {

@@ -60,7 +60,8 @@ namespace engine {
             k = false;
 
         //glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetKeyCallback(window, key_cb);
         glfwSetCursorPosCallback(window, cursor_pos_cb);
         glfwSetScrollCallback(window, mouse_scroll_cb);
