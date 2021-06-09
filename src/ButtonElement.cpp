@@ -56,7 +56,6 @@ namespace engine {
     }
 
     bool ButtonElement::handle_mouse_up(double x, double y, int button) {
-        std::cout << "Trigger" << std::endl;
         return false;
     }
 
