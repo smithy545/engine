@@ -38,10 +38,10 @@ namespace engine {
                 camera.move_up();
             if (InputManager::get_key(GLFW_KEY_LEFT_CONTROL))
                 camera.move_down();
-            if (InputManager::get_mouse_x() != InputManager::get_prev_mouse_x())
-                ;//camera.pan_horizontal(InputManager::get_prev_mouse_x() - InputManager::get_mouse_x());
-            if (InputManager::get_mouse_y() != InputManager::get_prev_mouse_y())
-                ;//camera.pan_vertical(InputManager::get_mouse_y() - InputManager::get_prev_mouse_y());
+            if (InputManager::get_key(GLFW_KEY_Q))
+                camera.pan_horizontal(10.0);
+            if (InputManager::get_key(GLFW_KEY_E))
+                camera.pan_horizontal(-10.0);
         }
     }
 

@@ -44,17 +44,20 @@ namespace engine {
         sprite.indices.push_back(3);
         sprite.indices.push_back(0);
 
-        auto shape_entity = registry.create();
-        registry.emplace<Sprite>(shape_entity, sprite);
-        registry.patch<InstanceList>(shape_entity, [](auto &instance_list) {
+        entity = registry.create();
+        registry.emplace<Sprite>(entity, sprite);
+        registry.patch<InstanceList>(entity, [](auto &instance_list) {
             instance_list.set_models({glm::mat4(1)});
         });
     }
 
-    void ColoredBoxElement::deregister(entt::registry& registry) {}
+    void ColoredBoxElement::deregister(entt::registry& registry) {
+        registry.destroy(entity);
+        entity = entt::null;
+    }
 
     bool ColoredBoxElement::handle_mouse_move(double x, double y) {
-        return true;
+        return false;
     }
 
     bool ColoredBoxElement::handle_mouse_down(double x, double y, int button) {

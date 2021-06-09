@@ -38,8 +38,7 @@ namespace engine {
     }
 
     InterfaceElement::Ptr InterfaceContainer::get_nearest_element(double x, double y) {
-        if(m_collision_tree != nullptr
-        && do_intersect(m_collision_tree->bbox(m_collision_tree->root()), Point_2{x,y})) {
+        if(m_collision_tree != nullptr) {
             std::vector<Point_2> nearest(1);
             m_collision_tree->nearest_neighbors(Point_2{x, y}, 1, nearest.begin());
             return m_elements[point_key(nearest[0].x(), nearest[0].y())];

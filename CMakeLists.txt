@@ -7,7 +7,8 @@ add_library(engine
         src/InputManager.cpp
         src/InterfaceHandler.cpp
         src/InterfaceContainer.cpp
-        src/BoxElement.cpp)
+        src/BoxElement.cpp
+        src/ButtonElement.cpp)
 target_link_directories(engine PRIVATE
         /opt/homebrew/Cellar/glew/2.2.0_1/lib
         /opt/homebrew/Cellar/glfw/3.3.4/lib)

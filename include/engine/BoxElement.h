@@ -45,7 +45,8 @@ namespace engine {
         bool handle_key_down(int code) override;
 
         bool handle_key_up(int code) override;
-
+    private:
+        entt::entity entity{entt::null};
     VAR(glm::vec3, color, public, public);
     };
 } // namespace engine
