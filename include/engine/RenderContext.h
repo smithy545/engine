@@ -5,6 +5,7 @@
 #ifndef CIVILWAR_RENDERCONTEXT_H
 #define CIVILWAR_RENDERCONTEXT_H
 
+#include <engine/Camera.h>
 #include <entt/entt.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -12,6 +13,7 @@
 
 namespace engine {
     struct RenderContext {
+        Camera::Ptr camera;
         GLuint shader2d;
         GLuint shader3d;
         float screen_width;

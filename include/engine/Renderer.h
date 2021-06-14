@@ -17,11 +17,11 @@
 namespace engine {
     class Renderer {
     public:
-        RenderContext init(entt::registry &registry);
+        explicit Renderer(RenderContext& context);
+
+        static bool init(entt::registry &registry);
 
         void render(entt::registry &registry);
-
-        void resize(float width, float height);
 
         void cleanup(entt::registry &registry);
 
@@ -33,19 +33,17 @@ namespace engine {
 
         static void destroy_instances(entt::registry &registry, entt::entity entity);
     private:
-        RenderContext context;
-
-        void read_config(const std::string& filename);
+        const RenderContext& ctx;
 
         static bool init_glfw();
 
         static bool init_glew();
 
-        bool init_window();
+        void read_config(RenderContext& context, const std::string& filename);
 
-        bool init_shaders();
+        bool init_window(RenderContext& context);
 
-    VAR_GET(entt::entity, camera_entity, public){entt::null};
+        bool init_shaders(RenderContext& context);
     };
 } // namespace engine
 

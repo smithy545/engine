@@ -11,8 +11,12 @@
 
 namespace engine {
     struct Steadicam : public Camera {
-        glm::vec3 position{0, 10, 0};
-        bool filming{false};
+        glm::vec3 position;
+        bool filming;
+
+        Steadicam(glm::vec3 position, bool filming = false)
+        : position(position), filming(filming) {}
+
 
         glm::mat4 get_view() const override {
             return glm::lookAt(position, position + forward, up);

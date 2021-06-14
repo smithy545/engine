@@ -5,6 +5,8 @@
 #include <engine/InterfaceHandler.h>
 
 #include <engine/OrbitCam.h>
+#include <engine/Steadicam.h>
+#include <engine/RenderContext.h>
 #include <engine/InputManager.h>
 #include <utility>
 
@@ -20,29 +22,35 @@ namespace engine {
         if(m_container != nullptr)
             m_container->update();
 
-        auto view = registry.view<OrbitCam>();
+        auto view = registry.view<RenderContext>();
         for(auto &entity: view) {
-            auto &camera = view.get<OrbitCam>(entity);
-            if(!camera.filming)
-                continue;
-            if (InputManager::get_key(GLFW_KEY_SPACE))
-                InputManager::is_paused() ? InputManager::unpause() : InputManager::pause();
-            if (InputManager::get_key(GLFW_KEY_W))
-                camera.move_forward();
-            if (InputManager::get_key(GLFW_KEY_A))
-                camera.move_left();
-            if (InputManager::get_key(GLFW_KEY_S))
-                camera.move_backward();
-            if (InputManager::get_key(GLFW_KEY_D))
-                camera.move_right();
-            if (InputManager::get_key(GLFW_KEY_LEFT_SHIFT))
-                camera.move_up();
-            if (InputManager::get_key(GLFW_KEY_LEFT_CONTROL))
-                camera.move_down();
-            if (InputManager::get_key(GLFW_KEY_Q))
-                camera.pan_horizontal(0.1);
-            if (InputManager::get_key(GLFW_KEY_E))
-                camera.pan_horizontal(-0.1);
+            auto [context] = view.get(entity);
+            auto camera = context.camera;
+            if(auto* orbit_cam = dynamic_cast<OrbitCam*>(camera.get())){
+                // STRATEGY MODE
+                if(!orbit_cam->filming)
+                    continue;
+                if (InputManager::get_key(GLFW_KEY_SPACE))
+                    InputManager::is_paused() ? InputManager::unpause() : InputManager::pause();
+                if (InputManager::get_key(GLFW_KEY_W))
+                    orbit_cam->move_forward();
+                if (InputManager::get_key(GLFW_KEY_A))
+                    orbit_cam->move_left();
+                if (InputManager::get_key(GLFW_KEY_S))
+                    orbit_cam->move_backward();
+                if (InputManager::get_key(GLFW_KEY_D))
+                    orbit_cam->move_right();
+                if (InputManager::get_key(GLFW_KEY_LEFT_SHIFT))
+                    orbit_cam->move_up();
+                if (InputManager::get_key(GLFW_KEY_LEFT_CONTROL))
+                    orbit_cam->move_down();
+                if (InputManager::get_key(GLFW_KEY_Q))
+                    orbit_cam->pan_horizontal(0.1);
+                if (InputManager::get_key(GLFW_KEY_E))
+                    orbit_cam->pan_horizontal(-0.1);
+            } else if(auto* steadicam = dynamic_cast<Steadicam*>(camera.get())) {
+                // TODO: First person mode
+            }
         }
     }
 

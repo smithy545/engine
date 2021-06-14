@@ -11,9 +11,12 @@
 
 namespace engine {
     struct OrbitCam : public Camera {
-        glm::vec3 focal_point{0, 0, 0};
-        glm::vec3 position{0, 10, 0};
-        bool filming{false};
+        glm::vec3 focal_point;
+        glm::vec3 position;
+        bool filming;
+
+        OrbitCam(glm::vec3 focal_point, glm::vec3 position, bool filming = false)
+        : focal_point(focal_point), position(position), filming(filming) {}
 
         glm::mat4 get_view() const override {
             if(horizontal_rotation == 0.0f)

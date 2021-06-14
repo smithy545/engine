@@ -5,8 +5,6 @@
 #include <engine/Renderer.h>
 
 #include <engine/OrbitCam.h>
-#include <engine/Steadicam.h>
-#include <engine/InputManager.h>
 #include <engine/InstanceList.h>
 #include <engine/Sprite.h>
 #include <engine/Mesh.h>
@@ -17,14 +15,43 @@
 
 
 namespace engine {
-    RenderContext Renderer::init(entt::registry &registry) {
-        read_config("../res/renderer.json");
+    Renderer::Renderer(RenderContext &context) : ctx(context){
+        context.camera = std::make_shared<OrbitCam>(
+                glm::vec3(400, 0, 300),glm::vec3(10, 10, 10),true);
+        read_config(context, "../res/renderer.json");
+        if(!init_glfw()) {
+            std::cerr << "Failed to init GLFW" << std::endl;
+            return;
+        }
+        if(!init_window(context)) {
+            std::cerr << "Failed to init window" << std::endl;
+            return;
+        }
+        if(!init_glew()) {
+            std::cerr << "Failed to init glew" << std::endl;
+            return;
+        }
+        if(!init_shaders(context)) {
+            std::cerr << "Failed to init shaders" << std::endl;
+            return;
+        }
+    }
 
-        assert(init_glfw());
-        assert(init_window());
-        assert(init_glew());
-        assert(init_shaders());
+    void Renderer::read_config(RenderContext& context, const std::string& filename) {
+        try {
+            auto config_json = utils::file::read_json_file(filename);
+            if (config_json.contains("width"))
+                context.screen_width = config_json["width"];
+            if (config_json.contains("height"))
+                context.screen_height = config_json["height"];
+        } catch (nlohmann::detail::parse_error e) {
+            std::cout << "Error reading config file: " << e.what() << std::endl;
+            context.screen_width = 800;
+            context.screen_height = 600;
+        }
+    }
 
+    bool Renderer::init(entt::registry &registry) {
         // cull triangles facing away from camera
         glEnable(GL_CULL_FACE);
 
@@ -39,18 +66,10 @@ namespace engine {
         registry.on_destroy<VertexArrayObject>().connect<&destroy_vao>();
         registry.on_destroy<InstanceList>().connect<&destroy_instances>();
 
-        // create camera
-        m_camera_entity = registry.create();
-        registry.emplace<OrbitCam>(m_camera_entity);
-        auto &camera = registry.get<OrbitCam>(m_camera_entity);
-        camera.filming = true;
-        camera.position = glm::vec3(10, 10, 10);
-        camera.focal_point = glm::vec3(400, 0, 300);
-
-        return context;
+        return true;
     }
 
-    bool Renderer::init_window() {
+    bool Renderer::init_window(RenderContext& context) {
         // Open a window and create its OpenGL context
         context.window = glfwCreateWindow(context.screen_width, context.screen_height, "Civil War", nullptr, nullptr);
         if (context.window == nullptr) {
@@ -87,7 +106,7 @@ namespace engine {
         return true;
     }
 
-    bool Renderer::init_shaders() {
+    bool Renderer::init_shaders(RenderContext& context) {
         const char *vshader_src = "#version 400 core\n"
                                   "\n"
                                   "layout (location = 0) in vec3 inPos;\n"
@@ -342,15 +361,10 @@ namespace engine {
     }
 
     void Renderer::render(entt::registry &registry) {
-        if(InputManager::has_resized()) {
-            resize(InputManager::get_width(), InputManager::get_height());
-            InputManager::clear_resize();
-        }
-        auto const &camera = registry.get<OrbitCam>(m_camera_entity);
-        auto vp_uniform = glGetUniformLocation(context.shader3d, "VP");
-        glm::mat4 view_matrix = camera.get_view();
-        glm::mat4 vp = glm::perspective(45.0f, context.screen_width / context.screen_height, 0.1f, 1000.0f) * view_matrix;
-        glUseProgram(context.shader3d);
+        auto vp_uniform = glGetUniformLocation(ctx.shader3d, "VP");
+        glm::mat4 view_matrix = ctx.camera->get_view();
+        glm::mat4 vp = glm::perspective(45.0f, ctx.screen_width / ctx.screen_height, 0.1f, 1000.0f) * view_matrix;
+        glUseProgram(ctx.shader3d);
         glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
         auto view3d = registry.view<VertexArrayObject, InstanceList, Mesh>();
         for (const auto &entity: view3d) {
@@ -358,9 +372,9 @@ namespace engine {
             glBindVertexArray(vao.id);
             glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0, ilist.instances.size());
         }
-        vp_uniform = glGetUniformLocation(context.shader2d, "VP");
-        vp = glm::ortho(-0.f*context.screen_width, 1.f*context.screen_width, 1.f*context.screen_height, -0.f*context.screen_height);
-        glUseProgram(context.shader2d);
+        vp_uniform = glGetUniformLocation(ctx.shader2d, "VP");
+        vp = glm::ortho(-0.f * ctx.screen_width, 1.f * ctx.screen_width, 1.f * ctx.screen_height, -0.f * ctx.screen_height);
+        glUseProgram(ctx.shader2d);
         glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
         auto view2d = registry.view<VertexArrayObject, InstanceList, Sprite>();
         for(const auto &entity: view2d) {
@@ -371,28 +385,8 @@ namespace engine {
     }
 
     void Renderer::cleanup(entt::registry &registry) {
-        glDeleteProgram(context.shader2d);
-        glDeleteProgram(context.shader3d);
+        glDeleteProgram(ctx.shader2d);
+        glDeleteProgram(ctx.shader3d);
         glfwTerminate();
-    }
-
-    void Renderer::resize(float width, float height) {
-        glViewport(0, 0, width, height);
-        context.screen_width = width;
-        context.screen_height = height;
-    }
-
-    void Renderer::read_config(const std::string& filename) {
-        try {
-            auto config_json = utils::file::read_json_file(filename);
-            if (config_json.contains("width"))
-                context.screen_width = config_json["width"];
-            if (config_json.contains("height"))
-                context.screen_height = config_json["height"];
-        } catch (nlohmann::detail::parse_error e) {
-            std::cout << "Error reading config file: " << e.what() << std::endl;
-            context.screen_width = 800;
-            context.screen_height = 600;
-        }
     }
 } // namespace engine
