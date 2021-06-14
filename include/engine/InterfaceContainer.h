@@ -50,6 +50,8 @@ class InterfaceContainer :
         void clear();
 
     private:
+        static const int QUADTREE_MAX_DEPTH{4};
+        static const int QUADTREE_BUCKET_SIZE{10};
         std::vector<Point_2> m_element_positions;
         std::unordered_map<std::string, InterfaceElement::Ptr> m_elements;
         std::shared_ptr<Quadtree> m_collision_tree{nullptr};

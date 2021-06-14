@@ -14,7 +14,7 @@
 
 
 namespace engine {
-    class BoxElement : public InterfaceElement, public c2AABB, public Collideable {
+    class BoxElement : public InterfaceElement, public Collideable, public c2AABB {
     public:
         PTR(BoxElement);
 

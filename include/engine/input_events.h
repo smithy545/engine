@@ -27,18 +27,14 @@ namespace engine {
         double y;
     };
 
-    struct KeyEventSink {
-        virtual void handle(KeyEvent& event, InterfaceContainer& emitter) = 0;
+    template <class Event>
+    struct EventSink {
+        virtual void handle(Event& event, InterfaceContainer& emitter) = 0;
     };
 
-    struct MouseButtonEventSink {
-        virtual void handle(MouseButtonEvent& event, InterfaceContainer& emitter) = 0;
-    };
-
-    struct MouseMotionEventSink {
-        virtual void handle(MouseMotionEvent& event, InterfaceContainer& emitter) = 0;
-    };
-
+    typedef EventSink<KeyEvent> KeyEventSink;
+    typedef EventSink<MouseButtonEvent> MouseButtonEventSink;
+    typedef EventSink<MouseMotionEvent> MouseMotionEventSink;
 } // namespace engine
 
 #endif //CIVILWAR_INPUT_EVENTS_H

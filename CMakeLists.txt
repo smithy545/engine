@@ -8,7 +8,8 @@ add_library(engine
         src/InterfaceHandler.cpp
         src/InterfaceContainer.cpp
         src/BoxElement.cpp
-        src/ButtonElement.cpp)
+        src/ButtonElement.cpp
+        src/RayElement.cpp)
 target_link_directories(engine PRIVATE
         /opt/homebrew/Cellar/glew/2.2.0_1/lib
         /opt/homebrew/Cellar/glfw/3.3.4/lib)

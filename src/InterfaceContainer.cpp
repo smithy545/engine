@@ -50,24 +50,27 @@ namespace engine {
             while(itr->get_next() != nullptr)
                 itr = itr->get_next();
             itr->set_next(element);
-        } else {
+        } else if(dynamic_cast<Collideable*>(element.get()) != nullptr) {
             m_elements[key] = element;
             m_element_positions.emplace_back(center.x, center.y);
             m_collision_tree = std::make_shared<Quadtree>(m_element_positions);
-            m_collision_tree->refine(4, 10);
+            m_collision_tree->refine(QUADTREE_MAX_DEPTH, QUADTREE_BUCKET_SIZE);
         }
         if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
             entity->register_with(registry);
         if(auto* handler = dynamic_cast<KeyEventSink*>(element.get()))
-            on<KeyEvent>([handler](KeyEvent& event, InterfaceContainer& emitter) {
+            on<KeyEvent>([element](KeyEvent& event, InterfaceContainer& emitter) {
+                auto* handler = dynamic_cast<KeyEventSink*>(element.get());
                 handler->handle(event, emitter);
             });
         if(auto* handler = dynamic_cast<MouseButtonEventSink*>(element.get()))
-            on<MouseButtonEvent>([handler](MouseButtonEvent& event, InterfaceContainer& emitter) {
+            on<MouseButtonEvent>([element](MouseButtonEvent& event, InterfaceContainer& emitter) {
+                auto* handler = dynamic_cast<MouseButtonEventSink*>(element.get());
                 handler->handle(event, emitter);
             });
         if(auto* handler = dynamic_cast<MouseMotionEventSink*>(element.get()))
-            on<MouseMotionEvent>([handler](MouseMotionEvent& event, InterfaceContainer& emitter) {
+            on<MouseMotionEvent>([element](MouseMotionEvent& event, InterfaceContainer& emitter) {
+                auto* handler = dynamic_cast<MouseMotionEventSink*>(element.get());
                 handler->handle(event, emitter);
             });
         // todo look into storing the above event connections to allow for later disconnection
@@ -92,8 +95,15 @@ namespace engine {
                 }
             }
             if(!m_elements.contains(key)) {
+                for(int i = 0; i < m_element_positions.size(); i++) {
+                    auto p = m_element_positions[i];
+                    if(point_key(p.x(), p.y()) == key) {
+                        m_element_positions.erase(m_element_positions.begin() + i);
+                        break;
+                    }
+                }
                 m_collision_tree = std::make_shared<Quadtree>(m_element_positions);
-                m_collision_tree->refine(4, 10);
+                m_collision_tree->refine(QUADTREE_MAX_DEPTH, QUADTREE_BUCKET_SIZE);
             }
         }
         if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))

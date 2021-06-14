@@ -55,23 +55,17 @@ namespace engine {
     }
 
     bool InterfaceHandler::trigger(double x, double y) {
-        if(m_container->collides(x, y)) {
-            m_container->publish<MouseMotionEvent>(x, y);
-            return false;
-        }
+        m_container->publish<MouseMotionEvent>(x, y);
         return true;
     }
 
     bool InterfaceHandler::trigger(double x, double y, int button, bool value) {
-        if(m_container->collides(x, y)) {
-            m_container->publish<MouseButtonEvent>(x, y, button, value);
-            return false;
-        }
+        m_container->publish<MouseButtonEvent>(x, y, button, value);
         return true;
     }
 
     bool InterfaceHandler::trigger(int code, bool value) {
         m_container->publish<KeyEvent>(code, value);
-        return false;
+        return true;
     }
 } // namespace engine
