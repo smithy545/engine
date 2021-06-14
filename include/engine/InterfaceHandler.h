@@ -21,7 +21,10 @@
 
 namespace engine {
     class InterfaceHandler :
-            public RegistryHandler, public KeyHandler, public MouseButtonHandler, public MouseMotionHandler {
+            public RegistryHandler,
+            public KeyHandler,
+            public MouseButtonHandler,
+            public MouseMotionHandler {
     public:
         InterfaceHandler(InterfaceContainer::Ptr container, entt::registry &registry);
 

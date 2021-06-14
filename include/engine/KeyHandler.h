@@ -18,7 +18,6 @@ namespace engine {
     VAR(KeyHandler*, next_key_handler, public, public){nullptr};
     protected:
         virtual bool trigger(int code, bool value) = 0;
-    private:
     };
 } // namespace engine
 

@@ -14,9 +14,7 @@ namespace fs = std::filesystem;
 
 namespace engine {
     InterfaceHandler::InterfaceHandler(InterfaceContainer::Ptr container, entt::registry &registry)
-    : m_container(std::move(container)) {
-        m_container->register_with(registry);
-    }
+    : m_container(std::move(container)) {}
 
     void InterfaceHandler::update(entt::registry &registry) {
         auto view = registry.view<Camera>();
@@ -46,18 +44,23 @@ namespace engine {
     }
 
     bool InterfaceHandler::trigger(double x, double y) {
-        return m_container->handle_mouse_move(x, y);
+        if(m_container->collides(x, y)) {
+            m_container->publish<MouseMotionEvent>(x, y);
+            return false;
+        }
+        return true;
     }
 
     bool InterfaceHandler::trigger(double x, double y, int button, bool value) {
-        if(value)
-            return m_container->handle_mouse_down(x, y, button);
-        return m_container->handle_mouse_up(x, y, button);
+        if(m_container->collides(x, y)) {
+            m_container->publish<MouseButtonEvent>(x, y, button, value);
+            return false;
+        }
+        return true;
     }
 
     bool InterfaceHandler::trigger(int code, bool value) {
-        if(value)
-            return m_container->handle_key_down(code);
-        return m_container->handle_key_up(code);
+        m_container->publish<KeyEvent>(code, value);
+        return false;
     }
 } // namespace engine

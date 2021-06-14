@@ -90,53 +90,6 @@ namespace engine {
         entt::monostate<PREV_MOUSE_Y_KEY>{} = get_mouse_y();
     }
 
-    bool InputManager::get_key(int key) {
-        return keys[key];
-    }
-
-    void InputManager::set_key(int key, bool value) {
-        if (key < GLFW_KEY_LAST && key >= 0)
-            keys[key] = value;
-        if(key_chain != nullptr)
-            key_chain->handle(key, value);
-    }
-
-    int InputManager::get_width() {
-        return entt::monostate<InputManager::WIDTH_KEY>{};
-    }
-
-    int InputManager::get_height() {
-        return entt::monostate<InputManager::HEIGHT_KEY>{};
-    }
-
-    bool InputManager::has_resized() {
-        return entt::monostate<RESIZED_KEY>{};
-    }
-
-    void InputManager::clear_resize() {
-        entt::monostate<engine::InputManager::RESIZED_KEY>{} = false;
-    }
-
-    void InputManager::set_mouse_position(double x, double y) {
-        entt::monostate<PREV_MOUSE_X_KEY>{} = ((double) entt::monostate<MOUSE_X_KEY>{});
-        entt::monostate<PREV_MOUSE_Y_KEY>{} = ((double) entt::monostate<MOUSE_Y_KEY>{});
-        entt::monostate<MOUSE_X_KEY>{} = x;
-        entt::monostate<MOUSE_Y_KEY>{} = y;
-        if(mouse_motion_chain != nullptr)
-            mouse_motion_chain->handle(x, y);
-    }
-
-    void InputManager::set_mouse_button(int button, bool value) {
-        if (button == GLFW_MOUSE_BUTTON_LEFT)
-            entt::monostate<MOUSE_LEFT_KEY>{} = value;
-        else if (button == GLFW_MOUSE_BUTTON_RIGHT)
-            entt::monostate<MOUSE_RIGHT_KEY>{} = value;
-        else if (button == GLFW_MOUSE_BUTTON_MIDDLE)
-            entt::monostate<MOUSE_MIDDLE_KEY>{} = value;
-        if(mouse_button_chain != nullptr)
-            mouse_button_chain->handle(get_mouse_x(), get_mouse_y(), button, value);
-    }
-
     void InputManager::start() {
         entt::monostate<START_KEY>{} = true;
         entt::monostate<STOP_KEY>{} = false;
@@ -165,6 +118,53 @@ namespace engine {
 
     bool InputManager::has_started() {
         return entt::monostate<START_KEY>{};
+    }
+
+    int InputManager::get_width() {
+        return entt::monostate<InputManager::WIDTH_KEY>{};
+    }
+
+    int InputManager::get_height() {
+        return entt::monostate<InputManager::HEIGHT_KEY>{};
+    }
+
+    bool InputManager::has_resized() {
+        return entt::monostate<RESIZED_KEY>{};
+    }
+
+    void InputManager::clear_resize() {
+        entt::monostate<engine::InputManager::RESIZED_KEY>{} = false;
+    }
+
+    bool InputManager::get_key(int key) {
+        return keys[key];
+    }
+
+    void InputManager::set_key(int key, bool value) {
+        if (key < GLFW_KEY_LAST && key >= 0)
+            keys[key] = value;
+        if(key_chain != nullptr)
+            key_chain->handle(key, value);
+    }
+
+    void InputManager::set_mouse_position(double x, double y) {
+        entt::monostate<PREV_MOUSE_X_KEY>{} = ((double) entt::monostate<MOUSE_X_KEY>{});
+        entt::monostate<PREV_MOUSE_Y_KEY>{} = ((double) entt::monostate<MOUSE_Y_KEY>{});
+        entt::monostate<MOUSE_X_KEY>{} = x;
+        entt::monostate<MOUSE_Y_KEY>{} = y;
+        if(mouse_motion_chain != nullptr)
+            mouse_motion_chain->handle(x, y);
+    }
+
+    void InputManager::set_mouse_button(int button, bool value) {
+        if (button == GLFW_MOUSE_BUTTON_LEFT)
+            entt::monostate<MOUSE_LEFT_KEY>{} = value;
+        else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+            entt::monostate<MOUSE_RIGHT_KEY>{} = value;
+        else if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+            entt::monostate<MOUSE_MIDDLE_KEY>{} = value;
+        if(mouse_button_chain != nullptr)
+            mouse_button_chain->handle(get_mouse_x(), get_mouse_y(), button, value);
     }
 
     void InputManager::register_key_handler(KeyHandler* handler) {

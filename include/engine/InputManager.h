@@ -36,18 +36,6 @@ namespace engine {
 
         static void init(GLFWwindow* window);
 
-        static void register_key_handler(KeyHandler* handler);
-
-        static void unregister_key_handler(KeyHandler* handler);
-
-        static void register_mouse_button_handler(MouseButtonHandler* handler);
-
-        static void unregister_mouse_button_handler(MouseButtonHandler* handler);
-
-        static void register_mouse_motion_handler(MouseMotionHandler* handler);
-
-        static void unregister_mouse_motion_handler(MouseMotionHandler* handler);
-
         static double get_mouse_x();
 
         static double get_mouse_y();
@@ -87,6 +75,19 @@ namespace engine {
         static bool is_paused();
 
         static bool has_started();
+
+        static void register_key_handler(KeyHandler* handler);
+
+        static void unregister_key_handler(KeyHandler* handler);
+
+        static void register_mouse_button_handler(MouseButtonHandler* handler);
+
+        static void unregister_mouse_button_handler(MouseButtonHandler* handler);
+
+        static void register_mouse_motion_handler(MouseMotionHandler* handler);
+
+        static void unregister_mouse_motion_handler(MouseMotionHandler* handler);
+
     private:
         static bool keys[GLFW_KEY_LAST];
         static KeyHandler* key_chain;
@@ -94,5 +95,6 @@ namespace engine {
         static MouseMotionHandler* mouse_motion_chain;
     };
 } // namespace engine
+
 
 #endif //ENGINE_INPUTHANDLER_H

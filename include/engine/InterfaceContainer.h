@@ -13,7 +13,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Collideable.h"
+#include "IndependentEntity.h"
 #include "InterfaceElement.h"
+#include "input_events.h"
 
 
 namespace engine {
@@ -21,27 +24,15 @@ namespace engine {
     typedef Kernel::Point_2 Point_2;
     typedef CGAL::Quadtree<Kernel, std::vector<Point_2>> Quadtree;
 
-    class InterfaceContainer : public InterfaceElement {
+class InterfaceContainer :
+        public InterfaceElement,
+        public IndependentEntity,
+        public Collideable,
+        public entt::emitter<InterfaceContainer> {
     public:
         PTR(InterfaceContainer);
 
-        InterfaceContainer();
-
-        explicit InterfaceContainer(std::vector<InterfaceElement::Ptr>& initial_elements);
-
-        void register_with(entt::registry& registry) override;
-
-        void deregister(entt::registry& registry) override;
-
-        bool handle_mouse_move(double x, double y) override;
-
-        bool handle_mouse_down(double x, double y, int button) override;
-
-        bool handle_mouse_up(double x, double y, int button) override;
-
-        bool handle_key_down(int code) override;
-
-        bool handle_key_up(int code) override;
+        explicit InterfaceContainer(entt::registry& registry);
 
         glm::vec2 get_center() override;
 

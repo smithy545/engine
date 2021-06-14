@@ -4,38 +4,12 @@
 
 #include <engine/InterfaceContainer.h>
 
-#include <iostream>
+#include <functional>
+#include <engine/ManagedEntity.h>
 
 
 namespace engine {
-    InterfaceContainer::InterfaceContainer() = default;
-    InterfaceContainer::InterfaceContainer(std::vector<InterfaceElement::Ptr>& initial_elements) {
-        for(auto &element: initial_elements) {
-            auto pos = element->get_center();
-            auto key = point_key(pos.x, pos.y);
-            if(m_elements.contains(key)) {
-                auto& neighbor = m_elements[key];
-                while(neighbor->get_next() != nullptr)
-                    neighbor = neighbor->get_next();
-                neighbor->set_next(element);
-            } else {
-                m_element_positions.emplace_back(pos.x, pos.y);
-                m_elements[key] = element;
-            }
-        }
-        m_collision_tree = std::make_shared<Quadtree>(m_element_positions);
-        m_collision_tree->refine(4, 10);
-    }
-
-    void InterfaceContainer::register_with(entt::registry& registry) {
-        for(auto [key, element]: m_elements)
-            element->register_with(registry);
-    }
-
-    void InterfaceContainer::deregister(entt::registry &registry) {
-        for(auto [key, element]: m_elements)
-            element->deregister(registry);
-    }
+    InterfaceContainer::InterfaceContainer(entt::registry& registry) : IndependentEntity(registry) {}
 
     InterfaceElement::Ptr InterfaceContainer::get_nearest_element(double x, double y) {
         if(m_collision_tree != nullptr) {
@@ -48,41 +22,10 @@ namespace engine {
 
     bool InterfaceContainer::collides(double x, double y) {
         auto element = get_nearest_element(x, y);
-        return element != nullptr && element->collides(x, y);
-    }
-
-    bool InterfaceContainer::handle_mouse_move(double x, double y) {
-//        std::cout << "mouse move to " << x << " " << y << std::endl;
-        auto element = get_nearest_element(x, y);
-        if(element != nullptr && element->collides(x, y))
-            return element->handle_mouse_move(x, y);
-        return true;
-    }
-
-    bool InterfaceContainer::handle_mouse_down(double x, double y, int button) {
-//        std::cout << "mouse button " << button << " down at " << x << " " << y << std::endl;
-        auto element = get_nearest_element(x, y);
-        if(element != nullptr && element->collides(x, y))
-            return element->handle_mouse_down(x, y, button);
-        return true;
-    }
-
-    bool InterfaceContainer::handle_mouse_up(double x, double y, int button) {
-//        std::cout << "mouse button " << button << " up at " << x << " " << y << std::endl;
-        auto element = get_nearest_element(x, y);
-        if(element != nullptr && element->collides(x, y))
-            return element->handle_mouse_up(x, y, button);
-        return true;
-    }
-
-    bool InterfaceContainer::handle_key_down(int code) {
-//        std::cout << code << " down" << std::endl;
-        return true;
-    }
-
-    bool InterfaceContainer::handle_key_up(int code) {
-//        std::cout << code << " up" << std::endl;
-        return true;
+        if(element == nullptr)
+            return false;
+        auto* collideable = dynamic_cast<Collideable*>(element.get());
+        return collideable != nullptr && collideable->collides(x, y);
     }
 
     glm::vec2 InterfaceContainer::get_center() {
@@ -106,6 +49,21 @@ namespace engine {
             m_collision_tree = std::make_shared<Quadtree>(m_element_positions);
             m_collision_tree->refine(4, 10);
         }
+        if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
+            entity->register_with(registry);
+        if(auto* handler = dynamic_cast<KeyEventSink*>(element.get()))
+            on<KeyEvent>([handler](KeyEvent& event, InterfaceContainer& emitter) {
+                handler->handle(event, emitter);
+            });
+        if(auto* handler = dynamic_cast<MouseButtonEventSink*>(element.get()))
+            on<MouseButtonEvent>([handler](MouseButtonEvent& event, InterfaceContainer& emitter) {
+                handler->handle(event, emitter);
+            });
+        if(auto* handler = dynamic_cast<MouseMotionEventSink*>(element.get()))
+            on<MouseMotionEvent>([handler](MouseMotionEvent& event, InterfaceContainer& emitter) {
+                handler->handle(event, emitter);
+            });
+        // todo look into storing the above connections to allow for later disconnection
     }
 
     void InterfaceContainer::remove_element(const InterfaceElement::Ptr& element) {
@@ -131,6 +89,8 @@ namespace engine {
                 m_collision_tree->refine(4, 10);
             }
         }
+        if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
+            entity->deregister(registry);
     }
 
     void InterfaceContainer::clear() {

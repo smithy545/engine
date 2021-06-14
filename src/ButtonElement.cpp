@@ -4,9 +4,9 @@
 
 #include <engine/ButtonElement.h>
 
+#include <iostream>
 #include <engine/InstanceList.h>
 #include <engine/Sprite.h>
-#include <iostream>
 #include <utility>
 
 
@@ -17,13 +17,13 @@ namespace engine {
     void ButtonElement::register_with(entt::registry& registry) {
         Sprite sprite;
         sprite.vertices.emplace_back(min.x, min.y);
-        sprite.colors.emplace_back(1,1,1);
+        sprite.colors.emplace_back(0,1,1);
 
         sprite.vertices.emplace_back(min.x, max.y);
-        sprite.colors.emplace_back(1,1,1);
+        sprite.colors.emplace_back(1,0,1);
 
         sprite.vertices.emplace_back(max.x, max.y);
-        sprite.colors.emplace_back(1,1,1);
+        sprite.colors.emplace_back(1,1,0);
 
         sprite.vertices.emplace_back(max.x, min.y);
         sprite.colors.emplace_back(1,1,1);
@@ -47,23 +47,10 @@ namespace engine {
         registry.destroy(entity);
     }
 
-    bool ButtonElement::handle_mouse_move(double x, double y) {
-        return false;
-    }
-
-    bool ButtonElement::handle_mouse_down(double x, double y, int button) {
-        return false;
-    }
-
-    bool ButtonElement::handle_mouse_up(double x, double y, int button) {
-        return false;
-    }
-
-    bool ButtonElement::handle_key_down(int code) {
-        return false;
-    }
-
-    bool ButtonElement::handle_key_up(int code) {
-        return false;
+    void ButtonElement::handle(MouseButtonEvent& event, InterfaceContainer& emitter) {
+        if(event.pressed)
+            std::cout << "pressed" << std::endl;
+        else
+            std::cout << "released" << std::endl;
     }
 } // namespace engine
