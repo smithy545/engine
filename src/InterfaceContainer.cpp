@@ -63,7 +63,7 @@ namespace engine {
             on<MouseMotionEvent>([handler](MouseMotionEvent& event, InterfaceContainer& emitter) {
                 handler->handle(event, emitter);
             });
-        // todo look into storing the above connections to allow for later disconnection
+        // todo look into storing the above event connections to allow for later disconnection
     }
 
     void InterfaceContainer::remove_element(const InterfaceElement::Ptr& element) {
