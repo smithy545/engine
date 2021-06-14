@@ -7,10 +7,11 @@
 
 #include "BoxElement.h"
 
-#include "input_events.h"
-#include "ManagedEntity.h"
 #include <string>
 #include <utils/macros.h>
+
+#include "input_events.h"
+#include "ManagedEntity.h"
 
 
 namespace engine {

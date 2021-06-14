@@ -4,7 +4,7 @@
 
 #include <engine/InterfaceHandler.h>
 
-#include <engine/Camera.h>
+#include <engine/OrbitCam.h>
 #include <engine/InputManager.h>
 #include <utility>
 
@@ -17,9 +17,12 @@ namespace engine {
     : m_container(std::move(container)) {}
 
     void InterfaceHandler::update(entt::registry &registry) {
-        auto view = registry.view<Camera>();
+        if(m_container != nullptr)
+            m_container->update();
+
+        auto view = registry.view<OrbitCam>();
         for(auto &entity: view) {
-            auto &camera = view.get<Camera>(entity);
+            auto &camera = view.get<OrbitCam>(entity);
             if(!camera.filming)
                 continue;
             if (InputManager::get_key(GLFW_KEY_SPACE))
@@ -37,9 +40,9 @@ namespace engine {
             if (InputManager::get_key(GLFW_KEY_LEFT_CONTROL))
                 camera.move_down();
             if (InputManager::get_key(GLFW_KEY_Q))
-                camera.pan_horizontal(10.0);
+                camera.pan_horizontal(0.1);
             if (InputManager::get_key(GLFW_KEY_E))
-                camera.pan_horizontal(-10.0);
+                camera.pan_horizontal(-0.1);
         }
     }
 

@@ -9,7 +9,7 @@
 
 
 namespace engine {
-    class UpdateEntity : public IndependentEntity {
+    class UpdateEntity : virtual public IndependentEntity {
     public:
         virtual void update() = 0;
     };

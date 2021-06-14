@@ -2,8 +2,8 @@
 // Created by Philip Smith on 6/4/21.
 //
 
-#ifndef ENGINE_MOUSEUPHANDLER_H
-#define ENGINE_MOUSEUPHANDLER_H
+#ifndef ENGINE_MOUSEBUTTONHANDLER_H
+#define ENGINE_MOUSEBUTTONHANDLER_H
 
 #include <utils/macros.h>
 
@@ -22,4 +22,4 @@ namespace engine {
 } // namespace engine
 
 
-#endif //ENGINE_MOUSEUPHANDLER_H
+#endif //ENGINE_MOUSEBUTTONHANDLER_H

@@ -2,8 +2,8 @@
 // Created by Philip Smith on 6/4/21.
 //
 
-#ifndef ENGINE_KEYUPHANDLER_H
-#define ENGINE_KEYUPHANDLER_H
+#ifndef ENGINE_KEYHANDLER_H
+#define ENGINE_KEYHANDLER_H
 
 #include <utils/macros.h>
 
@@ -22,4 +22,4 @@ namespace engine {
 } // namespace engine
 
 
-#endif //ENGINE_KEYUPHANDLER_H
+#endif //ENGINE_KEYHANDLER_H

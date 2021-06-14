@@ -39,7 +39,7 @@ namespace engine {
             entity = registry.create();
         registry.emplace_or_replace<Sprite>(entity, sprite);
         registry.patch<InstanceList>(entity, [](auto &instance_list) {
-            instance_list.set_models({glm::mat4(1)});
+            instance_list.add_instance(glm::mat4(1));
         });
     }
 

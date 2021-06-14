@@ -11,7 +11,6 @@
 
 #include "Collideable.h"
 #include "InterfaceElement.h"
-#include "ManagedEntity.h"
 
 
 namespace engine {

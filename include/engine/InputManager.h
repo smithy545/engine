@@ -34,7 +34,7 @@ namespace engine {
         static constexpr entt::hashed_string STOP_KEY{"stopped"};
         static constexpr entt::hashed_string START_KEY{"started"};
 
-        static void init(GLFWwindow* window);
+        static void register_input_callbacks(GLFWwindow* window);
 
         static double get_mouse_x();
 

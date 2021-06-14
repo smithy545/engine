@@ -11,13 +11,11 @@
 namespace engine {
     InterfaceContainer::InterfaceContainer(entt::registry& registry) : IndependentEntity(registry) {}
 
-    InterfaceElement::Ptr InterfaceContainer::get_nearest_element(double x, double y) {
-        if(m_collision_tree != nullptr) {
-            std::vector<Point_2> nearest(1);
-            m_collision_tree->nearest_neighbors(Point_2{x, y}, 1, nearest.begin());
-            return m_elements[point_key(nearest[0].x(), nearest[0].y())];
+    void InterfaceContainer::update() {
+        for(auto [pos, element]: m_elements) {
+            if(auto* updateable = dynamic_cast<UpdateEntity*>(element.get()))
+                updateable->update();
         }
-        return nullptr;
     }
 
     bool InterfaceContainer::collides(double x, double y) {
@@ -33,6 +31,15 @@ namespace engine {
             return glm::vec2(0,0);
         auto bounds = m_collision_tree->bbox(m_collision_tree->root());
         return glm::vec2((bounds.ymin() + bounds.ymax())/2.0, (bounds.xmin() + bounds.xmax())/2.0);
+    }
+
+    InterfaceElement::Ptr InterfaceContainer::get_nearest_element(double x, double y) {
+        if(m_collision_tree != nullptr) {
+            std::vector<Point_2> nearest(1);
+            m_collision_tree->nearest_neighbors(Point_2{x, y}, 1, nearest.begin());
+            return m_elements[point_key(nearest[0].x(), nearest[0].y())];
+        }
+        return nullptr;
     }
 
     void InterfaceContainer::insert_element(InterfaceElement::Ptr element) {

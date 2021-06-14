@@ -55,7 +55,7 @@ namespace engine {
     MouseButtonHandler* InputManager::mouse_button_chain = nullptr;
     MouseMotionHandler* InputManager::mouse_motion_chain = nullptr;
 
-    void InputManager::init(GLFWwindow *window) {
+    void InputManager::register_input_callbacks(GLFWwindow *window) {
         for (auto &k: keys)
             k = false;
 

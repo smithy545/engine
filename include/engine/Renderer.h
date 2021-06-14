@@ -11,11 +11,13 @@
 #include <string>
 #include <utils/macros.h>
 
+#include "RenderContext.h"
+
 
 namespace engine {
     class Renderer {
     public:
-        bool init(entt::registry &registry);
+        RenderContext init(entt::registry &registry);
 
         void render(entt::registry &registry);
 
@@ -31,8 +33,7 @@ namespace engine {
 
         static void destroy_instances(entt::registry &registry, entt::entity entity);
     private:
-        GLuint shader2d;
-        GLuint shader3d;
+        RenderContext context;
 
         void read_config(const std::string& filename);
 
@@ -40,14 +41,11 @@ namespace engine {
 
         static bool init_glew();
 
-        bool init_window(int width, int height);
+        bool init_window();
 
         bool init_shaders();
 
     VAR_GET(entt::entity, camera_entity, public){entt::null};
-    VAR_GET(float, width, public){0};
-    VAR_GET(float, height, public){0};
-    VAR_GET(GLFWwindow*, window, public){nullptr};
     };
 } // namespace engine
 

@@ -17,6 +17,7 @@
 #include "IndependentEntity.h"
 #include "InterfaceElement.h"
 #include "input_events.h"
+#include "UpdateEntity.h"
 
 
 namespace engine {
@@ -26,13 +27,15 @@ namespace engine {
 
 class InterfaceContainer :
         public InterfaceElement,
-        public IndependentEntity,
+        public UpdateEntity,
         public Collideable,
         public entt::emitter<InterfaceContainer> {
     public:
         PTR(InterfaceContainer);
 
         explicit InterfaceContainer(entt::registry& registry);
+
+        void update() override;
 
         glm::vec2 get_center() override;
 
