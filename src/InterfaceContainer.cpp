@@ -109,10 +109,4 @@ namespace engine {
         if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
             entity->deregister(registry);
     }
-
-    void InterfaceContainer::clear() {
-        m_collision_tree = nullptr;
-        m_element_positions.clear();
-        m_elements.clear();
-    }
 } // namespace engine

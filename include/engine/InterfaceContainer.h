@@ -25,7 +25,7 @@ namespace engine {
     typedef Kernel::Point_2 Point_2;
     typedef CGAL::Quadtree<Kernel, std::vector<Point_2>> Quadtree;
 
-class InterfaceContainer :
+    class InterfaceContainer :
         public InterfaceElement,
         public UpdateEntity,
         public Collideable,
@@ -46,8 +46,6 @@ class InterfaceContainer :
         void insert_element(InterfaceElement::Ptr element);
 
         void remove_element(const InterfaceElement::Ptr& element);
-
-        void clear();
 
     private:
         static const int QUADTREE_MAX_DEPTH{4};
