@@ -6,8 +6,8 @@
 
 #include <engine/OrbitCam.h>
 #include <engine/InstanceList.h>
-#include <engine/Sprite.h>
 #include <engine/Mesh.h>
+#include <engine/Sprite.h>
 #include <engine/VertexArrayObject.h>
 #include <glm/glm.hpp>
 #include <iostream>
@@ -15,27 +15,12 @@
 
 
 namespace engine {
-    Renderer::Renderer(RenderContext &context) : ctx(context){
-        context.camera = std::make_shared<OrbitCam>(
-                glm::vec3(400, 0, 300),glm::vec3(10, 10, 10),true);
-        read_config(context, "../res/renderer.json");
-        if(!init_glfw()) {
-            std::cerr << "Failed to init GLFW" << std::endl;
-            return;
-        }
-        if(!init_window(context)) {
-            std::cerr << "Failed to init window" << std::endl;
-            return;
-        }
-        if(!init_glew()) {
-            std::cerr << "Failed to init glew" << std::endl;
-            return;
-        }
-        if(!init_shaders(context)) {
-            std::cerr << "Failed to init shaders" << std::endl;
-            return;
-        }
+    Renderer::Renderer(entt::registry& registry) {
+        m_context_entity = registry.create();
+        registry.emplace<RenderContext>(m_context_entity);
     }
+
+    Renderer::Renderer(const entt::entity& context_entity) : m_context_entity(context_entity) {}
 
     void Renderer::read_config(RenderContext& context, const std::string& filename) {
         try {
@@ -52,6 +37,30 @@ namespace engine {
     }
 
     bool Renderer::init(entt::registry &registry) {
+        auto& context = registry.get<RenderContext>(m_context_entity);
+
+        read_config(context, "../res/renderer.json");
+
+        if(!init_glfw()) {
+            std::cerr << "Failed to init GLFW" << std::endl;
+            return false;
+        }
+        if(!init_window(context)) {
+            std::cerr << "Failed to init window" << std::endl;
+            return false;
+        }
+        if(!init_glew()) {
+            std::cerr << "Failed to init glew" << std::endl;
+            return false;
+        }
+        if(!init_shaders(context)) {
+            std::cerr << "Failed to init shaders" << std::endl;
+            return false;
+        }
+
+        context.camera = std::make_shared<OrbitCam>(
+                glm::vec3(400, 0, 300),glm::vec3(10, 10, 10),true);
+
         // cull triangles facing away from camera
         glEnable(GL_CULL_FACE);
 
@@ -361,6 +370,7 @@ namespace engine {
     }
 
     void Renderer::render(entt::registry &registry) {
+        const auto& ctx = registry.get<RenderContext>(m_context_entity);
         auto vp_uniform = glGetUniformLocation(ctx.shader3d, "VP");
         glm::mat4 view_matrix = ctx.camera->get_view();
         glm::mat4 vp = glm::perspective(45.0f, ctx.screen_width / ctx.screen_height, 0.1f, 1000.0f) * view_matrix;
@@ -385,8 +395,13 @@ namespace engine {
     }
 
     void Renderer::cleanup(entt::registry &registry) {
+        const auto& ctx = registry.get<RenderContext>(m_context_entity);
         glDeleteProgram(ctx.shader2d);
         glDeleteProgram(ctx.shader3d);
         glfwTerminate();
+    }
+
+    RenderContext& Renderer::get_context(entt::registry& registry) {
+        return registry.get<RenderContext>(m_context_entity);
     }
 } // namespace engine

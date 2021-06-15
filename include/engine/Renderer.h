@@ -17,23 +17,27 @@
 namespace engine {
     class Renderer {
     public:
-        explicit Renderer(RenderContext& context);
+        explicit Renderer(entt::registry& registry);
 
-        static bool init(entt::registry &registry);
+        explicit Renderer(const entt::entity& context_entity);
 
-        void render(entt::registry &registry);
+        bool init(entt::registry& registry);
 
-        void cleanup(entt::registry &registry);
+        void render(entt::registry& registry);
 
-        static void load_mesh(entt::registry &registry, entt::entity entity);
+        void cleanup(entt::registry& registry);
 
-        static void load_sprite(entt::registry &registry, entt::entity entity);
+        RenderContext& get_context(entt::registry& registry);
 
-        static void destroy_vao(entt::registry &registry, entt::entity entity);
+        static void load_mesh(entt::registry& registry, entt::entity entity);
 
-        static void destroy_instances(entt::registry &registry, entt::entity entity);
+        static void load_sprite(entt::registry& registry, entt::entity entity);
+
+        static void destroy_vao(entt::registry& registry, entt::entity entity);
+
+        static void destroy_instances(entt::registry& registry, entt::entity entity);
     private:
-        const RenderContext& ctx;
+        entt::entity m_context_entity;
 
         static bool init_glfw();
 
