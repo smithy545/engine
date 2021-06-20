@@ -15,9 +15,14 @@ namespace engine {
             if(trigger(x, y) && m_next_motion_handler != nullptr)
                 m_next_motion_handler->handle(x, y);
         }
+        void handle(double yoffset) {
+            if(trigger(yoffset) && m_next_motion_handler != nullptr)
+                m_next_motion_handler->handle(yoffset);
+        }
     VAR(MouseMotionHandler*, next_motion_handler, public, public){nullptr};
     protected:
         virtual bool trigger(double x, double y) = 0;
+        virtual bool trigger(double scroll_delta) = 0;
     };
 } // namespace engine
 

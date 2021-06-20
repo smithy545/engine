@@ -18,12 +18,25 @@ namespace engine {
         OrbitCam(glm::vec3 focal_point, glm::vec3 position, bool filming = false)
         : focal_point(focal_point), position(position), filming(filming) {}
 
+        glm::vec3 get_mouse_world_coords(glm::vec2 pos) override {
+            auto forward = get_forward_direction();
+            auto right = glm::normalize(glm::cross(forward, up));
+            return position + right*pos.x + glm::cross(right, forward)*pos.y;
+        }
+
+        glm::vec3 get_forward_direction() const override {
+            auto forward = glm::normalize(focal_point - position);
+            return glm::rotate(forward, horizontal_rotation, up);
+        }
+
+        glm::vec3 get_position() const override {
+            return position;
+        }
+
         glm::mat4 get_view() const override {
             if(horizontal_rotation == 0.0f)
                 return  glm::lookAt(position, focal_point, up);
-            auto forward = glm::normalize(focal_point - position);
-            forward = glm::rotate(forward, horizontal_rotation, up);
-            return  glm::lookAt(position, position + forward, up);
+            return  glm::lookAt(position, position + get_forward_direction(), up);
         }
 
         void move_forward(float scale = 1.0f) override {

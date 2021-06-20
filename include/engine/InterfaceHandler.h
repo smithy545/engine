@@ -16,19 +16,19 @@
 #include "KeyHandler.h"
 #include "MouseButtonHandler.h"
 #include "MouseMotionHandler.h"
-#include "RegistryHandler.h"
+#include "UpdateEntity.h"
 
 
 namespace engine {
     class InterfaceHandler :
-            public RegistryHandler,
+            public UpdateEntity,
             public KeyHandler,
             public MouseButtonHandler,
             public MouseMotionHandler {
     public:
         InterfaceHandler(InterfaceContainer::Ptr container, entt::registry &registry);
 
-        void update(entt::registry &registry) override;
+        void update() override;
 
     private:
         static constexpr entt::hashed_string SHAPES_KEY{"shapes"};
@@ -36,6 +36,9 @@ namespace engine {
 
         // mouse motion
         bool trigger(double x, double y) override;
+
+        // mouse scroll
+        bool trigger(double scroll_delta) override;
 
         // mouse press
         bool trigger(double x, double y, int button, bool value) override;

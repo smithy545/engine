@@ -17,6 +17,18 @@ namespace engine {
         Steadicam(glm::vec3 position, bool filming = false)
         : position(position), filming(filming) {}
 
+        glm::vec3 get_mouse_world_coords(glm::vec2 pos) override {
+            auto left = glm::cross(up, forward);
+            return position - left*pos.x + up*pos.y;
+        }
+
+        glm::vec3 get_forward_direction() const override {
+            return forward;
+        }
+
+        glm::vec3 get_position() const override {
+            return position;
+        }
 
         glm::mat4 get_view() const override {
             return glm::lookAt(position, position + forward, up);

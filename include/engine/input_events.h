@@ -26,6 +26,9 @@ namespace engine {
         double x;
         double y;
     };
+    struct MouseScrollEvent {
+        double scroll_delta;
+    };
 
     template <class Event>
     struct EventSink {
@@ -35,6 +38,7 @@ namespace engine {
     typedef EventSink<KeyEvent> KeyEventSink;
     typedef EventSink<MouseButtonEvent> MouseButtonEventSink;
     typedef EventSink<MouseMotionEvent> MouseMotionEventSink;
+    typedef EventSink<MouseScrollEvent> MouseScrollEventSink;
 } // namespace engine
 
 #endif //CIVILWAR_INPUT_EVENTS_H

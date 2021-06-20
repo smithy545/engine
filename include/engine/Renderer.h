@@ -27,11 +27,15 @@ namespace engine {
 
         void cleanup(entt::registry& registry);
 
-        RenderContext& get_context(entt::registry& registry);
+        const RenderContext& get_context(entt::registry& registry);
 
         static void load_mesh(entt::registry& registry, entt::entity entity);
 
         static void load_sprite(entt::registry& registry, entt::entity entity);
+
+        static void update_mesh(entt::registry& registry, entt::entity entity);
+
+        static void update_sprite(entt::registry& registry, entt::entity entity);
 
         static void destroy_vao(entt::registry& registry, entt::entity entity);
 

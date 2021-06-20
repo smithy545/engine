@@ -23,16 +23,26 @@ namespace engine {
     Renderer::Renderer(const entt::entity& context_entity) : m_context_entity(context_entity) {}
 
     void Renderer::read_config(RenderContext& context, const std::string& filename) {
+        // defaults
+        context.screen_width = 800;
+        context.screen_height = 600;
+        context.fovy = 45.0f;
+        context.z_near = 0.1f;
+        context.z_far = 10000.0f;
         try {
             auto config_json = utils::file::read_json_file(filename);
             if (config_json.contains("width"))
                 context.screen_width = config_json["width"];
             if (config_json.contains("height"))
                 context.screen_height = config_json["height"];
-        } catch (nlohmann::detail::parse_error e) {
+            if(config_json.contains("fovy"))
+                context.fovy = config_json["fovy"];
+            if(config_json.contains("z_near"))
+                context.z_near = config_json["z_near"];
+            if(config_json.contains("z_far"))
+                context.z_far = config_json["z_far"];
+        } catch (nlohmann::detail::parse_error& e) {
             std::cout << "Error reading config file: " << e.what() << std::endl;
-            context.screen_width = 800;
-            context.screen_height = 600;
         }
     }
 
@@ -59,7 +69,7 @@ namespace engine {
         }
 
         context.camera = std::make_shared<OrbitCam>(
-                glm::vec3(400, 0, 300),glm::vec3(10, 10, 10),true);
+                glm::vec3(500, 100, 400),glm::vec3(500, 100, 0),true);
 
         // cull triangles facing away from camera
         glEnable(GL_CULL_FACE);
@@ -72,6 +82,8 @@ namespace engine {
 
         registry.on_construct<Mesh>().connect<&load_mesh>();
         registry.on_construct<Sprite>().connect<&load_sprite>();
+        registry.on_update<Mesh>().connect<&update_mesh>();
+        registry.on_update<Sprite>().connect<&update_sprite>();
         registry.on_destroy<VertexArrayObject>().connect<&destroy_vao>();
         registry.on_destroy<InstanceList>().connect<&destroy_instances>();
 
@@ -352,6 +364,31 @@ namespace engine {
         glBindVertexArray(0);
     }
 
+    void Renderer::update_mesh(entt::registry &registry, entt::entity entity) {
+        auto sizeof_vec4 = sizeof(glm::vec4);
+        auto sizeof_vec3 = sizeof(glm::vec3);
+        auto& mesh = registry.get<Mesh>(entity);
+        auto& vao = registry.get<VertexArrayObject>(entity);
+        glBindVertexArray(vao.id);
+
+        // verts
+        glBindBuffer(GL_ARRAY_BUFFER, vao.vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.vertices.size(), &mesh.vertices[0], GL_STATIC_DRAW);
+
+        // colors
+        glBindBuffer(GL_ARRAY_BUFFER, vao.cbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.colors.size(), &mesh.colors[0], GL_STATIC_DRAW);
+
+        // indices
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vao.ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh.indices.size(), &mesh.indices[0],
+                     GL_STATIC_DRAW);
+
+        glBindVertexArray(0);
+    }
+
+    void Renderer::update_sprite(entt::registry &registry, entt::entity entity) {}
+
     void Renderer::destroy_vao(entt::registry &registry, entt::entity entity) {
         auto vao = registry.get<VertexArrayObject>(entity);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -371,9 +408,10 @@ namespace engine {
 
     void Renderer::render(entt::registry &registry) {
         const auto& ctx = registry.get<RenderContext>(m_context_entity);
+
+        // 3D rendering
         auto vp_uniform = glGetUniformLocation(ctx.shader3d, "VP");
-        glm::mat4 view_matrix = ctx.camera->get_view();
-        glm::mat4 vp = glm::perspective(45.0f, ctx.screen_width / ctx.screen_height, 0.1f, 1000.0f) * view_matrix;
+        auto vp = glm::perspective(ctx.fovy, ctx.screen_width / ctx.screen_height,  ctx.z_near, ctx.z_far) * ctx.camera->get_view();
         glUseProgram(ctx.shader3d);
         glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
         auto view3d = registry.view<VertexArrayObject, InstanceList, Mesh>();
@@ -382,8 +420,10 @@ namespace engine {
             glBindVertexArray(vao.id);
             glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0, ilist.instances.size());
         }
+
+        // 2D rendering (TODO: Add occlusion culling to prevent drawing 3D entities that are covered by 2D elements)
         vp_uniform = glGetUniformLocation(ctx.shader2d, "VP");
-        vp = glm::ortho(-0.f * ctx.screen_width, 1.f * ctx.screen_width, 1.f * ctx.screen_height, -0.f * ctx.screen_height);
+        vp = glm::ortho(0.f, ctx.screen_width, ctx.screen_height, 0.f);
         glUseProgram(ctx.shader2d);
         glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
         auto view2d = registry.view<VertexArrayObject, InstanceList, Sprite>();
@@ -401,7 +441,7 @@ namespace engine {
         glfwTerminate();
     }
 
-    RenderContext& Renderer::get_context(entt::registry& registry) {
+    const RenderContext& Renderer::get_context(entt::registry& registry) {
         return registry.get<RenderContext>(m_context_entity);
     }
 } // namespace engine

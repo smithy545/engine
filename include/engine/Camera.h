@@ -13,6 +13,9 @@ namespace engine {
     struct Camera {
         PTR(Camera);
 
+        virtual glm::vec3 get_mouse_world_coords(glm::vec2 pos) = 0;
+        virtual glm::vec3 get_forward_direction() const = 0;
+        virtual glm::vec3 get_position() const = 0;
         virtual glm::mat4 get_view() const = 0;
         virtual void pan_horizontal(float diff) = 0;
         virtual void pan_vertical(float diff) = 0;

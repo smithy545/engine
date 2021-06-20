@@ -18,6 +18,9 @@ namespace engine {
         GLuint shader3d;
         float screen_width;
         float screen_height;
+        float fovy;
+        float z_near;
+        float z_far;
         GLFWwindow* window;
     };
 } // namespace engine

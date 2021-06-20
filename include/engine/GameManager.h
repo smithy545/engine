@@ -17,7 +17,7 @@
 
 
 namespace engine {
-    class InputManager {
+    class GameManager {
     public:
         static constexpr entt::hashed_string MOUSE_X_KEY{"mouse_x"};
         static constexpr entt::hashed_string MOUSE_Y_KEY{"mouse_y"};
@@ -47,6 +47,8 @@ namespace engine {
         static void set_mouse_position(double x, double y);
 
         static void set_mouse_button(int button, bool value);
+
+        static void set_mouse_scroll(double yoffset);
 
         static bool get_key(int key);
 

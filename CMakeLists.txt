@@ -4,12 +4,11 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(OpenGL REQUIRED)
 add_library(engine
         src/Renderer.cpp
-        src/InputManager.cpp
+        src/GameManager.cpp
         src/InterfaceHandler.cpp
         src/InterfaceContainer.cpp
         src/BoxElement.cpp
-        src/ButtonElement.cpp
-        src/RayElement.cpp)
+        src/ButtonElement.cpp)
 target_link_directories(engine PRIVATE
         /opt/homebrew/Cellar/glew/2.2.0_1/lib
         /opt/homebrew/Cellar/glfw/3.3.4/lib)
