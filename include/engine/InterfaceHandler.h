@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 #include <utils/file_util.h>
+#include <utils/macros.h>
 #include <vector>
 
 #include "InterfaceContainer.h"
@@ -26,12 +27,13 @@ namespace engine {
             public MouseButtonHandler,
             public MouseMotionHandler {
     public:
-        InterfaceHandler(InterfaceContainer::Ptr container, entt::registry &registry);
+        explicit InterfaceHandler(entt::registry &registry);
 
         void update() override;
 
+        void set_state(InterfaceContainer::Ptr state);
+
     private:
-        static constexpr entt::hashed_string SHAPES_KEY{"shapes"};
         InterfaceContainer::Ptr m_container;
 
         // mouse motion

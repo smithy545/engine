@@ -5,11 +5,13 @@
 #include <engine/InterfaceContainer.h>
 
 #include <functional>
+#include <utility>
 #include <engine/ManagedEntity.h>
-
+#include <engine/InterfaceHandler.h>
 
 namespace engine {
-    InterfaceContainer::InterfaceContainer(entt::registry& registry) : IndependentEntity(registry) {}
+    InterfaceContainer::InterfaceContainer(InterfaceHandler& handler, entt::registry& registry)
+    : IndependentEntity(registry), handler(handler) {}
 
     void InterfaceContainer::update() {
         for(auto [pos, element]: m_elements) {
@@ -108,5 +110,9 @@ namespace engine {
         }
         if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
             entity->deregister(registry);
+    }
+
+    void InterfaceContainer::transition(InterfaceContainer::Ptr next_state) {
+        handler.set_state(std::move(next_state));
     }
 } // namespace engine

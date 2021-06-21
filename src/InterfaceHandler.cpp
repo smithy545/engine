@@ -8,6 +8,7 @@
 #include <engine/Steadicam.h>
 #include <engine/RenderContext.h>
 #include <engine/GameManager.h>
+
 #include <utility>
 
 
@@ -15,8 +16,8 @@ using namespace entt::literals;
 namespace fs = std::filesystem;
 
 namespace engine {
-    InterfaceHandler::InterfaceHandler(InterfaceContainer::Ptr container, entt::registry &registry)
-    : IndependentEntity(registry), m_container(std::move(container)) {}
+    InterfaceHandler::InterfaceHandler(entt::registry &registry)
+    : IndependentEntity(registry) {}
 
     void InterfaceHandler::update() {
         if(m_container != nullptr)
@@ -52,6 +53,10 @@ namespace engine {
                 // TODO: First person mode
             }
         }
+    }
+
+    void InterfaceHandler::set_state(InterfaceContainer::Ptr state) {
+        m_container = std::move(state);
     }
 
     bool InterfaceHandler::trigger(double scroll_delta) {
