@@ -69,7 +69,8 @@ namespace engine {
         }
 
         context.camera = std::make_shared<OrbitCam>(
-                glm::vec3(500, 100, 400),glm::vec3(500, 100, 0),true);
+                glm::vec3(500, 100, 400),
+                glm::vec3(500, 100, 0),true);
 
         // cull triangles facing away from camera
         glEnable(GL_CULL_FACE);

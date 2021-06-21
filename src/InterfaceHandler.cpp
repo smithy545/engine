@@ -34,10 +34,10 @@ namespace engine {
                     GameManager::is_paused() ? GameManager::unpause() : GameManager::pause();
                 if (GameManager::get_key(GLFW_KEY_W))
                     orbit_cam->move_forward();
-                if (GameManager::get_key(GLFW_KEY_A))
-                    orbit_cam->move_left();
                 if (GameManager::get_key(GLFW_KEY_S))
                     orbit_cam->move_backward();
+                if (GameManager::get_key(GLFW_KEY_A))
+                    orbit_cam->move_left();
                 if (GameManager::get_key(GLFW_KEY_D))
                     orbit_cam->move_right();
                 if (GameManager::get_key(GLFW_KEY_LEFT_SHIFT))
