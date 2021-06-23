@@ -14,6 +14,7 @@ namespace engine {
         std::vector<glm::vec2> vertices;
         std::vector<glm::vec3> colors;
         std::vector<unsigned int> indices;
+        bool visible{true};
     };
 } // namespace engine
 

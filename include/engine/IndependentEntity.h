@@ -2,8 +2,8 @@
 // Created by Philip Smith on 6/13/21.
 //
 
-#ifndef CIVILWAR_INDEPENDENTENTITY_H
-#define CIVILWAR_INDEPENDENTENTITY_H
+#ifndef ENGINE_INDEPENDENTENTITY_H
+#define ENGINE_INDEPENDENTENTITY_H
 
 #include <entt/entt.hpp>
 
@@ -18,4 +18,4 @@ namespace engine {
 } // namespace engine
 
 
-#endif //CIVILWAR_INDEPENDENTENTITY_H
+#endif //ENGINE_INDEPENDENTENTITY_H

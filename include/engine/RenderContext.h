@@ -2,8 +2,8 @@
 // Created by Philip Smith on 6/14/21.
 //
 
-#ifndef CIVILWAR_RENDERCONTEXT_H
-#define CIVILWAR_RENDERCONTEXT_H
+#ifndef ENGINE_RENDERCONTEXT_H
+#define ENGINE_RENDERCONTEXT_H
 
 #include <engine/Camera.h>
 #include <entt/entt.hpp>
@@ -26,4 +26,4 @@ namespace engine {
 } // namespace engine
 
 
-#endif //CIVILWAR_RENDERCONTEXT_H
+#endif //ENGINE_RENDERCONTEXT_H

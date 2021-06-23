@@ -2,8 +2,8 @@
 // Created by Philip Smith on 6/14/21.
 //
 
-#ifndef CIVILWAR_ORBITCAMERA_H
-#define CIVILWAR_ORBITCAMERA_H
+#ifndef ENGINE_ORBITCAMERA_H
+#define ENGINE_ORBITCAMERA_H
 
 #include "Camera.h"
 #include <glm/gtx/rotate_vector.hpp>
@@ -85,4 +85,4 @@ namespace engine {
 } // namespace engine
 
 
-#endif //CIVILWAR_ORBITCAMERA_H
+#endif //ENGINE_ORBITCAMERA_H

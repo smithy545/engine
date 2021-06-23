@@ -9,23 +9,36 @@
 #include <engine/ManagedEntity.h>
 #include <engine/InterfaceHandler.h>
 
+
 namespace engine {
     InterfaceContainer::InterfaceContainer(InterfaceHandler& handler, entt::registry& registry)
     : IndependentEntity(registry), handler(handler) {}
 
-    void InterfaceContainer::update() {
+    void InterfaceContainer::update(const RenderContext& context) {
         for(auto [pos, element]: m_elements) {
             if(auto* updateable = dynamic_cast<UpdateEntity*>(element.get()))
                 updateable->update();
         }
     }
 
+    void InterfaceContainer::unload() {
+        for(auto [pos, element]: m_elements) {
+            if(auto* managed = dynamic_cast<ManagedEntity*>(element.get()))
+                registry.destroy(managed->get_entity());
+        }
+    }
+
+    void InterfaceContainer::transition(InterfaceContainer::Ptr next_state) {
+        unload();
+        handler.set_state(std::move(next_state));
+    }
+
     bool InterfaceContainer::collides(double x, double y) {
         auto element = get_nearest_element(x, y);
         if(element == nullptr)
             return false;
-        auto* collideable = dynamic_cast<Collideable*>(element.get());
-        return collideable != nullptr && collideable->collides(x, y);
+        auto* collidable = dynamic_cast<Collidable*>(element.get());
+        return collidable != nullptr && collidable->collides(x, y);
     }
 
     glm::vec2 InterfaceContainer::get_center() {
@@ -52,7 +65,7 @@ namespace engine {
             while(itr->get_next() != nullptr)
                 itr = itr->get_next();
             itr->set_next(element);
-        } else if(dynamic_cast<Collideable*>(element.get()) != nullptr) {
+        } else if(dynamic_cast<Collidable*>(element.get()) != nullptr) {
             m_elements[key] = element;
             m_element_positions.emplace_back(center.x, center.y);
             m_collision_tree = std::make_shared<Quadtree>(m_element_positions);
@@ -110,9 +123,5 @@ namespace engine {
         }
         if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
             entity->deregister(registry);
-    }
-
-    void InterfaceContainer::transition(InterfaceContainer::Ptr next_state) {
-        handler.set_state(std::move(next_state));
     }
 } // namespace engine

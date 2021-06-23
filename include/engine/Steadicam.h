@@ -2,8 +2,8 @@
 // Created by Philip Smith on 6/14/21.
 //
 
-#ifndef CIVILWAR_STEADICAM_H
-#define CIVILWAR_STEADICAM_H
+#ifndef ENGINE_STEADICAM_H
+#define ENGINE_STEADICAM_H
 
 #include "Camera.h"
 #include <glm/gtx/transform.hpp>
@@ -75,4 +75,4 @@ namespace engine {
 } // namespace engine
 
 
-#endif //CIVILWAR_STEADICAM_H
+#endif //ENGINE_STEADICAM_H

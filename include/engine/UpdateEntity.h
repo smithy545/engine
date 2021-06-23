@@ -2,8 +2,8 @@
 // Created by Philip Smith on 6/14/21.
 //
 
-#ifndef CIVILWAR_UPDATEABLEENTITY_H
-#define CIVILWAR_UPDATEABLEENTITY_H
+#ifndef ENGINE_UPDATEABLEENTITY_H
+#define ENGINE_UPDATEABLEENTITY_H
 
 #include "IndependentEntity.h"
 
@@ -16,4 +16,4 @@ namespace engine {
 } // namespace engine
 
 
-#endif //CIVILWAR_UPDATEABLEENTITY_H
+#endif //ENGINE_UPDATEABLEENTITY_H

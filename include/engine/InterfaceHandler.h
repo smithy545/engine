@@ -17,6 +17,7 @@
 #include "KeyHandler.h"
 #include "MouseButtonHandler.h"
 #include "MouseMotionHandler.h"
+#include "RenderContext.h"
 #include "UpdateEntity.h"
 
 
@@ -27,14 +28,15 @@ namespace engine {
             public MouseButtonHandler,
             public MouseMotionHandler {
     public:
-        explicit InterfaceHandler(entt::registry &registry);
+        explicit InterfaceHandler(entt::registry &registry, const RenderContext& context);
 
         void update() override;
 
         void set_state(InterfaceContainer::Ptr state);
 
     private:
-        InterfaceContainer::Ptr m_container;
+        const RenderContext& context;
+        InterfaceContainer::Ptr m_state, m_prev_state{nullptr};
 
         // mouse motion
         bool trigger(double x, double y) override;

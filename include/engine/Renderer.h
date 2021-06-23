@@ -17,29 +17,30 @@
 namespace engine {
     class Renderer {
     public:
-        explicit Renderer(entt::registry& registry);
+        explicit Renderer(entt::registry &registry);
 
-        explicit Renderer(const entt::entity& context_entity);
+        explicit Renderer(const entt::entity &context_entity);
 
-        bool init(entt::registry& registry);
+        bool init(entt::registry &registry);
 
-        void render(entt::registry& registry);
+        void render(entt::registry &registry);
 
-        void cleanup(entt::registry& registry);
+        void cleanup(entt::registry &registry);
 
-        const RenderContext& get_context(entt::registry& registry);
+        const RenderContext &get_context(entt::registry &registry);
 
-        static void load_mesh(entt::registry& registry, entt::entity entity);
+        static void load_mesh(entt::registry &registry, entt::entity entity);
 
-        static void load_sprite(entt::registry& registry, entt::entity entity);
+        static void load_sprite(entt::registry &registry, entt::entity entity);
 
-        static void update_mesh(entt::registry& registry, entt::entity entity);
+        static void update_mesh(entt::registry &registry, entt::entity entity);
 
-        static void update_sprite(entt::registry& registry, entt::entity entity);
+        static void update_sprite(entt::registry &registry, entt::entity entity);
 
-        static void destroy_vao(entt::registry& registry, entt::entity entity);
+        static void destroy_vao(entt::registry &registry, entt::entity entity);
 
-        static void destroy_instances(entt::registry& registry, entt::entity entity);
+        static void destroy_instances(entt::registry &registry, entt::entity entity);
+
     private:
         entt::entity m_context_entity;
 
@@ -47,11 +48,13 @@ namespace engine {
 
         static bool init_glew();
 
-        void read_config(RenderContext& context, const std::string& filename);
+        void read_config(RenderContext &context, const std::string &filename);
 
-        bool init_window(RenderContext& context);
+        bool init_window(RenderContext &context);
 
-        bool init_shaders(RenderContext& context);
+        bool init_shaders(RenderContext &context);
+
+        bool init_tex_shaders(RenderContext &context);
     };
 } // namespace engine
 

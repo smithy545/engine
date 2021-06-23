@@ -13,11 +13,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Collideable.h"
+#include "Collidable.h"
 #include "IndependentEntity.h"
 #include "InterfaceElement.h"
 #include "input_events.h"
-#include "UpdateEntity.h"
+#include "RenderContext.h"
 
 
 namespace engine {
@@ -29,15 +29,19 @@ namespace engine {
 
     class InterfaceContainer :
         public InterfaceElement,
-        public UpdateEntity,
-        public Collideable,
+        public IndependentEntity,
+        public Collidable,
         public entt::emitter<InterfaceContainer> {
     public:
         PTR(InterfaceContainer);
 
         InterfaceContainer(InterfaceHandler& handler, entt::registry& registry);
 
-        void update() override;
+        virtual void update(const RenderContext& context);
+
+        virtual void load(const RenderContext& context) = 0;
+
+        virtual void unload();
 
         glm::vec2 get_center() override;
 

@@ -81,6 +81,9 @@ namespace engine {
         // background
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+        auto res = utils::file::read_png_file_to_texture("/Users/philipsmith/Downloads/red_arrow.png");
+        glDeleteTextures(1, &res);
+
         registry.on_construct<Mesh>().connect<&load_mesh>();
         registry.on_construct<Sprite>().connect<&load_sprite>();
         registry.on_update<Mesh>().connect<&update_mesh>();
@@ -130,15 +133,11 @@ namespace engine {
 
     bool Renderer::init_shaders(RenderContext& context) {
         const char *vshader_src = "#version 400 core\n"
-                                  "\n"
                                   "layout (location = 0) in vec3 inPos;\n"
                                   "layout (location = 1) in vec3 inColor;\n"
                                   "layout (location = 2) in mat4 instanceModel;\n"
-                                  "\n"
                                   "uniform mat4 VP;\n"
-                                  "\n"
                                   "out vec4 color;\n"
-                                  "\n"
                                   "void main() {\n"
                                   "    gl_Position = VP * instanceModel * vec4(inPos, 1);\n"
                                   "    color = vec4(inColor, 1);\n"
@@ -155,12 +154,8 @@ namespace engine {
             return false;
         }
         const char *fshader_src = "#version 400 core\n"
-                                  "\n"
-                                  "\n"
                                   "in vec4 color;\n"
                                   "out vec4 fragColor;\n"
-                                  "\n"
-                                  "\n"
                                   "void main() {\n"
                                   "    fragColor = color;\n"
                                   "}";
@@ -187,19 +182,15 @@ namespace engine {
         glDeleteShader(fragment_shader);
 
         const char *vshader_src2d = "#version 400 core\n"
-                                  "\n"
-                                  "layout (location = 0) in vec2 inPos;\n"
-                                  "layout (location = 1) in vec3 inColor;\n"
-                                  "layout (location = 2) in mat4 instanceModel;\n"
-                                  "\n"
-                                  "uniform mat4 VP;\n"
-                                  "\n"
-                                  "out vec4 color;\n"
-                                  "\n"
-                                  "void main() {\n"
-                                  "    gl_Position = VP * instanceModel * vec4(inPos, 0, 1);\n"
-                                  "    color = vec4(inColor, 1);\n"
-                                  "}";
+                                    "layout (location = 0) in vec2 inPos;\n"
+                                    "layout (location = 1) in vec3 inColor;\n"
+                                    "layout (location = 2) in mat4 instanceModel;\n"
+                                    "uniform mat4 VP;\n"
+                                    "out vec4 color;\n"
+                                    "void main() {\n"
+                                    "    gl_Position = VP * instanceModel * vec4(inPos, 0, 1);\n"
+                                    "    color = vec4(inColor, 1);\n"
+                                    "}";
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertex_shader, 1, &vshader_src2d, nullptr);
         glCompileShader(vertex_shader);
@@ -210,12 +201,8 @@ namespace engine {
             return false;
         }
         const char *fshader_src2d = "#version 400 core\n"
-                                  "\n"
-                                  "\n"
                                   "in vec4 color;\n"
                                   "out vec4 fragColor;\n"
-                                  "\n"
-                                  "\n"
                                   "void main() {\n"
                                   "    fragColor = color;\n"
                                   "}";
@@ -240,6 +227,41 @@ namespace engine {
         }
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
+
+        const char *tex_vshader_src = "#version 400 core\n"
+                                  "layout (location = 0) in vec3 inPos;\n"
+                                  "layout (location = 1) in vec2 inUV;\n"
+                                  "layout (location = 2) in mat4 instanceModel;\n"
+                                  "uniform mat4 VP;\n"
+                                  "out vec2 UV;\n"
+                                  "void main() {\n"
+                                  "    gl_Position = VP * instanceModel * vec4(inPos, 1);\n"
+                                  "    UV = inUV;\n"
+                                  "}";
+        const char *tex_fshader_src = "#version 400 core\n"
+                                  "in vec2 UV;\n"
+                                  "out vec3 fragColor;\n"
+                                  "uniform sampler2D texSampler;\n"
+                                  "void main() {\n"
+                                  "    fragColor = texture(texSampler, UV).rgb;\n"
+                                  "}";
+        const char *tex_vshader_src2d = "#version 400 core\n"
+                                  "layout (location = 0) in vec2 inPos;\n"
+                                  "layout (location = 1) in vec2 inUV;\n"
+                                  "layout (location = 2) in mat4 instanceModel;\n"
+                                  "uniform mat4 VP;\n"
+                                  "out vec2 UV;\n"
+                                  "void main() {\n"
+                                  "    gl_Position = VP * instanceModel * vec4(inPos, 0, 1);\n"
+                                  "    UV = inUV;\n"
+                                  "}";
+        const char *tex_fshader_src2d = "#version 400 core\n"
+                                  "in vec2 UV;\n"
+                                  "out vec3 fragColor;\n"
+                                  "uniform sampler2D texSampler;\n"
+                                  "void main() {\n"
+                                  "    fragColor = texture(texSampler, UV).rgb;\n"
+                                  "}";
 
         return true;
     }
@@ -329,12 +351,27 @@ namespace engine {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
+        // uvs
+        GLuint uvs;
+
         // indices
         GLuint ebo;
         glGenBuffers(1, &ebo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
                      GL_STATIC_DRAW);
+
+        // texture sampler
+        /*
+        GLuint tex_id;
+        glGenTextures(1, &tex_id);
+        // "Bind" the newly created texture : all future texture functions will modify this texture
+        glBindTexture(GL_TEXTURE_2D, tex_id);
+        // Give the image to OpenGL
+        glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        */
 
         // instance buffer (initially empty)
         GLuint ibo;
@@ -366,7 +403,6 @@ namespace engine {
     }
 
     void Renderer::update_mesh(entt::registry &registry, entt::entity entity) {
-        auto sizeof_vec4 = sizeof(glm::vec4);
         auto sizeof_vec3 = sizeof(glm::vec3);
         auto& mesh = registry.get<Mesh>(entity);
         auto& vao = registry.get<VertexArrayObject>(entity);
@@ -388,7 +424,28 @@ namespace engine {
         glBindVertexArray(0);
     }
 
-    void Renderer::update_sprite(entt::registry &registry, entt::entity entity) {}
+    void Renderer::update_sprite(entt::registry &registry, entt::entity entity) {
+        auto sizeof_vec3 = sizeof(glm::vec3);
+        auto sizeof_vec2 = sizeof(glm::vec2);
+        auto& sprite = registry.get<Sprite>(entity);
+        auto& vao = registry.get<VertexArrayObject>(entity);
+        glBindVertexArray(vao.id);
+
+        // verts
+        glBindBuffer(GL_ARRAY_BUFFER, vao.vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
+
+        // colors
+        glBindBuffer(GL_ARRAY_BUFFER, vao.cbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * sprite.colors.size(), &sprite.colors[0], GL_STATIC_DRAW);
+
+        // indices
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vao.ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
+                     GL_STATIC_DRAW);
+
+        glBindVertexArray(0);
+    }
 
     void Renderer::destroy_vao(entt::registry &registry, entt::entity entity) {
         auto vao = registry.get<VertexArrayObject>(entity);
@@ -418,8 +475,11 @@ namespace engine {
         auto view3d = registry.view<VertexArrayObject, InstanceList, Mesh>();
         for (const auto &entity: view3d) {
             auto [vao, ilist, mesh] = view3d.get(entity);
-            glBindVertexArray(vao.id);
-            glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0, ilist.instances.size());
+            if(mesh.visible) {
+                glBindVertexArray(vao.id);
+                glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
+                                        ilist.instances.size());
+            }
         }
 
         // 2D rendering (TODO: Add occlusion culling to prevent drawing 3D entities that are covered by 2D elements)
@@ -430,8 +490,11 @@ namespace engine {
         auto view2d = registry.view<VertexArrayObject, InstanceList, Sprite>();
         for(const auto &entity: view2d) {
             auto [vao, ilist, sprite] = view2d.get(entity);
-            glBindVertexArray(vao.id);
-            glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0, ilist.instances.size());
+            if(sprite.visible) {
+                glBindVertexArray(vao.id);
+                glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
+                                        ilist.instances.size());
+            }
         }
     }
 

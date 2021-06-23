@@ -2,8 +2,8 @@
 // Created by Philip Smith on 6/13/21.
 //
 
-#ifndef CIVILWAR_INPUT_EVENTS_H
-#define CIVILWAR_INPUT_EVENTS_H
+#ifndef ENGINE_INPUT_EVENTS_H
+#define ENGINE_INPUT_EVENTS_H
 
 #include <entt/entt.hpp>
 #include <functional>
@@ -41,4 +41,4 @@ namespace engine {
     typedef EventSink<MouseScrollEvent> MouseScrollEventSink;
 } // namespace engine
 
-#endif //CIVILWAR_INPUT_EVENTS_H
+#endif //ENGINE_INPUT_EVENTS_H
