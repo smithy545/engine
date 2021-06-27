@@ -6,7 +6,7 @@
 
 #include <engine/InstanceList.h>
 #include <engine/InterfaceContainer.h>
-#include <engine/Sprite.h>
+#include <engine/sprites.h>
 
 
 namespace engine {
@@ -26,7 +26,7 @@ namespace engine {
 
     template <typename Event>
     entt::entity ButtonElement<Event>::register_with(entt::registry& registry) {
-        Sprite sprite;
+        ShapeSprite sprite;
         sprite.vertices.emplace_back(min.x, min.y);
         sprite.colors.emplace_back(0,1,1);
 
@@ -48,7 +48,7 @@ namespace engine {
 
         if(m_entity == entt::null)
             m_entity = registry.create();
-        registry.emplace_or_replace<Sprite>(m_entity, sprite);
+        registry.emplace_or_replace<ShapeSprite>(m_entity, sprite);
         registry.patch<InstanceList>(m_entity, [](auto &instance_list) {
             instance_list.add_instance(glm::mat4(1));
         });
@@ -73,6 +73,36 @@ namespace engine {
 
     StartButton::StartButton(const RenderContext& ctx) :
     ButtonElement<StartEvent>(ctx.screen_width/2 - 50, 20, 100, 50) {}
+
+    entt::entity StartButton::register_with(entt::registry& registry) {
+        TextureSprite sprite;
+        sprite.vertices.emplace_back(min.x, min.y);
+        sprite.uvs.emplace_back(0,0);
+
+        sprite.vertices.emplace_back(min.x, max.y);
+        sprite.uvs.emplace_back(0,1);
+
+        sprite.vertices.emplace_back(max.x, max.y);
+        sprite.uvs.emplace_back(1,1);
+
+        sprite.vertices.emplace_back(max.x, min.y);
+        sprite.uvs.emplace_back(1,0);
+
+        sprite.indices.push_back(0);
+        sprite.indices.push_back(1);
+        sprite.indices.push_back(2);
+        sprite.indices.push_back(2);
+        sprite.indices.push_back(3);
+        sprite.indices.push_back(0);
+
+        if(m_entity == entt::null)
+            m_entity = registry.create();
+        registry.emplace_or_replace<TextureSprite>(m_entity, sprite);
+        registry.patch<InstanceList>(m_entity, [](auto &instance_list) {
+            instance_list.add_instance(glm::mat4(1));
+        });
+        return entt::null;
+    }
 
     StartEvent StartButton::build_event(MouseButtonEvent& event, InterfaceContainer& emitter) {
         return StartEvent{};

@@ -31,11 +31,15 @@ namespace engine {
 
         static void load_mesh(entt::registry &registry, entt::entity entity);
 
-        static void load_sprite(entt::registry &registry, entt::entity entity);
+        static void load_shape_sprite(entt::registry &registry, entt::entity entity);
+
+        static void load_texture_sprite(entt::registry &registry, entt::entity entity);
 
         static void update_mesh(entt::registry &registry, entt::entity entity);
 
-        static void update_sprite(entt::registry &registry, entt::entity entity);
+        static void update_shape_sprite(entt::registry &registry, entt::entity entity);
+
+        static void update_texture_sprite(entt::registry &registry, entt::entity entity);
 
         static void destroy_vao(entt::registry &registry, entt::entity entity);
 
@@ -54,7 +58,7 @@ namespace engine {
 
         bool init_shaders(RenderContext &context);
 
-        bool init_tex_shaders(RenderContext &context);
+        static GLuint load_shader(const char* vertex_source, const char* frag_source);
     };
 } // namespace engine
 

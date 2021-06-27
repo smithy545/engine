@@ -14,8 +14,10 @@
 namespace engine {
     struct RenderContext {
         Camera::Ptr camera;
-        GLuint shader2d;
-        GLuint shader3d;
+        GLuint color_shader2d;
+        GLuint color_shader3d;
+        GLuint tex_shader2d;
+        GLuint tex_shader3d;
         float screen_width;
         float screen_height;
         float fovy;

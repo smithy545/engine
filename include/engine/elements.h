@@ -57,6 +57,8 @@ namespace engine {
 
         explicit StartButton(const RenderContext& context);
 
+        entt::entity register_with(entt::registry& registry) override;
+
         StartEvent build_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
     };
 

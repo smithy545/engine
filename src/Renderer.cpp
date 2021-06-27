@@ -7,8 +7,9 @@
 #include <engine/OrbitCam.h>
 #include <engine/InstanceList.h>
 #include <engine/Mesh.h>
-#include <engine/Sprite.h>
+#include <engine/sprites.h>
 #include <engine/VertexArrayObject.h>
+#include <fmt/format.h>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <utils/file_util.h>
@@ -81,28 +82,14 @@ namespace engine {
         // background
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        auto res = utils::file::read_png_file_to_texture("/Users/philipsmith/Downloads/red_arrow.png");
-        glDeleteTextures(1, &res);
-
         registry.on_construct<Mesh>().connect<&load_mesh>();
-        registry.on_construct<Sprite>().connect<&load_sprite>();
+        registry.on_construct<ShapeSprite>().connect<&load_shape_sprite>();
+        registry.on_construct<TextureSprite>().connect<&load_texture_sprite>();
         registry.on_update<Mesh>().connect<&update_mesh>();
-        registry.on_update<Sprite>().connect<&update_sprite>();
+        registry.on_update<ShapeSprite>().connect<&update_shape_sprite>();
+        registry.on_update<TextureSprite>().connect<&update_texture_sprite>();
         registry.on_destroy<VertexArrayObject>().connect<&destroy_vao>();
         registry.on_destroy<InstanceList>().connect<&destroy_instances>();
-
-        return true;
-    }
-
-    bool Renderer::init_window(RenderContext& context) {
-        // Open a window and create its OpenGL context
-        context.window = glfwCreateWindow(context.screen_width, context.screen_height, "Civil War", nullptr, nullptr);
-        if (context.window == nullptr) {
-            std::cerr << "Failed to open GLFW window" << std::endl;
-            glfwTerminate();
-            return false;
-        }
-        glfwMakeContextCurrent(context.window);
 
         return true;
     }
@@ -131,8 +118,21 @@ namespace engine {
         return true;
     }
 
+    bool Renderer::init_window(RenderContext& context) {
+        // Open a window and create its OpenGL context
+        context.window = glfwCreateWindow(context.screen_width, context.screen_height, "Civil War", nullptr, nullptr);
+        if (context.window == nullptr) {
+            std::cerr << "Failed to open GLFW window" << std::endl;
+            glfwTerminate();
+            return false;
+        }
+        glfwMakeContextCurrent(context.window);
+
+        return true;
+    }
+
     bool Renderer::init_shaders(RenderContext& context) {
-        const char *vshader_src = "#version 400 core\n"
+        const char *color_vshader_src = "#version 400 core\n"
                                   "layout (location = 0) in vec3 inPos;\n"
                                   "layout (location = 1) in vec3 inColor;\n"
                                   "layout (location = 2) in mat4 instanceModel;\n"
@@ -142,46 +142,13 @@ namespace engine {
                                   "    gl_Position = VP * instanceModel * vec4(inPos, 1);\n"
                                   "    color = vec4(inColor, 1);\n"
                                   "}";
-        int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex_shader, 1, &vshader_src, nullptr);
-        glCompileShader(vertex_shader);
-        int success;
-        char infoLog[512];
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            glGetShaderInfoLog(vertex_shader, 512, nullptr, infoLog);
-            std::cout << "Error on vertex compilation: " << infoLog << std::endl;
-            return false;
-        }
-        const char *fshader_src = "#version 400 core\n"
+        const char *color_fshader_src = "#version 400 core\n"
                                   "in vec4 color;\n"
                                   "out vec4 fragColor;\n"
                                   "void main() {\n"
                                   "    fragColor = color;\n"
                                   "}";
-        int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment_shader, 1, &fshader_src, nullptr);
-        glCompileShader(fragment_shader);
-        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            glGetShaderInfoLog(fragment_shader, 512, nullptr, infoLog);
-            std::cout << "Error on fragment compilation: " << infoLog << std::endl;
-            return false;
-        }
-        context.shader3d = glCreateProgram();
-        glAttachShader(context.shader3d, vertex_shader);
-        glAttachShader(context.shader3d, fragment_shader);
-        glLinkProgram(context.shader3d);
-        glGetProgramiv(context.shader3d, GL_LINK_STATUS, &success);
-        if (!success) {
-            glGetProgramInfoLog(context.shader3d, 512, nullptr, infoLog);
-            std::cout << "Error linking program: " << infoLog << std::endl;
-            return false;
-        }
-        glDeleteShader(vertex_shader);
-        glDeleteShader(fragment_shader);
-
-        const char *vshader_src2d = "#version 400 core\n"
+        const char *color_vshader_src2d = "#version 400 core\n"
                                     "layout (location = 0) in vec2 inPos;\n"
                                     "layout (location = 1) in vec3 inColor;\n"
                                     "layout (location = 2) in mat4 instanceModel;\n"
@@ -191,77 +158,56 @@ namespace engine {
                                     "    gl_Position = VP * instanceModel * vec4(inPos, 0, 1);\n"
                                     "    color = vec4(inColor, 1);\n"
                                     "}";
-        vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex_shader, 1, &vshader_src2d, nullptr);
-        glCompileShader(vertex_shader);
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            glGetShaderInfoLog(vertex_shader, 512, nullptr, infoLog);
-            std::cout << "Error on vertex compilation: " << infoLog << std::endl;
-            return false;
-        }
-        const char *fshader_src2d = "#version 400 core\n"
-                                  "in vec4 color;\n"
-                                  "out vec4 fragColor;\n"
-                                  "void main() {\n"
-                                  "    fragColor = color;\n"
-                                  "}";
-        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment_shader, 1, &fshader_src2d, nullptr);
-        glCompileShader(fragment_shader);
-        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            glGetShaderInfoLog(fragment_shader, 512, nullptr, infoLog);
-            std::cout << "Error on fragment compilation: " << infoLog << std::endl;
-            return false;
-        }
-        context.shader2d = glCreateProgram();
-        glAttachShader(context.shader2d, vertex_shader);
-        glAttachShader(context.shader2d, fragment_shader);
-        glLinkProgram(context.shader2d);
-        glGetProgramiv(context.shader2d, GL_LINK_STATUS, &success);
-        if (!success) {
-            glGetProgramInfoLog(context.shader2d, 512, nullptr, infoLog);
-            std::cout << "Error linking program: " << infoLog << std::endl;
-            return false;
-        }
-        glDeleteShader(vertex_shader);
-        glDeleteShader(fragment_shader);
-
+        const char *color_fshader_src2d = "#version 400 core\n"
+                                    "in vec4 color;\n"
+                                    "out vec4 fragColor;\n"
+                                    "void main() {\n"
+                                    "    fragColor = color;\n"
+                                    "}";
         const char *tex_vshader_src = "#version 400 core\n"
-                                  "layout (location = 0) in vec3 inPos;\n"
-                                  "layout (location = 1) in vec2 inUV;\n"
-                                  "layout (location = 2) in mat4 instanceModel;\n"
-                                  "uniform mat4 VP;\n"
-                                  "out vec2 UV;\n"
-                                  "void main() {\n"
-                                  "    gl_Position = VP * instanceModel * vec4(inPos, 1);\n"
-                                  "    UV = inUV;\n"
-                                  "}";
+                                      "layout (location = 0) in vec3 inPos;\n"
+                                      "layout (location = 1) in vec2 inUV;\n"
+                                      "layout (location = 2) in mat4 instanceModel;\n"
+                                      "uniform mat4 VP;\n"
+                                      "out vec2 UV;\n"
+                                      "void main() {\n"
+                                      "    gl_Position = VP * instanceModel * vec4(inPos, 1);\n"
+                                      "    UV = inUV;\n"
+                                      "}";
         const char *tex_fshader_src = "#version 400 core\n"
-                                  "in vec2 UV;\n"
-                                  "out vec3 fragColor;\n"
-                                  "uniform sampler2D texSampler;\n"
-                                  "void main() {\n"
-                                  "    fragColor = texture(texSampler, UV).rgb;\n"
-                                  "}";
+                                      "in vec2 UV;\n"
+                                      "out vec3 fragColor;\n"
+                                      "uniform sampler2D texSampler;\n"
+                                      "void main() {\n"
+                                      "    fragColor = texture(texSampler, UV).rgb;\n"
+                                      "}";
         const char *tex_vshader_src2d = "#version 400 core\n"
-                                  "layout (location = 0) in vec2 inPos;\n"
-                                  "layout (location = 1) in vec2 inUV;\n"
-                                  "layout (location = 2) in mat4 instanceModel;\n"
-                                  "uniform mat4 VP;\n"
-                                  "out vec2 UV;\n"
-                                  "void main() {\n"
-                                  "    gl_Position = VP * instanceModel * vec4(inPos, 0, 1);\n"
-                                  "    UV = inUV;\n"
-                                  "}";
+                                        "layout (location = 0) in vec2 inPos;\n"
+                                        "layout (location = 1) in vec2 inUV;\n"
+                                        "layout (location = 2) in mat4 instanceModel;\n"
+                                        "uniform mat4 VP;\n"
+                                        "out vec2 UV;\n"
+                                        "void main() {\n"
+                                        "    gl_Position = VP * instanceModel * vec4(inPos, 0, 1);\n"
+                                        "    UV = inUV;\n"
+                                        "}";
         const char *tex_fshader_src2d = "#version 400 core\n"
-                                  "in vec2 UV;\n"
-                                  "out vec3 fragColor;\n"
-                                  "uniform sampler2D texSampler;\n"
-                                  "void main() {\n"
-                                  "    fragColor = texture(texSampler, UV).rgb;\n"
-                                  "}";
+                                        "in vec2 UV;\n"
+                                        "out vec4 fragColor;\n"
+                                        "uniform sampler2D texSampler;\n"
+                                        "void main() {\n"
+                                        "    fragColor = texture(texSampler, UV).rgba;\n"
+                                        "}";
+
+        try {
+            context.color_shader2d = load_shader(color_vshader_src2d, color_fshader_src2d);
+            context.color_shader3d = load_shader(color_vshader_src, color_fshader_src);
+            context.tex_shader2d = load_shader(tex_vshader_src2d, tex_fshader_src2d);
+            context.tex_shader3d = load_shader(tex_vshader_src, tex_fshader_src);
+        } catch (std::runtime_error& e) {
+            std::cout << e.what() << std::endl;
+            return false;
+        }
 
         return true;
     }
@@ -319,17 +265,17 @@ namespace engine {
                 entity, // id
                 vao, // Vertex Array Object
                 vbo, // Vertex Buffer Object
-                cbo, // Color Buffer Object
                 ebo, // Element Buffer Object
-                static_cast<unsigned int>(mesh.indices.size()) // Number of indices
+                static_cast<unsigned int>(mesh.indices.size()), // Number of indices
+                cbo // Color Buffer Object
         );
         registry.emplace<InstanceList>(entity, ibo);
         glBindVertexArray(0);
     }
 
-    void Renderer::load_sprite(entt::registry &registry, entt::entity entity) {
+    void Renderer::load_shape_sprite(entt::registry &registry, entt::entity entity) {
         auto sizeof_vec4 = sizeof(glm::vec4);
-        auto sprite = registry.get<Sprite>(entity);
+        auto sprite = registry.get<ShapeSprite>(entity);
         // setup vertex array object
         GLuint vao;
         glGenVertexArrays(1, &vao);
@@ -351,27 +297,12 @@ namespace engine {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-        // uvs
-        GLuint uvs;
-
         // indices
         GLuint ebo;
         glGenBuffers(1, &ebo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
                      GL_STATIC_DRAW);
-
-        // texture sampler
-        /*
-        GLuint tex_id;
-        glGenTextures(1, &tex_id);
-        // "Bind" the newly created texture : all future texture functions will modify this texture
-        glBindTexture(GL_TEXTURE_2D, tex_id);
-        // Give the image to OpenGL
-        glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        */
 
         // instance buffer (initially empty)
         GLuint ibo;
@@ -394,9 +325,75 @@ namespace engine {
                 entity, // id
                 vao, // Vertex Array Object
                 vbo, // Vertex Buffer Object
-                cbo, // Color Buffer Object
                 ebo, // Element Buffer Object
-                static_cast<unsigned int>(sprite.indices.size()) // Number of indices
+                static_cast<unsigned int>(sprite.indices.size()), // Number of indices
+                cbo // Color Buffer Object
+        );
+        registry.emplace<InstanceList>(entity, ibo);
+        glBindVertexArray(0);
+    }
+
+    void Renderer::load_texture_sprite(entt::registry &registry, entt::entity entity) {
+        auto sizeof_vec2 = sizeof(glm::vec2);
+        auto sizeof_vec4 = sizeof(glm::vec4);
+        auto sprite = registry.get<TextureSprite>(entity);
+        // setup vertex array object
+        GLuint vao;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        // verts
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        // uvs
+        GLuint uvs;
+        glGenBuffers(1, &uvs);
+        glBindBuffer(GL_ARRAY_BUFFER, uvs);
+        glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.uvs.size(), &sprite.uvs[0], GL_STATIC_DRAW);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        // indices
+        GLuint ebo;
+        glGenBuffers(1, &ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
+                     GL_STATIC_DRAW);
+
+        // texture sampler
+        GLuint tex_id = utils::file::read_png_file_to_texture("/Users/philipsmith/Downloads/red_arrow.png");
+
+        // instance buffer (initially empty)
+        GLuint ibo;
+        glGenBuffers(1, &ibo);
+        glBindBuffer(GL_ARRAY_BUFFER, ibo);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof_vec4, (void *) 0);
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof_vec4, (void *) (1 * sizeof_vec4));
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof_vec4, (void *) (2 * sizeof_vec4));
+        glEnableVertexAttribArray(5);
+        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * sizeof_vec4, (void *) (3 * sizeof_vec4));
+        glVertexAttribDivisor(2, 1);
+        glVertexAttribDivisor(3, 1);
+        glVertexAttribDivisor(4, 1);
+        glVertexAttribDivisor(5, 1);
+
+        registry.emplace<VertexArrayObject>(
+                entity, // id
+                vao, // Vertex Array Object
+                vbo, // Vertex Buffer Object
+                ebo, // Element Buffer Object
+                static_cast<unsigned int>(sprite.indices.size()), // Number of indices
+                static_cast<unsigned int>(0), // Color Buffer Object
+                tex_id, // texture object
+                uvs // texture uv buffer
         );
         registry.emplace<InstanceList>(entity, ibo);
         glBindVertexArray(0);
@@ -424,10 +421,10 @@ namespace engine {
         glBindVertexArray(0);
     }
 
-    void Renderer::update_sprite(entt::registry &registry, entt::entity entity) {
+    void Renderer::update_shape_sprite(entt::registry &registry, entt::entity entity) {
         auto sizeof_vec3 = sizeof(glm::vec3);
         auto sizeof_vec2 = sizeof(glm::vec2);
-        auto& sprite = registry.get<Sprite>(entity);
+        auto& sprite = registry.get<ShapeSprite>(entity);
         auto& vao = registry.get<VertexArrayObject>(entity);
         glBindVertexArray(vao.id);
 
@@ -447,6 +444,28 @@ namespace engine {
         glBindVertexArray(0);
     }
 
+    void Renderer::update_texture_sprite(entt::registry &registry, entt::entity entity) {
+        auto sizeof_vec2 = sizeof(glm::vec2);
+        auto& sprite = registry.get<TextureSprite>(entity);
+        auto& vao = registry.get<VertexArrayObject>(entity);
+        glBindVertexArray(vao.id);
+
+        // verts
+        glBindBuffer(GL_ARRAY_BUFFER, vao.vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
+
+        // uvs
+        glBindBuffer(GL_ARRAY_BUFFER, vao.tex_uvs);
+        glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.uvs.size(), &sprite.uvs[0], GL_STATIC_DRAW);
+
+        // indices
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vao.ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
+                     GL_STATIC_DRAW);
+
+        glBindVertexArray(0);
+    }
+
     void Renderer::destroy_vao(entt::registry &registry, entt::entity entity) {
         auto vao = registry.get<VertexArrayObject>(entity);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -455,8 +474,13 @@ namespace engine {
 
         glDeleteVertexArrays(1, &vao.id);
         glDeleteBuffers(1, &vao.vbo);
-        glDeleteBuffers(1, &vao.cbo);
         glDeleteBuffers(1, &vao.ebo);
+        if(vao.cbo)
+            glDeleteBuffers(1, &vao.cbo);
+        if(vao.tex_id)
+            glDeleteTextures(1, &vao.tex_id);
+        if(vao.tex_uvs)
+            glDeleteBuffers(1, &vao.tex_uvs);
     }
 
     void Renderer::destroy_instances(entt::registry &registry, entt::entity entity) {
@@ -468,9 +492,9 @@ namespace engine {
         const auto& ctx = registry.get<RenderContext>(m_context_entity);
 
         // 3D rendering
-        auto vp_uniform = glGetUniformLocation(ctx.shader3d, "VP");
+        auto vp_uniform = glGetUniformLocation(ctx.color_shader3d, "VP");
         auto vp = glm::perspective(ctx.fovy, ctx.screen_width / ctx.screen_height,  ctx.z_near, ctx.z_far) * ctx.camera->get_view();
-        glUseProgram(ctx.shader3d);
+        glUseProgram(ctx.color_shader3d);
         glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
         auto view3d = registry.view<VertexArrayObject, InstanceList, Mesh>();
         for (const auto &entity: view3d) {
@@ -483,15 +507,31 @@ namespace engine {
         }
 
         // 2D rendering (TODO: Add occlusion culling to prevent drawing 3D entities that are covered by 2D elements)
-        vp_uniform = glGetUniformLocation(ctx.shader2d, "VP");
+        vp_uniform = glGetUniformLocation(ctx.color_shader2d, "VP");
         vp = glm::ortho(0.f, ctx.screen_width, ctx.screen_height, 0.f);
-        glUseProgram(ctx.shader2d);
+        glUseProgram(ctx.color_shader2d);
         glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
-        auto view2d = registry.view<VertexArrayObject, InstanceList, Sprite>();
-        for(const auto &entity: view2d) {
-            auto [vao, ilist, sprite] = view2d.get(entity);
+        auto color_view = registry.view<VertexArrayObject, InstanceList, ShapeSprite>();
+        for(const auto &entity: color_view) {
+            auto [vao, ilist, sprite] = color_view.get(entity);
             if(sprite.visible) {
                 glBindVertexArray(vao.id);
+                glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
+                                        ilist.instances.size());
+            }
+        }
+        vp_uniform = glGetUniformLocation(ctx.tex_shader2d, "VP");
+        auto tex_uniform  = glGetUniformLocation(ctx.tex_shader2d, "texSampler");
+        glUseProgram(ctx.tex_shader2d);
+        glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
+        glActiveTexture(GL_TEXTURE0);
+        glUniform1i(tex_uniform, 0);
+        auto tex_view = registry.view<VertexArrayObject, InstanceList, TextureSprite>();
+        for(const auto &entity: tex_view) {
+            auto [vao, ilist, sprite] = tex_view.get(entity);
+            if(sprite.visible) {
+                glBindVertexArray(vao.id);
+                glBindTexture(GL_TEXTURE_2D, vao.tex_id);
                 glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
                                         ilist.instances.size());
             }
@@ -500,12 +540,50 @@ namespace engine {
 
     void Renderer::cleanup(entt::registry &registry) {
         const auto& ctx = registry.get<RenderContext>(m_context_entity);
-        glDeleteProgram(ctx.shader2d);
-        glDeleteProgram(ctx.shader3d);
+        glDeleteProgram(ctx.color_shader2d);
+        glDeleteProgram(ctx.color_shader3d);
+        glDeleteProgram(ctx.tex_shader2d);
+        glDeleteProgram(ctx.tex_shader3d);
         glfwTerminate();
     }
 
     const RenderContext& Renderer::get_context(entt::registry& registry) {
         return registry.get<RenderContext>(m_context_entity);
+    }
+
+    GLuint Renderer::load_shader(const char* vertex_source, const char* frag_source) {
+        int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertex_shader, 1, &vertex_source, nullptr);
+        glCompileShader(vertex_shader);
+        int success;
+        char infoLog[512];
+        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            glGetShaderInfoLog(vertex_shader, 512, nullptr, infoLog);
+            std::string message = fmt::format("Error on vertex compilation ", infoLog);
+            throw std::runtime_error(message.c_str());
+        }
+        int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragment_shader, 1, &frag_source, nullptr);
+        glCompileShader(fragment_shader);
+        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            glGetShaderInfoLog(fragment_shader, 512, nullptr, infoLog);
+            std::string message = fmt::format("Error on fragment compilation ", infoLog);
+            throw std::runtime_error(message.c_str());
+        }
+        auto shader = glCreateProgram();
+        glAttachShader(shader, vertex_shader);
+        glAttachShader(shader, fragment_shader);
+        glLinkProgram(shader);
+        glGetProgramiv(shader, GL_LINK_STATUS, &success);
+        if (!success) {
+            glGetProgramInfoLog(shader, 512, nullptr, infoLog);
+            std::string message = fmt::format("Error linking program ", infoLog);
+            throw std::runtime_error(message.c_str());
+        }
+        glDeleteShader(vertex_shader);
+        glDeleteShader(fragment_shader);
+        return shader;
     }
 } // namespace engine

@@ -11,9 +11,11 @@ namespace engine {
     struct VertexArrayObject {
         GLuint id;
         GLuint vbo;
-        GLuint cbo;
         GLuint ebo;
         unsigned int num_indices;
+        GLuint cbo{0};
+        GLuint tex_id{0};
+        GLuint tex_uvs{0};
     };
 } // namespace engine
 
