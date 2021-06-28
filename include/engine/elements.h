@@ -7,6 +7,7 @@
 
 #include <cute_c2.h>
 #include <glm/glm.hpp>
+#include <string>
 #include <utils/macros.h>
 
 #include "Collidable.h"
@@ -31,7 +32,7 @@ namespace engine {
         glm::vec2 m_center;
     };
 
-    template <typename Event>
+    template <typename DownEvent, typename UpEvent>
     class ButtonElement : public BoxElement, public ManagedEntity, public MouseButtonEventSink {
     public:
         PTR(ButtonElement);
@@ -46,29 +47,47 @@ namespace engine {
 
         void handle(MouseButtonEvent& event, InterfaceContainer& emitter) override;
 
-        virtual Event build_event(MouseButtonEvent& event, InterfaceContainer& emitter) = 0;
+        virtual UpEvent build_up_event(MouseButtonEvent& event, InterfaceContainer& emitter) = 0;
+
+        virtual DownEvent build_down_event(MouseButtonEvent& event, InterfaceContainer& emitter) = 0;
     protected:
         entt::entity m_entity{entt::null};
+        bool down{false};
     };
 
-    class StartButton : public ButtonElement<StartEvent> {
+    template <typename DownEvent, typename UpEvent>
+    class TexturedButton : public ButtonElement<DownEvent, UpEvent> {
+    public:
+        PTR(TexturedButton);
+
+        TexturedButton(std::string up_texture, std::string down_texture, float x, float y, float width, float height);
+
+        entt::entity register_with(entt::registry& registry) override;
+    protected:
+        std::string unclicked_tex_name{""};
+        std::string clicked_tex_name{""};
+    };
+
+    class StartButton : public TexturedButton<TexSwapEvent, StartEvent> {
     public:
         PTR(StartButton);
 
         explicit StartButton(const RenderContext& context);
 
-        entt::entity register_with(entt::registry& registry) override;
+        StartEvent build_up_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
 
-        StartEvent build_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
+        TexSwapEvent build_down_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
     };
 
-    class ExitButton : public ButtonElement<ExitEvent> {
+    class ExitButton : public TexturedButton<TexSwapEvent, ExitEvent> {
     public:
         PTR(ExitButton);
 
         explicit ExitButton(const RenderContext& context);
 
-        ExitEvent build_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
+        ExitEvent build_up_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
+
+        TexSwapEvent build_down_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
     };
 } // namespace engine
 

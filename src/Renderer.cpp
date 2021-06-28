@@ -366,7 +366,7 @@ namespace engine {
                      GL_STATIC_DRAW);
 
         // texture sampler
-        GLuint tex_id = utils::file::read_png_file_to_texture("/Users/philipsmith/Downloads/red_arrow.png");
+        GLuint tex_id = utils::file::read_png_file_to_texture(sprite.name);
 
         // instance buffer (initially empty)
         GLuint ibo;
@@ -462,6 +462,9 @@ namespace engine {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vao.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
                      GL_STATIC_DRAW);
+
+        // texture sampler
+        vao.tex_id = utils::file::read_png_file_to_texture(sprite.name);
 
         glBindVertexArray(0);
     }

@@ -18,6 +18,7 @@ namespace engine {
     };
 
     struct TextureSprite {
+        std::string name;
         std::vector<glm::vec2> vertices;
         std::vector<glm::vec2> uvs;
         std::vector<unsigned int> indices;
