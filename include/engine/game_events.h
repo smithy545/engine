@@ -10,12 +10,12 @@
 
 
 namespace engine {
-    struct StartEvent {};
-    struct ExitEvent {};
     struct TexSwapEvent {
         entt::entity entity;
         std::string texture_name;
     };
+    struct StartEvent : public TexSwapEvent {};
+    struct ExitEvent : public TexSwapEvent {};
 } // namespace engine
 
 #endif //ENGINE_GAME_EVENTS_H

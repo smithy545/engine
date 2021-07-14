@@ -5,7 +5,7 @@
 #include <engine/elements.h>
 
 #include <engine/InstanceList.h>
-#include <engine/InterfaceContainer.h>
+#include <engine/InterfaceView.h>
 #include <engine/sprites.h>
 
 #include <utility>
@@ -64,16 +64,15 @@ namespace engine {
     }
 
     template <typename DownEvent, typename UpEvent>
-    void ButtonElement<DownEvent, UpEvent>::handle(MouseButtonEvent& event, InterfaceContainer& emitter) {
+    void ButtonElement<DownEvent, UpEvent>::handle(MouseButtonEvent& event, InterfaceView& emitter) {
         if (down) {
-            if(!event.pressed)
+            down = event.pressed;
+            if(!down)
                 emitter.publish<UpEvent>(build_up_event(event, emitter));
         } else if(collides(event.x, event.y)) {
             down = event.pressed;
-            if(event.pressed)
+            if(down)
                 emitter.publish<DownEvent>(build_down_event(event, emitter));
-            else
-                emitter.publish<UpEvent>(build_up_event(event, emitter));
         }
     }
 
@@ -127,11 +126,14 @@ namespace engine {
                     "/Users/philipsmith/Downloads/kenny1/2D assets/UI Base Pack/PNG/blue_button01.png",
                     ctx.screen_width / 2 - 85, 20, 190, 49) {}
 
-    StartEvent StartButton::build_up_event(MouseButtonEvent& event, InterfaceContainer& emitter) {
-        return StartEvent{};
+    StartEvent StartButton::build_up_event(MouseButtonEvent& event, InterfaceView& emitter) {
+        return StartEvent{
+            m_entity,
+            unclicked_tex_name
+        };
     }
 
-    TexSwapEvent StartButton::build_down_event(MouseButtonEvent& event, InterfaceContainer& emitter) {
+    TexSwapEvent StartButton::build_down_event(MouseButtonEvent& event, InterfaceView& emitter) {
         return TexSwapEvent{
             m_entity,
             clicked_tex_name
@@ -144,11 +146,14 @@ namespace engine {
             "/Users/philipsmith/Downloads/kenny1/2D assets/UI Base Pack/PNG/red_button00.png",
             ctx.screen_width / 2 - 85, 100, 190, 49) {}
 
-    ExitEvent ExitButton::build_up_event(MouseButtonEvent& event, InterfaceContainer& emitter) {
-        return ExitEvent{};
+    ExitEvent ExitButton::build_up_event(MouseButtonEvent& event, InterfaceView& emitter) {
+        return ExitEvent{
+            m_entity,
+            unclicked_tex_name
+        };
     }
 
-    TexSwapEvent ExitButton::build_down_event(MouseButtonEvent& event, InterfaceContainer& emitter) {
+    TexSwapEvent ExitButton::build_down_event(MouseButtonEvent& event, InterfaceView& emitter) {
         return TexSwapEvent{
             m_entity,
             clicked_tex_name

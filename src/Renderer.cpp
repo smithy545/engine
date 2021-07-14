@@ -132,80 +132,35 @@ namespace engine {
     }
 
     bool Renderer::init_shaders(RenderContext& context) {
-        const char *color_vshader_src = "#version 400 core\n"
-                                  "layout (location = 0) in vec3 inPos;\n"
-                                  "layout (location = 1) in vec3 inColor;\n"
-                                  "layout (location = 2) in mat4 instanceModel;\n"
-                                  "uniform mat4 VP;\n"
-                                  "out vec4 color;\n"
-                                  "void main() {\n"
-                                  "    gl_Position = VP * instanceModel * vec4(inPos, 1);\n"
-                                  "    color = vec4(inColor, 1);\n"
-                                  "}";
-        const char *color_fshader_src = "#version 400 core\n"
-                                  "in vec4 color;\n"
-                                  "out vec4 fragColor;\n"
-                                  "void main() {\n"
-                                  "    fragColor = color;\n"
-                                  "}";
-        const char *color_vshader_src2d = "#version 400 core\n"
-                                    "layout (location = 0) in vec2 inPos;\n"
-                                    "layout (location = 1) in vec3 inColor;\n"
-                                    "layout (location = 2) in mat4 instanceModel;\n"
-                                    "uniform mat4 VP;\n"
-                                    "out vec4 color;\n"
-                                    "void main() {\n"
-                                    "    gl_Position = VP * instanceModel * vec4(inPos, 0, 1);\n"
-                                    "    color = vec4(inColor, 1);\n"
-                                    "}";
-        const char *color_fshader_src2d = "#version 400 core\n"
-                                    "in vec4 color;\n"
-                                    "out vec4 fragColor;\n"
-                                    "void main() {\n"
-                                    "    fragColor = color;\n"
-                                    "}";
-        const char *tex_vshader_src = "#version 400 core\n"
-                                      "layout (location = 0) in vec3 inPos;\n"
-                                      "layout (location = 1) in vec2 inUV;\n"
-                                      "layout (location = 2) in mat4 instanceModel;\n"
-                                      "uniform mat4 VP;\n"
-                                      "out vec2 UV;\n"
-                                      "void main() {\n"
-                                      "    gl_Position = VP * instanceModel * vec4(inPos, 1);\n"
-                                      "    UV = inUV;\n"
-                                      "}";
-        const char *tex_fshader_src = "#version 400 core\n"
-                                      "in vec2 UV;\n"
-                                      "out vec3 fragColor;\n"
-                                      "uniform sampler2D texSampler;\n"
-                                      "void main() {\n"
-                                      "    fragColor = texture(texSampler, UV).rgb;\n"
-                                      "}";
-        const char *tex_vshader_src2d = "#version 400 core\n"
-                                        "layout (location = 0) in vec2 inPos;\n"
-                                        "layout (location = 1) in vec2 inUV;\n"
-                                        "layout (location = 2) in mat4 instanceModel;\n"
-                                        "uniform mat4 VP;\n"
-                                        "out vec2 UV;\n"
-                                        "void main() {\n"
-                                        "    gl_Position = VP * instanceModel * vec4(inPos, 0, 1);\n"
-                                        "    UV = inUV;\n"
-                                        "}";
-        const char *tex_fshader_src2d = "#version 400 core\n"
-                                        "in vec2 UV;\n"
-                                        "out vec4 fragColor;\n"
-                                        "uniform sampler2D texSampler;\n"
-                                        "void main() {\n"
-                                        "    fragColor = texture(texSampler, UV).rgba;\n"
-                                        "}";
+        auto color_vshader_src = utils::file::read_file_to_string("../res/shaders/vert/color_vert.glsl");
+        auto color_vshader_src2d = utils::file::read_file_to_string("../res/shaders/vert/color_vert2d.glsl");
+        auto color_fshader_src = utils::file::read_file_to_string("../res/shaders/frag/color_frag.glsl");
+        auto tex_vshader_src = utils::file::read_file_to_string("../res/shaders/vert/tex_vert.glsl");
+        auto tex_vshader_src2d = utils::file::read_file_to_string("../res/shaders/vert/tex_vert2d.glsl");
+        auto tex_fshader_src = utils::file::read_file_to_string("../res/shaders/frag/tex_frag.glsl");
 
         try {
-            context.color_shader2d = load_shader(color_vshader_src2d, color_fshader_src2d);
-            context.color_shader3d = load_shader(color_vshader_src, color_fshader_src);
-            context.tex_shader2d = load_shader(tex_vshader_src2d, tex_fshader_src2d);
-            context.tex_shader3d = load_shader(tex_vshader_src, tex_fshader_src);
+            context.color_shader2d = load_shader(color_vshader_src2d.c_str(), color_fshader_src.c_str());
         } catch (std::runtime_error& e) {
-            std::cout << e.what() << std::endl;
+            std::cout << "2d color shader failed to init: " << e.what() << std::endl;
+            return false;
+        }
+        try {
+            context.color_shader3d = load_shader(color_vshader_src.c_str(), color_fshader_src.c_str());
+        } catch (std::runtime_error& e) {
+            std::cout << "3d color shader failed to init: " << e.what() << std::endl;
+            return false;
+        }
+        try {
+            context.tex_shader2d = load_shader(tex_vshader_src2d.c_str(), tex_fshader_src.c_str());
+        } catch (std::runtime_error& e) {
+            std::cout << "2d texture shader failed to init: " << e.what() << std::endl;
+            return false;
+        }
+        try {
+            context.tex_shader3d = load_shader(tex_vshader_src.c_str(), tex_fshader_src.c_str());
+        } catch (std::runtime_error& e) {
+            std::cout << "3d texture shader failed to init: " << e.what() << std::endl;
             return false;
         }
 
@@ -496,7 +451,8 @@ namespace engine {
 
         // 3D rendering
         auto vp_uniform = glGetUniformLocation(ctx.color_shader3d, "VP");
-        auto vp = glm::perspective(ctx.fovy, ctx.screen_width / ctx.screen_height,  ctx.z_near, ctx.z_far) * ctx.camera->get_view();
+        auto vp = glm::perspective(ctx.fovy, ctx.screen_width / ctx.screen_height,  ctx.z_near, ctx.z_far)
+                * ctx.camera->get_view();
         glUseProgram(ctx.color_shader3d);
         glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
         auto view3d = registry.view<VertexArrayObject, InstanceList, Mesh>();

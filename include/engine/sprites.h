@@ -10,19 +10,19 @@
 
 
 namespace engine {
-    struct ShapeSprite {
+    struct Sprite {
         std::vector<glm::vec2> vertices;
-        std::vector<glm::vec3> colors;
         std::vector<unsigned int> indices;
         bool visible{true};
     };
 
-    struct TextureSprite {
+    struct ShapeSprite : public Sprite {
+        std::vector<glm::vec3> colors;
+    };
+
+    struct TextureSprite : public Sprite {
         std::string name;
-        std::vector<glm::vec2> vertices;
         std::vector<glm::vec2> uvs;
-        std::vector<unsigned int> indices;
-        bool visible{true};
     };
 } // namespace engine
 

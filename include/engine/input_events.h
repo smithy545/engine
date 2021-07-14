@@ -10,7 +10,7 @@
 
 
 namespace engine {
-    class InterfaceContainer;
+    class InterfaceView;
 
     struct KeyEvent {
         int key;
@@ -32,7 +32,7 @@ namespace engine {
 
     template <class Event>
     struct EventSink {
-        virtual void handle(Event& event, InterfaceContainer& emitter) = 0;
+        virtual void handle(Event& event, InterfaceView& emitter) = 0;
     };
 
     typedef EventSink<KeyEvent> KeyEventSink;

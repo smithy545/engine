@@ -45,11 +45,11 @@ namespace engine {
 
         entt::entity get_entity() override;
 
-        void handle(MouseButtonEvent& event, InterfaceContainer& emitter) override;
+        void handle(MouseButtonEvent& event, InterfaceView& emitter) override;
 
-        virtual UpEvent build_up_event(MouseButtonEvent& event, InterfaceContainer& emitter) = 0;
+        virtual UpEvent build_up_event(MouseButtonEvent& event, InterfaceView& emitter) = 0;
 
-        virtual DownEvent build_down_event(MouseButtonEvent& event, InterfaceContainer& emitter) = 0;
+        virtual DownEvent build_down_event(MouseButtonEvent& event, InterfaceView& emitter) = 0;
     protected:
         entt::entity m_entity{entt::null};
         bool down{false};
@@ -64,8 +64,8 @@ namespace engine {
 
         entt::entity register_with(entt::registry& registry) override;
     protected:
-        std::string unclicked_tex_name{""};
-        std::string clicked_tex_name{""};
+        std::string unclicked_tex_name;
+        std::string clicked_tex_name;
     };
 
     class StartButton : public TexturedButton<TexSwapEvent, StartEvent> {
@@ -74,9 +74,9 @@ namespace engine {
 
         explicit StartButton(const RenderContext& context);
 
-        StartEvent build_up_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
+        StartEvent build_up_event(MouseButtonEvent& event, InterfaceView& emitter) override;
 
-        TexSwapEvent build_down_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
+        TexSwapEvent build_down_event(MouseButtonEvent& event, InterfaceView& emitter) override;
     };
 
     class ExitButton : public TexturedButton<TexSwapEvent, ExitEvent> {
@@ -85,9 +85,9 @@ namespace engine {
 
         explicit ExitButton(const RenderContext& context);
 
-        ExitEvent build_up_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
+        ExitEvent build_up_event(MouseButtonEvent& event, InterfaceView& emitter) override;
 
-        TexSwapEvent build_down_event(MouseButtonEvent& event, InterfaceContainer& emitter) override;
+        TexSwapEvent build_down_event(MouseButtonEvent& event, InterfaceView& emitter) override;
     };
 } // namespace engine
 

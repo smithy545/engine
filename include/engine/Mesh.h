@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+
 namespace engine {
     struct Mesh {
         std::vector<glm::vec3> vertices;

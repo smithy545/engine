@@ -16,7 +16,7 @@ namespace engine {
     public:
         PTR(InterfaceElement);
 
-        friend class InterfaceContainer;
+        friend class InterfaceView;
 
         virtual glm::vec2 get_center() = 0;
 

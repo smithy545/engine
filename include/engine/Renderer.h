@@ -52,7 +52,7 @@ namespace engine {
 
         static bool init_glew();
 
-        void read_config(RenderContext &context, const std::string &filename);
+        static void read_config(RenderContext &context, const std::string &filename);
 
         bool init_window(RenderContext &context);
 

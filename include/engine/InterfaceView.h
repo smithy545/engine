@@ -2,8 +2,8 @@
 // Created by Philip Smith on 6/7/21.
 //
 
-#ifndef ENGINE_INTERFACECONTAINER_H
-#define ENGINE_INTERFACECONTAINER_H
+#ifndef ENGINE_INTERFACEVIEW_H
+#define ENGINE_INTERFACEVIEW_H
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Quadtree.h>
@@ -15,8 +15,8 @@
 
 #include "Collidable.h"
 #include "IndependentEntity.h"
-#include "InterfaceElement.h"
 #include "input_events.h"
+#include "InterfaceElement.h"
 #include "RenderContext.h"
 
 
@@ -25,17 +25,17 @@ namespace engine {
     typedef Kernel::Point_2 Point_2;
     typedef CGAL::Quadtree<Kernel, std::vector<Point_2>> Quadtree;
 
-    class InterfaceHandler;
+    class InterfaceController;
 
-    class InterfaceContainer :
+    class InterfaceView :
         public InterfaceElement,
         public IndependentEntity,
         public Collidable,
-        public entt::emitter<InterfaceContainer> {
+        public entt::emitter<InterfaceView> {
     public:
-        PTR(InterfaceContainer);
+        PTR(InterfaceView);
 
-        InterfaceContainer(InterfaceHandler& handler, entt::registry& registry);
+        InterfaceView(InterfaceController& handler, entt::registry& registry);
 
         virtual void update(const RenderContext& context);
 
@@ -60,7 +60,7 @@ namespace engine {
         std::vector<Point_2> m_element_positions;
         std::unordered_map<std::string, InterfaceElement::Ptr> m_elements;
         std::shared_ptr<Quadtree> m_collision_tree{nullptr};
-        InterfaceHandler& handler;
+        InterfaceController& m_handler;
 
         static std::string point_key(double x, double y) {
             return fmt::format("{}:{}", x, y);
@@ -69,4 +69,4 @@ namespace engine {
 } // namespace engine
 
 
-#endif //ENGINE_INTERFACECONTAINER_H
+#endif //ENGINE_INTERFACEVIEW_H
