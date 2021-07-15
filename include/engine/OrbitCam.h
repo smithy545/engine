@@ -15,8 +15,8 @@ namespace engine {
         glm::vec3 focal_point;
         bool filming;
 
-        OrbitCam(glm::vec3 focal_point, glm::vec3 position, bool filming = false)
-        : focal_point(focal_point), position(position), filming(filming) {}
+        OrbitCam(glm::vec3 position, glm::vec3 focal_point, bool filming = false)
+        : position(position), focal_point(focal_point), filming(filming) {}
 
         glm::vec3 get_mouse_world_coords(glm::vec2 pos) override {
             auto forward = get_forward_direction();

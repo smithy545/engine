@@ -513,7 +513,7 @@ namespace engine {
 
     void Renderer::set_camera(entt::registry &registry, Camera::Ptr camera) {
         auto& context = registry.get<RenderContext>(m_context_entity);
-        context.camera = camera;
+        context.camera = std::move(camera);
     }
 
     GLuint Renderer::load_shader(const char* vertex_source, const char* frag_source) {

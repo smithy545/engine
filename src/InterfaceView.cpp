@@ -34,7 +34,7 @@ namespace engine {
     }
 
     void InterfaceView::set_camera(Camera::Ptr camera) {
-        m_controller.set_camera(camera);
+        m_controller.set_camera(std::move(camera));
     }
 
     bool InterfaceView::collides(double x, double y) {
