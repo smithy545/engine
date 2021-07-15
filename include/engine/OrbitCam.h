@@ -11,8 +11,8 @@
 
 namespace engine {
     struct OrbitCam : public Camera {
-        glm::vec3 focal_point;
         glm::vec3 position;
+        glm::vec3 focal_point;
         bool filming;
 
         OrbitCam(glm::vec3 focal_point, glm::vec3 position, bool filming = false)

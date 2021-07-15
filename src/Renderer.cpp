@@ -69,9 +69,7 @@ namespace engine {
             return false;
         }
 
-        context.camera = std::make_shared<OrbitCam>(
-                glm::vec3(500, 100, 400),
-                glm::vec3(500, 100, 0),true);
+        context.camera = nullptr;
 
         // cull triangles facing away from camera
         glEnable(GL_CULL_FACE);
@@ -448,20 +446,23 @@ namespace engine {
 
     void Renderer::render(entt::registry &registry) {
         const auto& ctx = registry.get<RenderContext>(m_context_entity);
-
-        // 3D rendering
-        auto vp_uniform = glGetUniformLocation(ctx.color_shader3d, "VP");
-        auto vp = glm::perspective(ctx.fovy, ctx.screen_width / ctx.screen_height,  ctx.z_near, ctx.z_far)
-                * ctx.camera->get_view();
-        glUseProgram(ctx.color_shader3d);
-        glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
-        auto view3d = registry.view<VertexArrayObject, InstanceList, Mesh>();
-        for (const auto &entity: view3d) {
-            auto [vao, ilist, mesh] = view3d.get(entity);
-            if(mesh.visible) {
-                glBindVertexArray(vao.id);
-                glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
-                                        ilist.instances.size());
+        GLuint vp_uniform;
+        glm::mat4 vp;
+        if(ctx.camera != nullptr) {
+            // 3D rendering
+            vp_uniform = glGetUniformLocation(ctx.color_shader3d, "VP");
+            vp = glm::perspective(ctx.fovy, ctx.screen_width / ctx.screen_height, ctx.z_near, ctx.z_far)
+                      * ctx.camera->get_view();
+            glUseProgram(ctx.color_shader3d);
+            glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
+            auto view3d = registry.view<VertexArrayObject, InstanceList, Mesh>();
+            for (const auto &entity: view3d) {
+                auto[vao, ilist, mesh] = view3d.get(entity);
+                if (mesh.visible) {
+                    glBindVertexArray(vao.id);
+                    glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
+                                            ilist.instances.size());
+                }
             }
         }
 
@@ -506,8 +507,13 @@ namespace engine {
         glfwTerminate();
     }
 
-    const RenderContext& Renderer::get_context(entt::registry& registry) {
+    const RenderContext& Renderer::get_context(entt::registry& registry) const {
         return registry.get<RenderContext>(m_context_entity);
+    }
+
+    void Renderer::set_camera(entt::registry &registry, Camera::Ptr camera) {
+        auto& context = registry.get<RenderContext>(m_context_entity);
+        context.camera = camera;
     }
 
     GLuint Renderer::load_shader(const char* vertex_source, const char* frag_source) {

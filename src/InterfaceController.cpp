@@ -14,8 +14,8 @@ using namespace entt::literals;
 namespace fs = std::filesystem;
 
 namespace engine {
-    InterfaceController::InterfaceController(entt::registry &registry, const RenderContext& context)
-    : IndependentEntity(registry), context(context) {}
+    InterfaceController::InterfaceController(entt::registry &registry, Renderer &renderer)
+    : IndependentEntity(registry), renderer(renderer), context(renderer.get_context(registry)) {}
 
     void InterfaceController::update() {
         if(m_state != nullptr)
@@ -31,6 +31,10 @@ namespace engine {
         m_state->load(context);
     }
 
+    void InterfaceController::set_camera(Camera::Ptr camera) {
+        renderer.set_camera(registry, std::move(camera));
+    }
+
     bool InterfaceController::trigger(double scroll_delta) {
         m_state->publish<MouseScrollEvent>(scroll_delta);
         return true;
@@ -44,7 +48,7 @@ namespace engine {
     bool InterfaceController::trigger(double x, double y, int button, bool value) {
         m_state->publish<MouseButtonEvent>(x, y, button, value);
         return true;
-    }
+    } 
 
     bool InterfaceController::trigger(int code, bool value) {
         m_state->publish<KeyEvent>(code, value);

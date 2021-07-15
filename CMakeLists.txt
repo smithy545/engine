@@ -7,8 +7,8 @@ add_library(engine
         src/GameManager.cpp
         src/InterfaceController.cpp
         src/InterfaceView.cpp
-        src/elements.cpp
-        src/BoxMesh.cpp)
+        src/BoxMesh.cpp
+        src/BoxElement.cpp)
 target_link_directories(engine PRIVATE
         /opt/homebrew/Cellar/glew/2.2.0_1/lib
         /opt/homebrew/Cellar/glfw/3.3.4/lib)

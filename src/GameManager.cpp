@@ -7,60 +7,58 @@
 #include <iostream>
 
 
-void key_cb(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    switch (action) {
-        case GLFW_PRESS:
-            engine::GameManager::set_key(key, true);
-            break;
-        case GLFW_RELEASE:
-            engine::GameManager::set_key(key, false);
-            break;
-        case GLFW_REPEAT:
-            break;
-        default:
-            std::cerr << "Key action \"" << action << "\" not handled" << std::endl;
-    }
-}
-
-void cursor_pos_cb(GLFWwindow *window, double xpos, double ypos) {
-    engine::GameManager::set_mouse_position(xpos, ypos);
-}
-
-void mouse_scroll_cb(GLFWwindow *window, double xoffset, double yoffset) {
-    engine::GameManager::set_mouse_scroll(yoffset);
-}
-
-void mouse_button_cb(GLFWwindow *window, int button, int action, int mods) {
-    switch (action) {
-        case GLFW_PRESS:
-            engine::GameManager::set_mouse_button(button, true);
-            break;
-        case GLFW_RELEASE:
-            engine::GameManager::set_mouse_button(button, false);
-            break;
-        default:
-            std::cerr << "Mouse action \"" << action << "\" not handled" << std::endl;
-    }
-}
-
-void resize_cb(GLFWwindow *window, int width, int height) {
-    entt::monostate<engine::GameManager::WIDTH_KEY>{} = width;
-    entt::monostate<engine::GameManager::HEIGHT_KEY>{} = height;
-    entt::monostate<engine::GameManager::RESIZED_KEY>{} = true;
-}
-
 namespace engine {
     bool GameManager::keys[];
     KeyHandler* GameManager::key_chain = nullptr;
     MouseButtonHandler* GameManager::mouse_button_chain = nullptr;
     MouseMotionHandler* GameManager::mouse_motion_chain = nullptr;
 
+    void key_cb(GLFWwindow *window, int key, int scancode, int action, int mods) {
+        switch (action) {
+            case GLFW_PRESS:
+                GameManager::set_key(key, true);
+                break;
+            case GLFW_RELEASE:
+                GameManager::set_key(key, false);
+                break;
+            case GLFW_REPEAT:
+                break;
+            default:
+                std::cerr << "Key action \"" << action << "\" not handled" << std::endl;
+        }
+    }
+
+    void cursor_pos_cb(GLFWwindow *window, double xpos, double ypos) {
+        GameManager::set_mouse_position(xpos, ypos);
+    }
+
+    void mouse_scroll_cb(GLFWwindow *window, double xoffset, double yoffset) {
+        GameManager::set_mouse_scroll(yoffset);
+    }
+
+    void mouse_button_cb(GLFWwindow *window, int button, int action, int mods) {
+        switch (action) {
+            case GLFW_PRESS:
+                GameManager::set_mouse_button(button, true);
+                break;
+            case GLFW_RELEASE:
+                GameManager::set_mouse_button(button, false);
+                break;
+            default:
+                std::cerr << "Mouse action \"" << action << "\" not handled" << std::endl;
+        }
+    }
+
+    void resize_cb(GLFWwindow *window, int width, int height) {
+        entt::monostate<GameManager::WIDTH_KEY>{} = width;
+        entt::monostate<GameManager::HEIGHT_KEY>{} = height;
+        entt::monostate<GameManager::RESIZED_KEY>{} = true;
+    }
+
     void GameManager::register_input_callbacks(GLFWwindow *window) {
         for (auto &k: keys)
             k = false;
 
-        //glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         glfwSetKeyCallback(window, key_cb);
         glfwSetCursorPosCallback(window, cursor_pos_cb);

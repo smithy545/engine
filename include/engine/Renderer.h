@@ -27,7 +27,9 @@ namespace engine {
 
         void cleanup(entt::registry &registry);
 
-        const RenderContext &get_context(entt::registry &registry);
+        const RenderContext &get_context(entt::registry &registry) const;
+
+        void set_camera(entt::registry &registry, Camera::Ptr camera);
 
         static void load_mesh(entt::registry &registry, entt::entity entity);
 

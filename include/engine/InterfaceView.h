@@ -35,7 +35,7 @@ namespace engine {
     public:
         PTR(InterfaceView);
 
-        InterfaceView(InterfaceController& handler, entt::registry& registry);
+        InterfaceView(InterfaceController& controller, entt::registry& registry);
 
         virtual void update(const RenderContext& context);
 
@@ -54,13 +54,16 @@ namespace engine {
         void remove_element(const InterfaceElement::Ptr& element);
 
         void transition(Ptr next_state);
+
+    protected:
+        void set_camera(Camera::Ptr camera);
     private:
         static const int QUADTREE_MAX_DEPTH{4};
         static const int QUADTREE_BUCKET_SIZE{10};
         std::vector<Point_2> m_element_positions;
         std::unordered_map<std::string, InterfaceElement::Ptr> m_elements;
         std::shared_ptr<Quadtree> m_collision_tree{nullptr};
-        InterfaceController& m_handler;
+        InterfaceController& m_controller;
 
         static std::string point_key(double x, double y) {
             return fmt::format("{}:{}", x, y);

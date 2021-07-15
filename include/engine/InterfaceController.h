@@ -18,6 +18,7 @@
 #include "MouseButtonHandler.h"
 #include "MouseMotionHandler.h"
 #include "RenderContext.h"
+#include "Renderer.h"
 #include "UpdateEntity.h"
 
 
@@ -28,15 +29,18 @@ namespace engine {
             public MouseButtonHandler,
             public MouseMotionHandler {
     public:
-        explicit InterfaceController(entt::registry &registry, const RenderContext& context);
+        InterfaceController(entt::registry &registry, Renderer &renderer);
 
         void update() override;
 
         void set_state(InterfaceView::Ptr state);
 
+        void set_camera(Camera::Ptr camera);
+
     private:
         const RenderContext& context;
-        InterfaceView::Ptr m_state, m_prev_state{nullptr};
+        Renderer& renderer;
+        InterfaceView::Ptr m_state{nullptr}, m_prev_state{nullptr};
 
         // mouse motion
         bool trigger(double x, double y) override;

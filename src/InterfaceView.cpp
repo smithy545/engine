@@ -11,8 +11,8 @@
 
 
 namespace engine {
-    InterfaceView::InterfaceView(InterfaceController& handler, entt::registry& registry)
-    : IndependentEntity(registry), m_handler(handler) {}
+    InterfaceView::InterfaceView(InterfaceController& controller, entt::registry& registry)
+    : IndependentEntity(registry), m_controller(controller) {}
 
     void InterfaceView::update(const RenderContext& context) {
         for(auto [pos, element]: m_elements) {
@@ -30,7 +30,11 @@ namespace engine {
 
     void InterfaceView::transition(InterfaceView::Ptr next_state) {
         unload();
-        m_handler.set_state(std::move(next_state));
+        m_controller.set_state(std::move(next_state));
+    }
+
+    void InterfaceView::set_camera(Camera::Ptr camera) {
+        m_controller.set_camera(camera);
     }
 
     bool InterfaceView::collides(double x, double y) {
