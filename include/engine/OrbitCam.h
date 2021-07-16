@@ -26,6 +26,7 @@ namespace engine {
 
         glm::vec3 get_forward_direction() const override {
             auto forward = glm::normalize(focal_point - position);
+            forward.y = 0;
             return glm::rotate(forward, horizontal_rotation, up);
         }
 
@@ -39,16 +40,22 @@ namespace engine {
             return  glm::lookAt(position, position + get_forward_direction(), up);
         }
 
-        void move_forward(float scale = 1.0f) override {
+        void move_toward(float scale = 1.0f) {
             auto forward = glm::normalize(focal_point - position);
-            position.x += scale * forward.x;
-            position.z += scale * forward.z;
+            position += scale * forward;
+        }
+
+        void move_away(float scale = 1.0f) {
+            auto forward = glm::normalize(focal_point - position);
+            position -= scale * forward;
+        }
+
+        void move_forward(float scale = 1.0f) override {
+            position += scale * get_forward_direction();
         }
 
         void move_backward(float scale = 1.0f) override {
-            auto forward = glm::normalize(focal_point - position);
-            position.x -= scale * forward.x;
-            position.z -= scale * forward.z;
+            position -= scale * get_forward_direction();
         }
 
         void move_left(float scale = 1.0f) override {
