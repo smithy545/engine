@@ -26,7 +26,6 @@ namespace engine {
 
         glm::vec3 get_forward_direction() const override {
             auto forward = glm::normalize(focal_point - position);
-            forward.y = 0;
             return glm::rotate(forward, horizontal_rotation, up);
         }
 
