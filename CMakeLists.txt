@@ -8,7 +8,9 @@ add_library(engine
         src/InterfaceController.cpp
         src/InterfaceView.cpp
         src/BoxMesh.cpp
-        src/BoxElement.cpp)
+        src/BoxElement.cpp
+        src/OrbitCam.cpp
+        src/Steadicam.cpp)
 target_link_directories(engine PRIVATE
         /opt/homebrew/Cellar/glew/2.2.0_1/lib
         /opt/homebrew/Cellar/glfw/3.3.4/lib)

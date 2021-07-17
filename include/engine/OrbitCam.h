@@ -15,77 +15,35 @@ namespace engine {
         glm::vec3 focal_point;
         bool filming;
 
-        OrbitCam(glm::vec3 position, glm::vec3 focal_point, bool filming = false)
-        : position(position), focal_point(focal_point), filming(filming) {}
+        OrbitCam(glm::vec3 position, glm::vec3 focal_point, bool filming = false);
 
-        glm::vec3 get_mouse_world_coords(glm::vec2 pos) override {
-            auto forward = get_forward_direction();
-            auto right = glm::normalize(glm::cross(forward, up));
-            return position + right*pos.x + glm::cross(right, forward)*pos.y;
-        }
+        glm::vec3 get_mouse_world_coords(glm::vec2 pos) override;
 
-        glm::vec3 get_forward_direction() const override {
-            return glm::normalize(focal_point - position);
-        }
+        glm::vec3 get_forward_direction() const override;
 
-        glm::vec3 get_position() const override {
-            return position;
-        }
+        glm::vec3 get_position() const override;
 
-        glm::mat4 get_view() const override {
-            return  glm::lookAt(position, focal_point, up);
-        }
+        glm::mat4 get_view() const override;
 
-        void move_toward(float scale = 1.0f) {
-            auto forward = glm::normalize(focal_point - position);
-            position += scale * forward;
-        }
+        void move_toward(float scale = 1.0f);
 
-        void move_away(float scale = 1.0f) {
-            auto forward = glm::normalize(focal_point - position);
-            position -= scale * forward;
-        }
+        void move_away(float scale = 1.0f);
 
-        void move_forward(float scale = 1.0f) override {
-            auto forward = get_forward_direction();
-            forward.y = 0;
-            focal_point += scale * forward;
-            position += scale * forward;
-        }
+        void move_forward(float scale = 1.0f) override;
 
-        void move_backward(float scale = 1.0f) override {
-            auto forward = get_forward_direction();
-            forward.y = 0;
-            focal_point -= scale * forward;
-            position -= scale * forward;
-        }
+        void move_backward(float scale = 1.0f) override;
 
-        void move_left(float scale = 1.0f) override {
-            position -= scale * glm::cross(get_forward_direction(), up);
-        }
+        void move_left(float scale = 1.0f) override;
 
-        void move_right(float scale = 1.0f) override {
-            position += scale * glm::cross(get_forward_direction(), up);
-        }
+        void move_right(float scale = 1.0f) override;
 
-        void move_up(float scale = 1.0f) override {
-            position += scale * up;
-        }
+        void move_up(float scale = 1.0f) override;
 
-        void move_down(float scale = 1.0f) override {
-            position -= scale * up;
-        }
+        void move_down(float scale = 1.0f) override;
 
-        void pan_horizontal(float diff) override {
-            auto dv = glm::length(focal_point - position);
-            auto forward = glm::rotate(get_forward_direction(), diff, up);
-            focal_point = forward*dv + position;
-        }
+        void pan_horizontal(float diff) override;
 
-        void pan_vertical(float diff) override {
-            // TODO: make this do something
-            vertical_rotation += diff;
-        }
+        void pan_vertical(float diff) override;
     protected:
         glm::vec3 up{0, 1, 0};
         float vertical_rotation{0};
