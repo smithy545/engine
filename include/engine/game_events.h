@@ -14,6 +14,10 @@ namespace engine {
         entt::entity entity;
         std::string texture_name;
     };
+
+    struct CameraMoveEvent {
+        const Camera::Ptr& camera;
+    };
 } // namespace engine
 
 #endif //ENGINE_GAME_EVENTS_H

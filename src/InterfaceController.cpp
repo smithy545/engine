@@ -25,7 +25,6 @@ namespace engine {
     }
 
     void InterfaceController::set_state(InterfaceView::Ptr state) {
-        // store current state and cleanly dispose of it during update step
         m_prev_state = std::move(m_state);
         m_state = std::move(state);
         m_state->load(context);

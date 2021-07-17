@@ -24,7 +24,7 @@ namespace engine {
     void InterfaceView::unload() {
         for(auto [pos, element]: m_elements) {
             if(auto* managed = dynamic_cast<ManagedEntity*>(element.get()))
-                registry.destroy(managed->get_entity());
+                managed->deregister(registry);
         }
     }
 
