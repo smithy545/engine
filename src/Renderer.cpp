@@ -11,6 +11,7 @@
 #include <engine/VertexArrayObject.h>
 #include <fmt/format.h>
 #include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <iostream>
 #include <utils/file_util.h>
 

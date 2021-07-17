@@ -6,11 +6,12 @@
 #define ENGINE_ORBITCAMERA_H
 
 #include "Camera.h"
-#include <glm/gtx/rotate_vector.hpp>
 
 
 namespace engine {
     struct OrbitCam : public Camera {
+        PTR(OrbitCam);
+
         glm::vec3 position;
         glm::vec3 focal_point;
         bool filming;
@@ -25,21 +26,21 @@ namespace engine {
 
         glm::mat4 get_view() const override;
 
-        void move_toward(float scale = 1.0f);
+        void move_toward(float scale);
 
-        void move_away(float scale = 1.0f);
+        void move_away(float scale);
 
-        void move_forward(float scale = 1.0f) override;
+        void move_forward(float scale) override;
 
-        void move_backward(float scale = 1.0f) override;
+        void move_backward(float scale) override;
 
-        void move_left(float scale = 1.0f) override;
+        void move_left(float scale) override;
 
-        void move_right(float scale = 1.0f) override;
+        void move_right(float scale) override;
 
-        void move_up(float scale = 1.0f) override;
+        void move_up(float scale) override;
 
-        void move_down(float scale = 1.0f) override;
+        void move_down(float scale) override;
 
         void pan_horizontal(float diff) override;
 

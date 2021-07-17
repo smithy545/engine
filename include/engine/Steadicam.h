@@ -10,6 +10,8 @@
 
 namespace engine {
     struct Steadicam : public Camera {
+        PTR(Steadicam);
+
         glm::vec3 position;
         bool filming;
 
@@ -27,17 +29,17 @@ namespace engine {
 
         void pan_vertical(float diff) override;
 
-        void move_forward(float scale = 1.0f);
+        void move_forward(float scale) override;
 
-        void move_backward(float scale = 1.0f);
+        void move_backward(float scale) override;
 
-        void move_left(float scale = 1.0f) override;
+        void move_left(float scale) override;
 
-        void move_right(float scale = 1.0f) override;
+        void move_right(float scale) override;
 
-        void move_up(float scale = 1.0f) override;
+        void move_up(float scale) override;
 
-        void move_down(float scale = 1.0f) override;
+        void move_down(float scale) override;
     protected:
         glm::vec3 forward{0, 0, 1};
         glm::vec3 up{0, 1, 0};

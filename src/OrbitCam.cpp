@@ -4,6 +4,8 @@
 
 #include <engine/OrbitCam.h>
 
+#include <glm/gtx/rotate_vector.hpp>
+
 
 namespace engine {
 

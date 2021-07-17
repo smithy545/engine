@@ -19,12 +19,12 @@ namespace engine {
         virtual glm::mat4 get_view() const = 0;
         virtual void pan_horizontal(float diff) = 0;
         virtual void pan_vertical(float diff) = 0;
-        virtual void move_forward(float scale = 1.0f) = 0;
-        virtual void move_backward(float scale = 1.0f) = 0;
-        virtual void move_left(float scale = 1.0f) = 0;
-        virtual void move_right(float scale = 1.0f) = 0;
-        virtual void move_up(float scale = 1.0f) = 0;
-        virtual void move_down(float scale = 1.0f) = 0;
+        virtual void move_forward(float scale) = 0;
+        virtual void move_backward(float scale) = 0;
+        virtual void move_left(float scale) = 0;
+        virtual void move_right(float scale) = 0;
+        virtual void move_up(float scale) = 0;
+        virtual void move_down(float scale) = 0;
     };
 } // namespace engine
 
