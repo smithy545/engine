@@ -25,8 +25,7 @@ namespace engine {
         }
 
         glm::vec3 get_forward_direction() const override {
-            auto forward = glm::normalize(focal_point - position);
-            return glm::rotate(forward, horizontal_rotation, up);
+            return glm::normalize(focal_point - position);
         }
 
         glm::vec3 get_position() const override {
@@ -34,9 +33,7 @@ namespace engine {
         }
 
         glm::mat4 get_view() const override {
-            if(horizontal_rotation == 0.0f)
-                return  glm::lookAt(position, focal_point, up);
-            return  glm::lookAt(position, position + get_forward_direction(), up);
+            return  glm::lookAt(position, focal_point, up);
         }
 
         void move_toward(float scale = 1.0f) {
@@ -50,21 +47,25 @@ namespace engine {
         }
 
         void move_forward(float scale = 1.0f) override {
-            position += scale * get_forward_direction();
+            auto forward = get_forward_direction();
+            forward.y = 0;
+            focal_point += scale * forward;
+            position += scale * forward;
         }
 
         void move_backward(float scale = 1.0f) override {
-            position -= scale * get_forward_direction();
+            auto forward = get_forward_direction();
+            forward.y = 0;
+            focal_point -= scale * forward;
+            position -= scale * forward;
         }
 
         void move_left(float scale = 1.0f) override {
-            auto forward = glm::normalize(focal_point - position);
-            position -= scale * glm::cross(forward, up);
+            position -= scale * glm::cross(get_forward_direction(), up);
         }
 
         void move_right(float scale = 1.0f) override {
-            auto forward = glm::normalize(focal_point - position);
-            position += scale * glm::cross(forward, up);
+            position += scale * glm::cross(get_forward_direction(), up);
         }
 
         void move_up(float scale = 1.0f) override {
@@ -76,7 +77,9 @@ namespace engine {
         }
 
         void pan_horizontal(float diff) override {
-            horizontal_rotation += diff;
+            auto dv = glm::length(focal_point - position);
+            auto forward = glm::rotate(get_forward_direction(), diff, up);
+            focal_point = forward*dv + position;
         }
 
         void pan_vertical(float diff) override {
@@ -85,7 +88,6 @@ namespace engine {
         }
     protected:
         glm::vec3 up{0, 1, 0};
-        float horizontal_rotation{0};
         float vertical_rotation{0};
     };
 } // namespace engine
