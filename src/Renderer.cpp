@@ -6,8 +6,8 @@
 
 #include <engine/OrbitCam.h>
 #include <engine/InstanceList.h>
-#include <engine/Mesh.h>
-#include <engine/sprites.h>
+#include <engine/mesh.h>
+#include <engine/sprite.h>
 #include <engine/VertexArrayObject.h>
 #include <fmt/format.h>
 #include <glm/glm.hpp>
@@ -21,8 +21,6 @@ namespace engine {
         m_context_entity = registry.create();
         registry.emplace<RenderContext>(m_context_entity);
     }
-
-    Renderer::Renderer(const entt::entity& context_entity) : m_context_entity(context_entity) {}
 
     void Renderer::read_config(RenderContext& context, const std::string& filename) {
         // defaults
@@ -119,7 +117,11 @@ namespace engine {
 
     bool Renderer::init_window(RenderContext& context) {
         // Open a window and create its OpenGL context
-        context.window = glfwCreateWindow(context.screen_width, context.screen_height, "Civil War", nullptr, nullptr);
+        context.window = glfwCreateWindow(context.screen_width,
+                                          context.screen_height,
+                                          "Civil War",
+                                          nullptr,
+                                          nullptr);
         if (context.window == nullptr) {
             std::cerr << "Failed to open GLFW window" << std::endl;
             glfwTerminate();

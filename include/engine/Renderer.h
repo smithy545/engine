@@ -19,15 +19,13 @@ namespace engine {
     public:
         explicit Renderer(entt::registry &registry);
 
-        explicit Renderer(const entt::entity &context_entity);
-
         bool init(entt::registry &registry);
 
         void render(entt::registry &registry);
 
         void cleanup(entt::registry &registry);
 
-        const RenderContext &get_context(entt::registry &registry) const;
+        const RenderContext& get_context(entt::registry &registry) const;
 
         void set_camera(entt::registry &registry, Camera::Ptr camera);
 
@@ -54,11 +52,11 @@ namespace engine {
 
         static bool init_glew();
 
+        static bool init_window(RenderContext &context);
+
+        static bool init_shaders(RenderContext &context);
+
         static void read_config(RenderContext &context, const std::string &filename);
-
-        bool init_window(RenderContext &context);
-
-        bool init_shaders(RenderContext &context);
 
         static GLuint load_shader(const char* vertex_source, const char* frag_source);
     };

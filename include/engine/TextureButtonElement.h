@@ -8,7 +8,7 @@
 #include "ButtonElement.h"
 #include "game_events.h"
 #include "InstanceList.h"
-#include "sprites.h"
+#include "sprite.h"
 #include <string>
 
 

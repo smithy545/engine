@@ -6,7 +6,12 @@
 
 
 namespace engine {
-    BoxMesh::BoxMesh(double x_offset, double y_offset, double z_offset, double width, double height, double depth) {
+    BoxMesh::BoxMesh(double x_offset,
+                     double y_offset,
+                     double z_offset,
+                     double width,
+                     double height,
+                     double depth) {
         glm::vec3 anchor{x_offset, y_offset, z_offset};
         glm::vec3 w{width,0,0};
         glm::vec3 h{0,height,0};

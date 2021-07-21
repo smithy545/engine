@@ -5,7 +5,7 @@
 #ifndef ENGINE_BOXMESH_H
 #define ENGINE_BOXMESH_H
 
-#include "Mesh.h"
+#include "mesh.h"
 
 
 namespace engine {

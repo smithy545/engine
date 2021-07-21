@@ -10,7 +10,7 @@
 #include "input_events.h"
 #include "InstanceList.h"
 #include "InterfaceView.h"
-#include "sprites.h"
+#include "sprite.h"
 
 
 namespace engine {
