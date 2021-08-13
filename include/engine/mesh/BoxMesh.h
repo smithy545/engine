@@ -5,7 +5,7 @@
 #ifndef ENGINE_BOXMESH_H
 #define ENGINE_BOXMESH_H
 
-#include "mesh.h"
+#include "Mesh.h"
 
 
 namespace engine {
@@ -17,7 +17,7 @@ namespace engine {
                 double height = 1.0,
                 double depth = 1.0);
 
-        BoxMesh(glm::vec3 anchor, glm::vec3 scale);
+        BoxMesh(glm::vec3 offset, glm::vec3 scale);
     };
 } // namespace engine
 

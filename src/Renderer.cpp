@@ -6,8 +6,8 @@
 
 #include <engine/OrbitCam.h>
 #include <engine/InstanceList.h>
-#include <engine/mesh.h>
-#include <engine/sprite.h>
+#include <engine/mesh/Mesh.h>
+#include <engine/sprite/Sprite.h>
 #include <engine/VertexArrayObject.h>
 #include <fmt/format.h>
 #include <glm/glm.hpp>

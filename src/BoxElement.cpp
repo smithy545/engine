@@ -3,7 +3,7 @@
 //
 
 #define CUTE_C2_IMPLEMENTATION
-#include <engine/BoxElement.h>
+#include <engine/interface/BoxElement.h>
 
 
 namespace engine {

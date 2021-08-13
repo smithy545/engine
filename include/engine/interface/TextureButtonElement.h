@@ -6,9 +6,10 @@
 #define ENGINE_TEXTUREBUTTONELEMENT_H
 
 #include "ButtonElement.h"
-#include "game_events.h"
-#include "InstanceList.h"
-#include "sprite.h"
+
+#include <engine/game_events.h>
+#include <engine/InstanceList.h>
+#include <engine/sprite/Sprite.h>
 #include <string>
 
 

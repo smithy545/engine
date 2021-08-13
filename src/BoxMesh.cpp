@@ -2,7 +2,7 @@
 // Created by Philip Smith on 7/4/21.
 //
 
-#include <engine/BoxMesh.h>
+#include <engine/mesh/BoxMesh.h>
 
 
 namespace engine {
@@ -46,6 +46,6 @@ namespace engine {
             colors.emplace_back(1,0, 0);
     }
 
-    BoxMesh::BoxMesh(glm::vec3 anchor, glm::vec3 scale)
-    : BoxMesh(anchor.x, anchor.y, anchor.z, scale.x, scale.y, scale.z) {}
+    BoxMesh::BoxMesh(glm::vec3 offset, glm::vec3 scale)
+    : BoxMesh(offset.x, offset.y, offset.z, scale.x, scale.y, scale.z) {}
 } // namespace engine

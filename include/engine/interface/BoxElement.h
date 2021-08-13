@@ -6,10 +6,10 @@
 #define ENGINE_BOXELEMENT_H
 
 #include <cute_c2.h>
+#include <engine/Collidable.h>
 #include <glm/glm.hpp>
 #include <utils/macros.h>
 
-#include "Collidable.h"
 #include "InterfaceElement.h"
 
 

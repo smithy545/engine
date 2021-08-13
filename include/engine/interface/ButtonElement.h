@@ -6,11 +6,12 @@
 #define ENGINE_BUTTONELEMENT_H
 
 #include "BoxElement.h"
-#include "ManagedEntity.h"
-#include "input_events.h"
-#include "InstanceList.h"
 #include "InterfaceView.h"
-#include "sprite.h"
+
+#include <engine/ManagedEntity.h>
+#include <engine/input_events.h>
+#include <engine/InstanceList.h>
+#include <engine/sprite/Sprite.h>
 
 
 namespace engine {

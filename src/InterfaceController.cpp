@@ -2,7 +2,7 @@
 // Created by Philip Smith on 5/25/21.
 //
 
-#include <engine/InterfaceController.h>
+#include <engine/interface/InterfaceController.h>
 
 #include <engine/RenderContext.h>
 #include <engine/GameManager.h>

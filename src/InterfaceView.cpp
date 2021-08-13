@@ -2,12 +2,12 @@
 // Created by Philip Smith on 6/7/21.
 //
 
-#include <engine/InterfaceView.h>
+#include <engine/interface/InterfaceView.h>
 
 #include <functional>
 #include <utility>
 #include <engine/ManagedEntity.h>
-#include <engine/InterfaceController.h>
+#include <engine/interface/InterfaceController.h>
 
 
 namespace engine {

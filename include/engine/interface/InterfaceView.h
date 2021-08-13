@@ -13,11 +13,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Collidable.h"
-#include "IndependentEntity.h"
-#include "input_events.h"
+#include <engine/Collidable.h>
+#include <engine/IndependentEntity.h>
+#include <engine/input_events.h>
+#include <engine/RenderContext.h>
+
 #include "InterfaceElement.h"
-#include "RenderContext.h"
 
 
 namespace engine {

@@ -13,13 +13,14 @@
 #include <utils/macros.h>
 #include <vector>
 
+#include <engine/KeyHandler.h>
+#include <engine/MouseButtonHandler.h>
+#include <engine/MouseMotionHandler.h>
+#include <engine/RenderContext.h>
+#include <engine/Renderer.h>
+#include <engine/UpdateEntity.h>
+
 #include "InterfaceView.h"
-#include "KeyHandler.h"
-#include "MouseButtonHandler.h"
-#include "MouseMotionHandler.h"
-#include "RenderContext.h"
-#include "Renderer.h"
-#include "UpdateEntity.h"
 
 
 namespace engine {
