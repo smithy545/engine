@@ -56,6 +56,7 @@ namespace engine {
 
         void transition(Ptr next_state);
 
+        entt::registry& get_registry();
     protected:
         void set_camera(Camera::Ptr camera);
     private:

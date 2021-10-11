@@ -4,10 +4,10 @@
 
 #include <engine/interface/InterfaceView.h>
 
+#include <engine/interface/InterfaceController.h>
+#include <engine/ManagedEntity.h>
 #include <functional>
 #include <utility>
-#include <engine/ManagedEntity.h>
-#include <engine/interface/InterfaceController.h>
 
 
 namespace engine {
@@ -47,9 +47,9 @@ namespace engine {
 
     glm::vec2 InterfaceView::get_center() {
         if(m_collision_tree == nullptr)
-            return glm::vec2(0,0);
+            return {0,0};
         auto bounds = m_collision_tree->bbox(m_collision_tree->root());
-        return glm::vec2((bounds.ymin() + bounds.ymax())/2.0, (bounds.xmin() + bounds.xmax())/2.0);
+        return {(bounds.ymin() + bounds.ymax())/2.0, (bounds.xmin() + bounds.xmax())/2.0};
     }
 
     InterfaceElement::Ptr InterfaceView::get_nearest_element(double x, double y) {
@@ -92,7 +92,12 @@ namespace engine {
                 auto* handler = dynamic_cast<MouseMotionEventSink*>(element.get());
                 handler->handle(event, emitter);
             });
-        // todo look into storing the above event connections to allow for later disconnection
+        if(auto* handler = dynamic_cast<MouseScrollEventSink*>(element.get()))
+        	on<MouseScrollEvent>([element](MouseScrollEvent& event, InterfaceView& emitter) {
+        		auto* handler = dynamic_cast<MouseScrollEventSink*>(element.get());
+        		handler->handle(event, emitter);
+        	});
+        // TODO: store the above event connections to allow for later disconnection
     }
 
     void InterfaceView::remove_element(const InterfaceElement::Ptr& element) {
@@ -127,5 +132,9 @@ namespace engine {
         }
         if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
             entity->deregister(registry);
+    }
+
+	entt::registry &InterfaceView::get_registry(){
+    	return registry;
     }
 } // namespace engine

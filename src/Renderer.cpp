@@ -7,7 +7,8 @@
 #include <engine/OrbitCam.h>
 #include <engine/InstanceList.h>
 #include <engine/mesh/Mesh.h>
-#include <engine/sprite/Sprite.h>
+#include <engine/sprite/ShapeSprite.h>
+#include <engine/sprite/TextureSprite.h>
 #include <engine/VertexArrayObject.h>
 #include <fmt/format.h>
 #include <glm/glm.hpp>
@@ -449,7 +450,7 @@ namespace engine {
 
     void Renderer::render(entt::registry &registry) {
         const auto& ctx = registry.get<RenderContext>(m_context_entity);
-        GLuint vp_uniform;
+        GLint vp_uniform;
         glm::mat4 vp;
         if(ctx.camera != nullptr) {
             // 3D rendering

@@ -2,8 +2,8 @@
 // Created by Philip Smith on 5/25/21.
 //
 
-#ifndef ENGINE_INPUTHANDLER_H
-#define ENGINE_INPUTHANDLER_H
+#ifndef ENGINE_GAMEMANAGER_H
+#define ENGINE_GAMEMANAGER_H
 
 #include <entt/entt.hpp>
 #include <functional>
@@ -80,15 +80,9 @@ namespace engine {
 
         static void register_key_handler(KeyHandler* handler);
 
-        static void unregister_key_handler(KeyHandler* handler);
-
         static void register_mouse_button_handler(MouseButtonHandler* handler);
 
-        static void unregister_mouse_button_handler(MouseButtonHandler* handler);
-
         static void register_mouse_motion_handler(MouseMotionHandler* handler);
-
-        static void unregister_mouse_motion_handler(MouseMotionHandler* handler);
 
     private:
         static bool keys[GLFW_KEY_LAST];
@@ -99,4 +93,4 @@ namespace engine {
 } // namespace engine
 
 
-#endif //ENGINE_INPUTHANDLER_H
+#endif //ENGINE_GAMEMANAGER_H

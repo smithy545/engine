@@ -11,17 +11,16 @@
 #include <engine/ManagedEntity.h>
 #include <engine/input_events.h>
 #include <engine/InstanceList.h>
-#include <engine/sprite/Sprite.h>
+#include <engine/sprite/ShapeSprite.h>
 
 
 namespace engine {
     template<typename DownEvent, typename UpEvent>
-    class ButtonElement : public BoxElement, public ManagedEntity, public MouseButtonEventSink {
+    class ButtonBase : public BoxElement, public ManagedEntity, public MouseButtonEventSink {
     public:
-        PTR(ButtonElement);
+        PTR(ButtonBase);
 
-        ButtonElement(float x, float y, float width, float height)
-                : BoxElement(x, y, width, height) {}
+        ButtonBase(float x, float y, float width, float height) : BoxElement(x, y, width, height) {}
 
         entt::entity register_with(entt::registry& registry) override {
             ShapeSprite sprite;
@@ -62,7 +61,7 @@ namespace engine {
                 m_down = event.pressed;
                 if(!m_down) {
                     auto* event_ptr = build_up_event(event, emitter);
-                    emitter.publish<UpEvent *>(event_ptr);
+                    emitter.publish<UpEvent*>(event_ptr);
                     delete event_ptr;
                 }
             } else if(collides(event.x, event.y)) {

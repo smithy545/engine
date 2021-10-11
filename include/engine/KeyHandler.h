@@ -5,17 +5,16 @@
 #ifndef ENGINE_KEYHANDLER_H
 #define ENGINE_KEYHANDLER_H
 
-#include <utils/macros.h>
+#include "InputHandler.h"
 
 
 namespace engine {
-    class KeyHandler {
+    class KeyHandler : public InputHandler<KeyHandler> {
     public:
         void handle(int code, bool value) {
-            if(trigger(code, value) && m_next_key_handler != nullptr)
-                m_next_key_handler->handle(code, value);
+        	if(trigger(code, value) && m_next != nullptr)
+        		m_next->handle(code, value);
         }
-    VAR(KeyHandler*, next_key_handler, public, public){nullptr};
     protected:
         virtual bool trigger(int code, bool value) = 0;
     };

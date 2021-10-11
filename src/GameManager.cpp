@@ -172,80 +172,24 @@ namespace engine {
     }
 
     void GameManager::register_key_handler(KeyHandler* handler) {
-        if(key_chain == nullptr) {
-            key_chain = handler;
-            return;
-        }
-        auto ptr = key_chain;
-        while(ptr->get_next_key_handler() != nullptr)
-            ptr = ptr->get_next_key_handler();
-        ptr->set_next_key_handler(handler);
+    	if(key_chain == nullptr)
+    		key_chain = handler;
+    	else
+    		key_chain->set_next_handler(handler);
     }
 
     void GameManager::register_mouse_button_handler(MouseButtonHandler* handler) {
-        if(mouse_button_chain == nullptr) {
+        if(mouse_button_chain == nullptr)
             mouse_button_chain = handler;
-            return;
-        }
-        auto ptr = mouse_button_chain;
-        while(ptr->get_next_button_handler() != nullptr)
-            ptr = ptr->get_next_button_handler();
-        ptr->set_next_button_handler(handler);
+        else
+        	mouse_button_chain->set_next_handler(handler);
     }
 
     void GameManager::register_mouse_motion_handler(MouseMotionHandler* handler) {
-        if(mouse_motion_chain == nullptr) {
-            mouse_motion_chain = handler;
-            return;
-        }
-        auto ptr = mouse_motion_chain;
-        while(ptr->get_next_motion_handler() != nullptr)
-            ptr = ptr->get_next_motion_handler();
-        ptr->set_next_motion_handler(handler);
+    	if(mouse_motion_chain == nullptr)
+    		mouse_motion_chain = handler;
+    	else
+    		mouse_motion_chain->set_next_handler(handler);
     }
 
-    void GameManager::unregister_key_handler(KeyHandler *handler) {
-        if(handler == key_chain) {
-            key_chain = key_chain->get_next_key_handler();
-            return;
-        }
-        auto ptr = key_chain;
-        while(ptr != nullptr) {
-            if(ptr->get_next_key_handler() == handler) {
-                ptr->set_next_key_handler(handler->get_next_key_handler());
-                return;
-            }
-            ptr = ptr->get_next_key_handler();
-        }
-    }
-
-    void GameManager::unregister_mouse_button_handler(MouseButtonHandler *handler) {
-        if(handler == mouse_button_chain) {
-            mouse_button_chain = mouse_button_chain->get_next_button_handler();
-            return;
-        }
-        auto ptr = mouse_button_chain;
-        while(ptr != nullptr) {
-            if(ptr->get_next_button_handler() == handler) {
-                ptr->set_next_button_handler(handler->get_next_button_handler());
-                return;
-            }
-            ptr = ptr->get_next_button_handler();
-        }
-    }
-
-    void GameManager::unregister_mouse_motion_handler(MouseMotionHandler *handler) {
-        if(handler == mouse_motion_chain) {
-            mouse_motion_chain = mouse_motion_chain->get_next_motion_handler();
-            return;
-        }
-        auto ptr = mouse_motion_chain;
-        while(ptr != nullptr) {
-            if(ptr->get_next_motion_handler() == handler) {
-                ptr->set_next_motion_handler(handler->get_next_motion_handler());
-                return;
-            }
-            ptr = ptr->get_next_motion_handler();
-        }
-    }
 } // namespace engine

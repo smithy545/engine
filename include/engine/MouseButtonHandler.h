@@ -5,17 +5,16 @@
 #ifndef ENGINE_MOUSEBUTTONHANDLER_H
 #define ENGINE_MOUSEBUTTONHANDLER_H
 
-#include <utils/macros.h>
+#include "InputHandler.h"
 
 
 namespace engine {
-    class MouseButtonHandler {
+	class MouseButtonHandler : public InputHandler<MouseButtonHandler> {
     public:
         void handle(double x, double y, int button, bool value) {
-            if(trigger(x, y, button, value) && m_next_button_handler != nullptr)
-                m_next_button_handler->handle(x, y, button, value);
+            if(trigger(x, y, button, value) && m_next != nullptr)
+            	m_next->handle(x, y, button, value);
         }
-    VAR(MouseButtonHandler*, next_button_handler, public, public){nullptr};
     protected:
         virtual bool trigger(double x, double y, int button, bool value) = 0;
     };

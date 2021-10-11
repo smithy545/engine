@@ -15,15 +15,6 @@ namespace engine {
         std::vector<unsigned int> indices;
         bool visible{true};
     };
-
-    struct ShapeSprite : public Sprite {
-        std::vector<glm::vec3> colors;
-    };
-
-    struct TextureSprite : public Sprite {
-        std::string name;
-        std::vector<glm::vec2> uvs;
-    };
 } // namespace engine
 
 #endif //ENGINE_SPRITE_H
