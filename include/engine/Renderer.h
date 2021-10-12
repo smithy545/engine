@@ -6,6 +6,8 @@
 #define ENGINE_RENDERER_H
 
 #include <entt/entt.hpp>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <string>
@@ -33,20 +35,30 @@ namespace engine {
 
         static void load_shape_sprite(entt::registry &registry, entt::entity entity);
 
-        static void load_texture_sprite(entt::registry &registry, entt::entity entity);
+        void load_texture_sprite(entt::registry &registry, entt::entity entity);
 
         static void update_mesh(entt::registry &registry, entt::entity entity);
 
         static void update_shape_sprite(entt::registry &registry, entt::entity entity);
 
-        static void update_texture_sprite(entt::registry &registry, entt::entity entity);
+        void update_texture_sprite(entt::registry &registry, entt::entity entity);
 
         static void destroy_vao(entt::registry &registry, entt::entity entity);
 
         static void destroy_instances(entt::registry &registry, entt::entity entity);
 
     private:
+    	struct Glyph {
+    		unsigned int tex_id;
+    		glm::ivec2 size;
+    		glm::ivec2 bearing;
+    		long advance;
+    	};
+
         entt::entity m_context_entity;
+        std::map<std::string, unsigned int> m_loaded_textures;
+
+        bool init_fonts();
 
         static bool init_glfw();
 
@@ -56,9 +68,9 @@ namespace engine {
 
         static bool init_shaders(RenderContext &context);
 
-        static void read_config(RenderContext &context, const std::string &filename);
-
         static GLuint load_shader(const char* vertex_source, const char* frag_source);
+
+        static unsigned int load_font(FT_Library ft, const std::string& filepath);
     };
 } // namespace engine
 

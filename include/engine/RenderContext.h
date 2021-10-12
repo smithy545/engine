@@ -18,6 +18,7 @@ namespace engine {
         GLuint color_shader3d;
         GLuint tex_shader2d;
         GLuint tex_shader3d;
+        GLuint text_shader;
         float screen_width;
         float screen_height;
         float fovy;

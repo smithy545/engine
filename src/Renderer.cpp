@@ -23,35 +23,35 @@ namespace engine {
         registry.emplace<RenderContext>(m_context_entity);
     }
 
-    void Renderer::read_config(RenderContext& context, const std::string& filename) {
-        // defaults
+    bool Renderer::init(entt::registry &registry) {
+    	// init config
+        auto& context = registry.get<RenderContext>(m_context_entity);
         context.screen_width = 800;
         context.screen_height = 600;
         context.fovy = 45.0f;
         context.z_near = 0.1f;
         context.z_far = 10000.0f;
+        json requested_textures;
         try {
-            auto config_json = utils::file::read_json_file(filename);
-            if (config_json.contains("width"))
-                context.screen_width = config_json["width"];
-            if (config_json.contains("height"))
-                context.screen_height = config_json["height"];
-            if(config_json.contains("fovy"))
-                context.fovy = config_json["fovy"];
-            if(config_json.contains("z_near"))
-                context.z_near = config_json["z_near"];
-            if(config_json.contains("z_far"))
-                context.z_far = config_json["z_far"];
+        	// load override from config file if available
+        	auto config_json = utils::file::read_json_file("../res/renderer.json");
+        	if (config_json.contains("width"))
+        		context.screen_width = config_json["width"];
+        	if (config_json.contains("height"))
+        		context.screen_height = config_json["height"];
+        	if(config_json.contains("fovy"))
+        		context.fovy = config_json["fovy"];
+        	if(config_json.contains("z_near"))
+        		context.z_near = config_json["z_near"];
+        	if(config_json.contains("z_far"))
+        		context.z_far = config_json["z_far"];
+        	if(config_json.contains("textures"))
+        		requested_textures = config_json["textures"];
         } catch (nlohmann::detail::parse_error& e) {
-            std::cout << "Error reading config file: " << e.what() << std::endl;
+        	std::cout << "Error reading config file: " << e.what() << std::endl;
         }
-    }
 
-    bool Renderer::init(entt::registry &registry) {
-        auto& context = registry.get<RenderContext>(m_context_entity);
-
-        read_config(context, "../res/renderer.json");
-
+        //init subsystems
         if(!init_glfw()) {
             std::cerr << "Failed to init GLFW" << std::endl;
             return false;
@@ -68,6 +68,10 @@ namespace engine {
             std::cerr << "Failed to init shaders" << std::endl;
             return false;
         }
+        if(!init_fonts()) {
+        	std::cerr << "Failed to init fonts" << std::endl;
+        	return false;
+        }
 
         context.camera = nullptr;
 
@@ -77,15 +81,27 @@ namespace engine {
         // enable depth buffer
         glEnable(GL_DEPTH_TEST);
 
+        // enable blending for text transparency
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         // background
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+        // load textures from config
+        for(auto info: requested_textures) {
+        	std::string path = info["filepath"];
+        	std::string name = info["name"];
+        	std::cout << "Loading texture '" << name << "' at '" << path << "'" << std::endl;
+        	m_loaded_textures.insert({name, utils::file::read_png_file_to_texture(path)});
+        }
+
         registry.on_construct<Mesh>().connect<&load_mesh>();
         registry.on_construct<ShapeSprite>().connect<&load_shape_sprite>();
-        registry.on_construct<TextureSprite>().connect<&load_texture_sprite>();
+        registry.on_construct<TextureSprite>().connect<&Renderer::load_texture_sprite>(this);
         registry.on_update<Mesh>().connect<&update_mesh>();
         registry.on_update<ShapeSprite>().connect<&update_shape_sprite>();
-        registry.on_update<TextureSprite>().connect<&update_texture_sprite>();
+        registry.on_update<TextureSprite>().connect<&Renderer::update_texture_sprite>(this);
         registry.on_destroy<VertexArrayObject>().connect<&destroy_vao>();
         registry.on_destroy<InstanceList>().connect<&destroy_instances>();
 
@@ -116,6 +132,18 @@ namespace engine {
         return true;
     }
 
+    bool Renderer::init_fonts() {
+	    FT_Library ft;
+	    if(FT_Init_FreeType(&ft)) {
+    		std::cerr << "Could not initialize FreeType library" << std::endl;
+    		return false;
+    	}
+
+	    FT_Done_FreeType(ft);
+
+    	return true;
+    }
+
     bool Renderer::init_window(RenderContext& context) {
         // Open a window and create its OpenGL context
         context.window = glfwCreateWindow(context.screen_width,
@@ -140,6 +168,8 @@ namespace engine {
         auto tex_vshader_src = utils::file::read_file_to_string("../res/shaders/vert/tex_vert.glsl");
         auto tex_vshader_src2d = utils::file::read_file_to_string("../res/shaders/vert/tex_vert2d.glsl");
         auto tex_fshader_src = utils::file::read_file_to_string("../res/shaders/frag/tex_frag.glsl");
+        auto text_vshader_src = utils::file::read_file_to_string("../res/shaders/vert/text_vert.glsl");
+        auto text_fshader_src = utils::file::read_file_to_string("../res/shaders/frag/text_frag.glsl");
 
         try {
             context.color_shader2d = load_shader(color_vshader_src2d.c_str(), color_fshader_src.c_str());
@@ -164,6 +194,12 @@ namespace engine {
         } catch (std::runtime_error& e) {
             std::cout << "3d texture shader failed to init: " << e.what() << std::endl;
             return false;
+        }
+        try {
+        	context.text_shader = load_shader(text_vshader_src.c_str(), text_fshader_src.c_str());
+        } catch (std::runtime_error& e) {
+        	std::cout << "Text shader failed to init: " << e.what() << std::endl;
+        	return false;
         }
 
         return true;
@@ -323,7 +359,7 @@ namespace engine {
                      GL_STATIC_DRAW);
 
         // texture sampler
-        GLuint tex_id = utils::file::read_png_file_to_texture(sprite.name);
+        GLuint tex_id = m_loaded_textures[sprite.name];
 
         // instance buffer (initially empty)
         GLuint ibo;
@@ -421,7 +457,7 @@ namespace engine {
                      GL_STATIC_DRAW);
 
         // texture sampler
-        vao.tex_id = utils::file::read_png_file_to_texture(sprite.name);
+        vao.tex_id = m_loaded_textures[sprite.name];
 
         glBindVertexArray(0);
     }
@@ -555,4 +591,67 @@ namespace engine {
         glDeleteShader(fragment_shader);
         return shader;
     }
+
+    unsigned int Renderer::load_font(FT_Library ft, const std::string& filepath) {
+    	FT_Face face;
+    	if(FT_New_Face(ft, filepath.c_str(), 0, &face)) {
+    		std::cerr << "Could not initialize font from file at " << filepath << std::endl;
+    		FT_Done_Face(face);
+    		return 0;
+    	}
+    	FT_Set_Pixel_Sizes(face, 0, 48);
+    	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    	std::map<char, Glyph> glyphs;
+    	for(unsigned char c = 0; c < 128; c++) {
+    		if(FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+    			std::cout << "Failed to load glyph '" << c << "'" << std::endl;
+    			FT_Done_Face(face);
+    			return 0;
+    		}
+
+    		unsigned int texture;
+    		glGenTextures(1, &texture);
+    		glBindTexture(GL_TEXTURE_2D, texture);
+    		glTexImage2D(GL_TEXTURE_2D,
+						 0,
+						 GL_RED,
+						 face->glyph->bitmap.width,
+						 face->glyph->bitmap.rows,
+						 0,
+						 GL_RED,
+						 GL_UNSIGNED_BYTE,
+						 face->glyph->bitmap.buffer);
+
+    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    		Glyph glyph{
+    			texture,
+    			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+    			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+    			face->glyph->advance.x
+    		};
+    		glyphs.insert({c, glyph});
+    	}
+
+    	// setup vertex array object
+    	GLuint vao;
+    	glGenVertexArrays(1, &vao);
+    	glBindVertexArray(vao);
+
+    	// verts
+    	GLuint vbo;
+    	glGenBuffers(1, &vbo);
+    	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    	glBufferData(GL_ARRAY_BUFFER, 6 * 4 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    	glEnableVertexAttribArray(0);
+    	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
+    	glBindBuffer(GL_ARRAY_BUFFER, 0);
+    	glBindVertexArray(0);
+
+    	FT_Done_Face(face);
+    	return 1;
+    }
+
 } // namespace engine
