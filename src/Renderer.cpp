@@ -32,6 +32,7 @@ namespace engine {
         context.z_near = 0.1f;
         context.z_far = 10000.0f;
         json requested_textures;
+        json requested_fonts;
         try {
         	// load override from config file if available
         	auto config_json = utils::file::read_json_file("../res/renderer.json");
@@ -47,6 +48,8 @@ namespace engine {
         		context.z_far = config_json["z_far"];
         	if(config_json.contains("textures"))
         		requested_textures = config_json["textures"];
+        	if(config_json.contains("fonts"))
+        		requested_fonts = config_json["fonts"];
         } catch (nlohmann::detail::parse_error& e) {
         	std::cout << "Error reading config file: " << e.what() << std::endl;
         }
@@ -68,23 +71,16 @@ namespace engine {
             std::cerr << "Failed to init shaders" << std::endl;
             return false;
         }
-        if(!init_fonts()) {
+        if(!init_fonts(requested_fonts)) {
         	std::cerr << "Failed to init fonts" << std::endl;
         	return false;
         }
 
         context.camera = nullptr;
-
         // cull triangles facing away from camera
         glEnable(GL_CULL_FACE);
-
         // enable depth buffer
         glEnable(GL_DEPTH_TEST);
-
-        // enable blending for text transparency
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         // background
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -99,9 +95,11 @@ namespace engine {
         registry.on_construct<Mesh>().connect<&load_mesh>();
         registry.on_construct<ShapeSprite>().connect<&load_shape_sprite>();
         registry.on_construct<TextureSprite>().connect<&Renderer::load_texture_sprite>(this);
+        registry.on_construct<TextSprite>().connect<&Renderer::load_text_sprite>();
         registry.on_update<Mesh>().connect<&update_mesh>();
         registry.on_update<ShapeSprite>().connect<&update_shape_sprite>();
         registry.on_update<TextureSprite>().connect<&Renderer::update_texture_sprite>(this);
+        registry.on_update<TextSprite>().connect<&Renderer::update_text_sprite>(this);
         registry.on_destroy<VertexArrayObject>().connect<&destroy_vao>();
         registry.on_destroy<InstanceList>().connect<&destroy_instances>();
 
@@ -132,13 +130,24 @@ namespace engine {
         return true;
     }
 
-    bool Renderer::init_fonts() {
+    bool Renderer::init_fonts(const nlohmann::json& fonts) {
 	    FT_Library ft;
 	    if(FT_Init_FreeType(&ft)) {
     		std::cerr << "Could not initialize FreeType library" << std::endl;
     		return false;
     	}
 
+	    // enable blending for text transparency
+	    glEnable(GL_BLEND);
+	    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	    for(auto font: fonts) {
+	    	auto glyphs = load_font(ft, font["path"], font["size"]);
+	    	if(glyphs.empty())
+	    		std::cerr << "Could not initialize font from '" << font["path"] << "'" << std::endl;
+	    	else
+	    		m_loaded_fonts[font["name"]] = glyphs;
+	    }
 	    FT_Done_FreeType(ft);
 
     	return true;
@@ -392,6 +401,20 @@ namespace engine {
         glBindVertexArray(0);
     }
 
+    void Renderer::load_text_sprite(entt::registry &registry, entt::entity entity) {
+    	GLuint vao, vbo;
+    	glGenVertexArrays(1, &vao);
+    	glGenBuffers(1, &vbo);
+    	glBindVertexArray(vao);
+    	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    	glEnableVertexAttribArray(0);
+    	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    	glBindBuffer(GL_ARRAY_BUFFER, 0);
+    	glBindVertexArray(0);
+    	registry.emplace<VertexArrayObject>(entity, vao, vbo);
+    }
+
     void Renderer::update_mesh(entt::registry &registry, entt::entity entity) {
         auto sizeof_vec3 = sizeof(glm::vec3);
         auto& mesh = registry.get<Mesh>(entity);
@@ -462,15 +485,20 @@ namespace engine {
         glBindVertexArray(0);
     }
 
+    void Renderer::update_text_sprite(entt::registry &registry, entt::entity entity) {}
+
     void Renderer::destroy_vao(entt::registry &registry, entt::entity entity) {
         auto vao = registry.get<VertexArrayObject>(entity);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
-        glDeleteVertexArrays(1, &vao.id);
-        glDeleteBuffers(1, &vao.vbo);
-        glDeleteBuffers(1, &vao.ebo);
+        if(vao.id)
+	        glDeleteVertexArrays(1, &vao.id);
+        if(vao.vbo)
+	        glDeleteBuffers(1, &vao.vbo);
+        if(vao.ebo)
+	        glDeleteBuffers(1, &vao.ebo);
         if(vao.cbo)
             glDeleteBuffers(1, &vao.cbo);
         if(vao.tex_id)
@@ -481,20 +509,19 @@ namespace engine {
 
     void Renderer::destroy_instances(entt::registry &registry, entt::entity entity) {
         auto instances = registry.get<InstanceList>(entity);
-        glDeleteBuffers(1, &instances.id);
+        if(instances.id)
+	        glDeleteBuffers(1, &instances.id);
     }
 
     void Renderer::render(entt::registry &registry) {
         const auto& ctx = registry.get<RenderContext>(m_context_entity);
-        GLint vp_uniform;
         glm::mat4 vp;
         if(ctx.camera != nullptr) {
             // 3D rendering
-            vp_uniform = glGetUniformLocation(ctx.color_shader3d, "VP");
             vp = glm::perspective(ctx.fovy, ctx.screen_width / ctx.screen_height, ctx.z_near, ctx.z_far)
                       * ctx.camera->get_view();
             glUseProgram(ctx.color_shader3d);
-            glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(ctx.color_shader3d, "VP"), 1, GL_FALSE, &vp[0][0]);
             auto view3d = registry.view<VertexArrayObject, InstanceList, Mesh>();
             for (const auto &entity: view3d) {
                 auto[vao, ilist, mesh] = view3d.get(entity);
@@ -507,10 +534,9 @@ namespace engine {
         }
 
         // 2D rendering (TODO: Add occlusion culling to prevent drawing 3D entities that are covered by 2D elements)
-        vp_uniform = glGetUniformLocation(ctx.color_shader2d, "VP");
         vp = glm::ortho(0.f, ctx.screen_width, ctx.screen_height, 0.f);
         glUseProgram(ctx.color_shader2d);
-        glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(ctx.color_shader2d, "VP"), 1, GL_FALSE, &vp[0][0]);
         auto color_view = registry.view<VertexArrayObject, InstanceList, ShapeSprite>();
         for(const auto &entity: color_view) {
             auto [vao, ilist, sprite] = color_view.get(entity);
@@ -520,12 +546,12 @@ namespace engine {
                                         ilist.instances.size());
             }
         }
-        vp_uniform = glGetUniformLocation(ctx.tex_shader2d, "VP");
-        auto tex_uniform  = glGetUniformLocation(ctx.tex_shader2d, "texSampler");
+
+        // texture rendering
         glUseProgram(ctx.tex_shader2d);
-        glUniformMatrix4fv(vp_uniform, 1, GL_FALSE, &vp[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(ctx.tex_shader2d, "VP"), 1, GL_FALSE, &vp[0][0]);
+        glUniform1i(glGetUniformLocation(ctx.tex_shader2d, "texSampler"), 0);
         glActiveTexture(GL_TEXTURE0);
-        glUniform1i(tex_uniform, 0);
         auto tex_view = registry.view<VertexArrayObject, InstanceList, TextureSprite>();
         for(const auto &entity: tex_view) {
             auto [vao, ilist, sprite] = tex_view.get(entity);
@@ -534,8 +560,63 @@ namespace engine {
                 glBindTexture(GL_TEXTURE_2D, vao.tex_id);
                 glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
                                         ilist.instances.size());
+                glBindTexture(GL_TEXTURE_2D, 0);
+                glBindVertexArray(0);
             }
         }
+
+        // text rendering
+        glUseProgram(ctx.text_shader);
+        glUniformMatrix4fv(glGetUniformLocation(ctx.text_shader, "VP"), 1, GL_FALSE, &vp[0][0]);
+        glUniform1i(glGetUniformLocation(ctx.text_shader, "texSampler"), 0);
+        auto text_view = registry.view<VertexArrayObject, TextSprite>();
+        for(const auto &entity: text_view) {
+        	auto [vao, sprite] = text_view.get(entity);
+        	if(sprite.visible) {
+        		if(!m_loaded_fonts.contains(sprite.font))
+        			std::cerr << "Can't render sprite with unloaded font '" << sprite.font << "'" << std::endl;
+        		else {
+        			glUniform3f(glGetUniformLocation(ctx.text_shader, "textColor"),
+								sprite.color.x, sprite.color.y, sprite.color.z);
+        			auto x = sprite.x;
+        			for(std::string::const_iterator c = sprite.text.begin(); c != sprite.text.end(); c++) {
+        				if(!m_loaded_fonts[sprite.font].contains(*c)) {
+        					std::cerr << "Todo: add 404 texture. Error on '" << *c << "'"<< std::endl;
+        					continue;
+        				}
+        				auto glyph = m_loaded_fonts[sprite.font][*c];
+        				float xpos = x + glyph.bearing.x * sprite.scale;
+        				float ypos = sprite.y - (glyph.size.y - glyph.bearing.y) * sprite.scale;
+
+        				float w = glyph.size.x * sprite.scale;
+        				float h = glyph.size.y * sprite.scale;
+        				// update VBO for each character
+        				float vertices[6][4] = {
+        						{ xpos,     ypos - h,   0.0f, 0.0f },
+        						{ xpos,     ypos,       0.0f, 1.0f },
+        						{ xpos + w, ypos,       1.0f, 1.0f },
+        						{ xpos,     ypos - h,   0.0f, 0.0f },
+        						{ xpos + w, ypos,       1.0f, 1.0f },
+        						{ xpos + w, ypos - h,   1.0f, 0.0f }
+        				};
+        				glBindVertexArray(vao.id);
+        				// render glyph texture over quad
+        				glBindTexture(GL_TEXTURE_2D, glyph.tex_id);
+        				// update content of VBO memory
+        				glBindBuffer(GL_ARRAY_BUFFER, vao.vbo);
+        				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        				glBindBuffer(GL_ARRAY_BUFFER, 0);
+        				// render quad
+        				glDrawArrays(GL_TRIANGLES, 0, 6);
+        				// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+        				x += (glyph.advance >> 6) * sprite.scale; // bitshift by 6 to get value in pixels (2^6 = 64)
+        				glBindTexture(GL_TEXTURE_2D, 0);
+        				glBindVertexArray(0);
+        			}
+        		}
+        	}
+        }
+        glUseProgram(0);
     }
 
     void Renderer::cleanup(entt::registry &registry) {
@@ -544,6 +625,7 @@ namespace engine {
         glDeleteProgram(ctx.color_shader3d);
         glDeleteProgram(ctx.tex_shader2d);
         glDeleteProgram(ctx.tex_shader3d);
+        glDeleteProgram(ctx.text_shader);
         glfwTerminate();
     }
 
@@ -581,6 +663,7 @@ namespace engine {
         glAttachShader(shader, vertex_shader);
         glAttachShader(shader, fragment_shader);
         glLinkProgram(shader);
+        glValidateProgram(shader);
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(shader, 512, nullptr, infoLog);
@@ -592,66 +675,60 @@ namespace engine {
         return shader;
     }
 
-    unsigned int Renderer::load_font(FT_Library ft, const std::string& filepath) {
+    std::map<unsigned long, Renderer::Glyph> Renderer::load_font(FT_Library ft,
+					   const std::string& fontfile,
+					   unsigned int font_size,
+					   const std::string& text) {
+    	std::cout << "Loading font at '" << fontfile << "'" << std::endl;
     	FT_Face face;
-    	if(FT_New_Face(ft, filepath.c_str(), 0, &face)) {
-    		std::cerr << "Could not initialize font from file at " << filepath << std::endl;
+    	if(FT_New_Face(ft, fontfile.c_str(), 0, &face)) {
+    		std::cerr << "Could not initialize font from file at " << fontfile << std::endl;
     		FT_Done_Face(face);
-    		return 0;
+    		return {};
     	}
-    	FT_Set_Pixel_Sizes(face, 0, 48);
-    	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    	std::map<char, Glyph> glyphs;
-    	for(unsigned char c = 0; c < 128; c++) {
-    		if(FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-    			std::cout << "Failed to load glyph '" << c << "'" << std::endl;
-    			FT_Done_Face(face);
-    			return 0;
-    		}
+        // set size to load glyphs as
+        FT_Set_Pixel_Sizes(face, 0, font_size);
 
-    		unsigned int texture;
-    		glGenTextures(1, &texture);
-    		glBindTexture(GL_TEXTURE_2D, texture);
-    		glTexImage2D(GL_TEXTURE_2D,
-						 0,
-						 GL_RED,
-						 face->glyph->bitmap.width,
-						 face->glyph->bitmap.rows,
-						 0,
-						 GL_RED,
-						 GL_UNSIGNED_BYTE,
-						 face->glyph->bitmap.buffer);
+        // disable byte-alignment restriction
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    		Glyph glyph{
-    			texture,
-    			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-    			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-    			face->glyph->advance.x
-    		};
-    		glyphs.insert({c, glyph});
-    	}
-
-    	// setup vertex array object
-    	GLuint vao;
-    	glGenVertexArrays(1, &vao);
-    	glBindVertexArray(vao);
-
-    	// verts
-    	GLuint vbo;
-    	glGenBuffers(1, &vbo);
-    	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    	glBufferData(GL_ARRAY_BUFFER, 6 * 4 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-    	glEnableVertexAttribArray(0);
-    	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
-    	glBindBuffer(GL_ARRAY_BUFFER, 0);
-    	glBindVertexArray(0);
-
+        std::map<unsigned long, Glyph> glyphs;
+        for (unsigned char c: text) {
+        	if(glyphs.contains(c))
+        		continue;
+            if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+                std::cout << "ERROR::FREETYTPE: Failed to load Glyph '" << c << "'" << std::endl;
+                continue;
+            }
+            // generate texture
+            unsigned int texture;
+            glGenTextures(1, &texture);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexImage2D(
+            		GL_TEXTURE_2D,
+            		0,
+            		GL_RED,
+                    face->glyph->bitmap.width,
+                    face->glyph->bitmap.rows,
+                    0,
+                    GL_RED,
+                    GL_UNSIGNED_BYTE,
+                    face->glyph->bitmap.buffer);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            Glyph glyph = {
+                    texture,
+                    glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+                    glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+                    static_cast<unsigned int>(face->glyph->advance.x)
+            };
+            glyphs.insert({c, glyph});
+        }
+        glBindTexture(GL_TEXTURE_2D, 0);
+    	// destroy FreeType once we're finished
     	FT_Done_Face(face);
-    	return 1;
+    	return glyphs;
     }
-
 } // namespace engine

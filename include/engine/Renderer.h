@@ -10,10 +10,12 @@
 #include FT_FREETYPE_H
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <utils/macros.h>
 
 #include "RenderContext.h"
+#include "sprite/TextSprite.h"
 
 
 namespace engine {
@@ -37,11 +39,15 @@ namespace engine {
 
         void load_texture_sprite(entt::registry &registry, entt::entity entity);
 
+        static void load_text_sprite(entt::registry &registry, entt::entity entity);
+
         static void update_mesh(entt::registry &registry, entt::entity entity);
 
         static void update_shape_sprite(entt::registry &registry, entt::entity entity);
 
         void update_texture_sprite(entt::registry &registry, entt::entity entity);
+
+        void update_text_sprite(entt::registry &registry, entt::entity entity);
 
         static void destroy_vao(entt::registry &registry, entt::entity entity);
 
@@ -57,8 +63,9 @@ namespace engine {
 
         entt::entity m_context_entity;
         std::map<std::string, unsigned int> m_loaded_textures;
+        std::map<std::string, std::map<unsigned long, Glyph>> m_loaded_fonts;
 
-        bool init_fonts();
+        bool init_fonts(const nlohmann::json& fonts);
 
         static bool init_glfw();
 
@@ -70,8 +77,11 @@ namespace engine {
 
         static GLuint load_shader(const char* vertex_source, const char* frag_source);
 
-        static unsigned int load_font(FT_Library ft, const std::string& filepath);
+        static std::map<unsigned long, Glyph> load_font(FT_Library ft, const std::string& fontfile, unsigned int font_size,
+														const std::string& text = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,?!-:!@#$%^&*()_+|~");
     };
+
+
 } // namespace engine
 
 #endif //ENGINE_RENDERER_H

@@ -49,11 +49,7 @@ namespace engine {
             registry.patch<InstanceList>(m_entity, [](auto &instance_list) {
                 instance_list.add_instance(glm::mat4(1));
             });
-            return entt::null;
-        }
-
-        void deregister(entt::registry& registry) override {
-            registry.destroy(m_entity);
+            return m_entity;
         }
 
         void handle(MouseButtonEvent& event, InterfaceView& emitter) override {

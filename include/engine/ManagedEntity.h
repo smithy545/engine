@@ -12,7 +12,9 @@ namespace engine {
     struct ManagedEntity {
         virtual entt::entity register_with(entt::registry& registry) = 0;
 
-        virtual void deregister(entt::registry& registry) = 0;
+        virtual void deregister(entt::registry& registry) {
+        	registry.destroy(get_entity());
+        }
 
         virtual entt::entity get_entity() = 0;
     };

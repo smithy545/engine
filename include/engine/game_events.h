@@ -9,6 +9,8 @@
 
 
 namespace engine {
+	struct NoopEvent {};
+
     struct CameraMoveEvent {
         const Camera::Ptr& camera;
     };

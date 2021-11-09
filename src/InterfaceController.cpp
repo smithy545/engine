@@ -17,7 +17,7 @@ namespace engine {
     InterfaceController::InterfaceController(entt::registry &registry, Renderer &renderer)
     : IndependentEntity(registry), renderer(renderer), context(renderer.get_context(registry)) {}
 
-    void InterfaceController::update() {
+    void InterfaceController::tick() {
         if(m_state != nullptr)
             m_state->update(context);
         if(m_prev_state != nullptr)

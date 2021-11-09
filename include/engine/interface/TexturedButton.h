@@ -14,8 +14,6 @@
 
 
 namespace engine {
-	struct NoopEvent {};
-
 	template <typename ActivationEvent, typename DownEvent = NoopEvent>
 	class TexturedButton : public ButtonBase<DownEvent, ActivationEvent> {
 	public:
@@ -55,7 +53,7 @@ namespace engine {
 			registry.patch<InstanceList>(this->m_entity, [](auto &instance_list) {
 				instance_list.add_instance(glm::mat4(1));
 			});
-			return entt::null;
+			return this->m_entity;
 		}
 
 		ActivationEvent* build_up_event(MouseButtonEvent& event, InterfaceView& emitter) override {

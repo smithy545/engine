@@ -16,8 +16,8 @@ namespace engine {
 
     void InterfaceView::update(const RenderContext& context) {
         for(auto [pos, element]: m_elements) {
-            if(auto* updatable = dynamic_cast<UpdateEntity*>(element.get()))
-                updatable->update();
+            if(auto* updatable = dynamic_cast<TickableEntity*>(element.get()))
+	            updatable->tick();
         }
     }
 

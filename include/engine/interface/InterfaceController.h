@@ -13,26 +13,28 @@
 #include <utils/macros.h>
 #include <vector>
 
+#include <engine/IndependentEntity.h>
 #include <engine/KeyHandler.h>
 #include <engine/MouseButtonHandler.h>
 #include <engine/MouseMotionHandler.h>
 #include <engine/RenderContext.h>
 #include <engine/Renderer.h>
-#include <engine/UpdateEntity.h>
+#include <engine/TickableEntity.h>
 
 #include "InterfaceView.h"
 
 
 namespace engine {
     class InterfaceController :
-            public UpdateEntity,
+    		public IndependentEntity,
+            public TickableEntity,
             public KeyHandler,
             public MouseButtonHandler,
             public MouseMotionHandler {
     public:
         InterfaceController(entt::registry &registry, Renderer &renderer);
 
-        void update() override;
+        void tick() override;
 
         void set_state(InterfaceView::Ptr state);
 
