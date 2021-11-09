@@ -9,7 +9,6 @@
 #include <engine/mesh/Mesh.h>
 #include <engine/sprite/ShapeSprite.h>
 #include <engine/sprite/TextureSprite.h>
-#include <engine/VertexArrayObject.h>
 #include <fmt/format.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -99,7 +98,7 @@ namespace engine {
         registry.on_update<Mesh>().connect<&update_mesh>();
         registry.on_update<ShapeSprite>().connect<&update_shape_sprite>();
         registry.on_update<TextureSprite>().connect<&Renderer::update_texture_sprite>(this);
-        registry.on_update<TextSprite>().connect<&Renderer::update_text_sprite>(this);
+        registry.on_update<TextSprite>().connect<&Renderer::update_text_sprite>( );
         registry.on_destroy<VertexArrayObject>().connect<&destroy_vao>();
         registry.on_destroy<InstanceList>().connect<&destroy_instances>();
 
@@ -217,32 +216,28 @@ namespace engine {
     void Renderer::load_mesh(entt::registry &registry, entt::entity entity) {
         auto sizeof_vec4 = sizeof(glm::vec4);
         auto sizeof_vec3 = sizeof(glm::vec3);
-        auto mesh = registry.get<Mesh>(entity);
+        auto& mesh = registry.get<Mesh>(entity);
         // setup vertex array object
-        GLuint vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        glGenVertexArrays(1, &mesh.vao);
+        glBindVertexArray(mesh.vao);
 
         // verts
-        GLuint vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glGenBuffers(1, &mesh.vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.vertices.size(), &mesh.vertices[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         // colors
-        GLuint cbo;
-        glGenBuffers(1, &cbo);
-        glBindBuffer(GL_ARRAY_BUFFER, cbo);
+        glGenBuffers(1, &mesh.cbo);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.cbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.colors.size(), &mesh.colors[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         // indices
-        GLuint ebo;
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glGenBuffers(1, &mesh.ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh.indices.size(), &mesh.indices[0],
                      GL_STATIC_DRAW);
 
@@ -262,47 +257,35 @@ namespace engine {
         glVertexAttribDivisor(3, 1);
         glVertexAttribDivisor(4, 1);
         glVertexAttribDivisor(5, 1);
-
-        registry.emplace<VertexArrayObject>(
-                entity, // id
-                vao, // Vertex Array Object
-                vbo, // Vertex Buffer Object
-                ebo, // Element Buffer Object
-                static_cast<unsigned int>(mesh.indices.size()), // Number of indices
-                cbo // Color Buffer Object
-        );
+        mesh.num_indices = mesh.indices.size();
         registry.emplace<InstanceList>(entity, ibo);
         glBindVertexArray(0);
     }
 
     void Renderer::load_shape_sprite(entt::registry &registry, entt::entity entity) {
         auto sizeof_vec4 = sizeof(glm::vec4);
-        auto sprite = registry.get<ShapeSprite>(entity);
+        auto& sprite = registry.get<ShapeSprite>(entity);
         // setup vertex array object
-        GLuint vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        glGenVertexArrays(1, &sprite.vao);
+        glBindVertexArray(sprite.vao);
 
         // verts
-        GLuint vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glGenBuffers(1, &sprite.vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         // colors
-        GLuint cbo;
-        glGenBuffers(1, &cbo);
-        glBindBuffer(GL_ARRAY_BUFFER, cbo);
+        glGenBuffers(1, &sprite.cbo);
+        glBindBuffer(GL_ARRAY_BUFFER, sprite.cbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * sprite.colors.size(), &sprite.colors[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         // indices
-        GLuint ebo;
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glGenBuffers(1, &sprite.ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
                      GL_STATIC_DRAW);
 
@@ -322,53 +305,41 @@ namespace engine {
         glVertexAttribDivisor(3, 1);
         glVertexAttribDivisor(4, 1);
         glVertexAttribDivisor(5, 1);
-
-        registry.emplace<VertexArrayObject>(
-                entity, // id
-                vao, // Vertex Array Object
-                vbo, // Vertex Buffer Object
-                ebo, // Element Buffer Object
-                static_cast<unsigned int>(sprite.indices.size()), // Number of indices
-                cbo // Color Buffer Object
-        );
-        registry.emplace<InstanceList>(entity, ibo);
         glBindVertexArray(0);
+        sprite.num_indices = sprite.indices.size();
+		registry.emplace<InstanceList>(entity, ibo);
     }
 
     void Renderer::load_texture_sprite(entt::registry &registry, entt::entity entity) {
         auto sizeof_vec2 = sizeof(glm::vec2);
         auto sizeof_vec4 = sizeof(glm::vec4);
-        auto sprite = registry.get<TextureSprite>(entity);
+        auto& sprite = registry.get<TextureSprite>(entity);
         // setup vertex array object
-        GLuint vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        glGenVertexArrays(1, &sprite.vao);
+        glBindVertexArray(sprite.vao);
 
         // verts
-        GLuint vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glGenBuffers(1, &sprite.vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         // uvs
-        GLuint uvs;
-        glGenBuffers(1, &uvs);
-        glBindBuffer(GL_ARRAY_BUFFER, uvs);
+        glGenBuffers(1, &sprite.tex_uvs);
+        glBindBuffer(GL_ARRAY_BUFFER, sprite.tex_uvs);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.uvs.size(), &sprite.uvs[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         // indices
-        GLuint ebo;
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glGenBuffers(1, &sprite.ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
                      GL_STATIC_DRAW);
 
         // texture sampler
-        GLuint tex_id = m_loaded_textures[sprite.name];
+        sprite.tex_id = m_loaded_textures[sprite.name];
 
         // instance buffer (initially empty)
         GLuint ibo;
@@ -386,54 +357,38 @@ namespace engine {
         glVertexAttribDivisor(3, 1);
         glVertexAttribDivisor(4, 1);
         glVertexAttribDivisor(5, 1);
-
-        registry.emplace<VertexArrayObject>(
-                entity, // id
-                vao, // Vertex Array Object
-                vbo, // Vertex Buffer Object
-                ebo, // Element Buffer Object
-                static_cast<unsigned int>(sprite.indices.size()), // Number of indices
-                static_cast<unsigned int>(0), // Color Buffer Object
-                tex_id, // texture object
-                uvs // texture uv buffer
-        );
-        registry.emplace<InstanceList>(entity, ibo);
         glBindVertexArray(0);
+        sprite.num_indices = sprite.indices.size();
+        registry.emplace<InstanceList>(entity, ibo);
     }
 
     void Renderer::load_text_sprite(entt::registry &registry, entt::entity entity) {
-    	GLuint vao, vbo;
-    	glGenVertexArrays(1, &vao);
-    	glGenBuffers(1, &vbo);
-    	glBindVertexArray(vao);
-    	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    	auto& sprite = registry.get<TextSprite>(entity);
+    	glGenVertexArrays(1, &sprite.vao);
+    	glGenBuffers(1, &sprite.vbo);
+    	glBindVertexArray(sprite.vao);
+    	glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
+    	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
     	glEnableVertexAttribArray(0);
-    	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     	glBindBuffer(GL_ARRAY_BUFFER, 0);
     	glBindVertexArray(0);
-    	registry.emplace<VertexArrayObject>(entity, vao, vbo);
     }
 
     void Renderer::update_mesh(entt::registry &registry, entt::entity entity) {
         auto sizeof_vec3 = sizeof(glm::vec3);
         auto& mesh = registry.get<Mesh>(entity);
-        auto& vao = registry.get<VertexArrayObject>(entity);
-        glBindVertexArray(vao.id);
-
+        glBindVertexArray(mesh.vao);
         // verts
-        glBindBuffer(GL_ARRAY_BUFFER, vao.vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.vertices.size(), &mesh.vertices[0], GL_STATIC_DRAW);
-
         // colors
-        glBindBuffer(GL_ARRAY_BUFFER, vao.cbo);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.cbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.colors.size(), &mesh.colors[0], GL_STATIC_DRAW);
-
         // indices
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vao.ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh.indices.size(), &mesh.indices[0],
                      GL_STATIC_DRAW);
-
         glBindVertexArray(0);
     }
 
@@ -441,47 +396,36 @@ namespace engine {
         auto sizeof_vec3 = sizeof(glm::vec3);
         auto sizeof_vec2 = sizeof(glm::vec2);
         auto& sprite = registry.get<ShapeSprite>(entity);
-        auto& vao = registry.get<VertexArrayObject>(entity);
-        glBindVertexArray(vao.id);
-
+        glBindVertexArray(sprite.vao);
         // verts
-        glBindBuffer(GL_ARRAY_BUFFER, vao.vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
-
         // colors
-        glBindBuffer(GL_ARRAY_BUFFER, vao.cbo);
+        glBindBuffer(GL_ARRAY_BUFFER, sprite.cbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * sprite.colors.size(), &sprite.colors[0], GL_STATIC_DRAW);
-
         // indices
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vao.ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
                      GL_STATIC_DRAW);
-
         glBindVertexArray(0);
     }
 
     void Renderer::update_texture_sprite(entt::registry &registry, entt::entity entity) {
         auto sizeof_vec2 = sizeof(glm::vec2);
         auto& sprite = registry.get<TextureSprite>(entity);
-        auto& vao = registry.get<VertexArrayObject>(entity);
-        glBindVertexArray(vao.id);
-
+        glBindVertexArray(sprite.vao);
         // verts
-        glBindBuffer(GL_ARRAY_BUFFER, vao.vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
-
         // uvs
-        glBindBuffer(GL_ARRAY_BUFFER, vao.tex_uvs);
+        glBindBuffer(GL_ARRAY_BUFFER, sprite.tex_uvs);
         glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.uvs.size(), &sprite.uvs[0], GL_STATIC_DRAW);
-
         // indices
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vao.ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
                      GL_STATIC_DRAW);
-
         // texture sampler
-        vao.tex_id = m_loaded_textures[sprite.name];
-
+        sprite.tex_id = m_loaded_textures[sprite.name];
         glBindVertexArray(0);
     }
 
@@ -492,9 +436,8 @@ namespace engine {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-
-        if(vao.id)
-	        glDeleteVertexArrays(1, &vao.id);
+        if(vao.vao)
+	        glDeleteVertexArrays(1, &vao.vao);
         if(vao.vbo)
 	        glDeleteBuffers(1, &vao.vbo);
         if(vao.ebo)
@@ -522,12 +465,12 @@ namespace engine {
                       * ctx.camera->get_view();
             glUseProgram(ctx.color_shader3d);
             glUniformMatrix4fv(glGetUniformLocation(ctx.color_shader3d, "VP"), 1, GL_FALSE, &vp[0][0]);
-            auto view3d = registry.view<VertexArrayObject, InstanceList, Mesh>();
+            auto view3d = registry.view<Mesh, InstanceList>();
             for (const auto &entity: view3d) {
-                auto[vao, ilist, mesh] = view3d.get(entity);
+            	auto[mesh, ilist] = view3d.get(entity);
                 if (mesh.visible) {
-                    glBindVertexArray(vao.id);
-                    glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
+                	glBindVertexArray(mesh.vao);
+                	glDrawElementsInstanced(ilist.render_strategy, mesh.num_indices, GL_UNSIGNED_INT, 0,
                                             ilist.instances.size());
                 }
             }
@@ -537,12 +480,12 @@ namespace engine {
         vp = glm::ortho(0.f, ctx.screen_width, ctx.screen_height, 0.f);
         glUseProgram(ctx.color_shader2d);
         glUniformMatrix4fv(glGetUniformLocation(ctx.color_shader2d, "VP"), 1, GL_FALSE, &vp[0][0]);
-        auto color_view = registry.view<VertexArrayObject, InstanceList, ShapeSprite>();
+        auto color_view = registry.view<ShapeSprite, InstanceList>();
         for(const auto &entity: color_view) {
-            auto [vao, ilist, sprite] = color_view.get(entity);
+        	auto [sprite, ilist] = color_view.get(entity);
             if(sprite.visible) {
-                glBindVertexArray(vao.id);
-                glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
+            	glBindVertexArray(sprite.vao);
+                glDrawElementsInstanced(ilist.render_strategy, sprite.num_indices, GL_UNSIGNED_INT, 0,
                                         ilist.instances.size());
             }
         }
@@ -551,14 +494,13 @@ namespace engine {
         glUseProgram(ctx.tex_shader2d);
         glUniformMatrix4fv(glGetUniformLocation(ctx.tex_shader2d, "VP"), 1, GL_FALSE, &vp[0][0]);
         glUniform1i(glGetUniformLocation(ctx.tex_shader2d, "texSampler"), 0);
-        glActiveTexture(GL_TEXTURE0);
-        auto tex_view = registry.view<VertexArrayObject, InstanceList, TextureSprite>();
+        auto tex_view = registry.view<TextureSprite, InstanceList>();
         for(const auto &entity: tex_view) {
-            auto [vao, ilist, sprite] = tex_view.get(entity);
+        	auto [sprite, ilist] = tex_view.get(entity);
             if(sprite.visible) {
-                glBindVertexArray(vao.id);
-                glBindTexture(GL_TEXTURE_2D, vao.tex_id);
-                glDrawElementsInstanced(ilist.render_strategy, vao.num_indices, GL_UNSIGNED_INT, 0,
+            	glBindVertexArray(sprite.vao);
+            	glBindTexture(GL_TEXTURE_2D, sprite.tex_id);
+            	glDrawElementsInstanced(ilist.render_strategy, sprite.num_indices, GL_UNSIGNED_INT, 0,
                                         ilist.instances.size());
                 glBindTexture(GL_TEXTURE_2D, 0);
                 glBindVertexArray(0);
@@ -569,9 +511,9 @@ namespace engine {
         glUseProgram(ctx.text_shader);
         glUniformMatrix4fv(glGetUniformLocation(ctx.text_shader, "VP"), 1, GL_FALSE, &vp[0][0]);
         glUniform1i(glGetUniformLocation(ctx.text_shader, "texSampler"), 0);
-        auto text_view = registry.view<VertexArrayObject, TextSprite>();
+        auto text_view = registry.view<TextSprite>();
         for(const auto &entity: text_view) {
-        	auto [vao, sprite] = text_view.get(entity);
+        	auto [sprite] = text_view.get(entity);
         	if(sprite.visible) {
         		if(!m_loaded_fonts.contains(sprite.font))
         			std::cerr << "Can't render sprite with unloaded font '" << sprite.font << "'" << std::endl;
@@ -599,11 +541,11 @@ namespace engine {
         						{ xpos + w, ypos,       1.0f, 1.0f },
         						{ xpos + w, ypos - h,   1.0f, 0.0f }
         				};
-        				glBindVertexArray(vao.id);
+        				glBindVertexArray(sprite.vao);
         				// render glyph texture over quad
         				glBindTexture(GL_TEXTURE_2D, glyph.tex_id);
         				// update content of VBO memory
-        				glBindBuffer(GL_ARRAY_BUFFER, vao.vbo);
+        				glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
         				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
         				glBindBuffer(GL_ARRAY_BUFFER, 0);
         				// render quad

@@ -47,7 +47,7 @@ namespace engine {
 
         void update_texture_sprite(entt::registry &registry, entt::entity entity);
 
-        void update_text_sprite(entt::registry &registry, entt::entity entity);
+        static void update_text_sprite(entt::registry &registry, entt::entity entity);
 
         static void destroy_vao(entt::registry &registry, entt::entity entity);
 

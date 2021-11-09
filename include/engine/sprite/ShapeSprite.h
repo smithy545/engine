@@ -10,7 +10,9 @@
 
 namespace engine {
 	struct ShapeSprite : public Sprite {
-		std::vector<glm::vec3> colors;
+		ShapeSprite() = default;
+
+		std::vector<glm::vec3> colors{};
 	};
 } // namespace engine
 

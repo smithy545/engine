@@ -9,7 +9,7 @@
 
 namespace engine {
     struct VertexArrayObject {
-        GLuint id{0};
+        GLuint vao{0};
         GLuint vbo{0};
         GLuint ebo{0};
         unsigned int num_indices{0};
