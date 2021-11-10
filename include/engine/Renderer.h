@@ -2,79 +2,85 @@
 // Created by Philip Smith on 10/17/2020.
 //
 
-#ifndef CIVILWAR_RENDERER_H
-#define CIVILWAR_RENDERER_H
+#ifndef ENGINE_RENDERER_H
+#define ENGINE_RENDERER_H
 
-#include <glm/ext.hpp>
+#include <engine/Camera.h>
+#include <entt/entt.hpp>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <nlohmann/json.hpp>
 #include <string>
-#include <unordered_map>
 #include <utils/macros.h>
 
-#include "Scene.h"
+#include "RenderContext.h"
+#include "sprite/TextSprite.h"
 
 
-class Renderer {
-public:
-    struct Camera {
-        glm::vec3 position{0, 0, 0};
-        glm::vec3 forward{0, 0, 1};
-        glm::vec3 up{0, 1, 0};
-        float scale{1.0f};
+namespace engine {
+    class Renderer {
+    public:
+        explicit Renderer(entt::registry &registry);
+
+        bool init(entt::registry &registry);
+
+        void render(entt::registry &registry, const Camera::Ptr& camera);
+
+        void cleanup(entt::registry &registry);
+
+        const RenderContext& get_context(entt::registry &registry) const;
+
+        static void load_mesh(entt::registry &registry, entt::entity entity);
+
+        static void load_shape_sprite(entt::registry &registry, entt::entity entity);
+
+        void load_texture_sprite(entt::registry &registry, entt::entity entity);
+
+        static void load_text_sprite(entt::registry &registry, entt::entity entity);
+
+        static void update_mesh(entt::registry &registry, entt::entity entity);
+
+        static void update_shape_sprite(entt::registry &registry, entt::entity entity);
+
+        void update_texture_sprite(entt::registry &registry, entt::entity entity);
+
+        static void update_text_sprite(entt::registry &registry, entt::entity entity);
+
+        static void destroy_vao(entt::registry &registry, entt::entity entity);
+
+        static void destroy_instances(entt::registry &registry, entt::entity entity);
+
+    private:
+    	struct Glyph {
+    		unsigned int tex_id;
+    		glm::ivec2 size;
+    		glm::ivec2 bearing;
+    		long advance;
+    	};
+
+        entt::entity m_context_entity;
+        std::map<std::string, unsigned int> m_loaded_textures;
+        std::map<std::string, std::map<unsigned long, Glyph>> m_loaded_fonts;
+
+        bool init_fonts(const nlohmann::json& fonts);
+
+        static bool init_glfw();
+
+        static bool init_glew();
+
+        static bool init_window(RenderContext &context);
+
+        static bool init_shaders(RenderContext &context);
+
+        static GLuint load_shader(const char* vertex_source, const char* frag_source);
+
+        static std::map<unsigned long, Glyph> load_font(FT_Library ft, const std::string& fontfile, unsigned int font_size,
+														const std::string& text = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,?!-:!@#$%^&*()_+|~");
     };
 
-    struct VertexArrayObject {
-        GLuint vao;
-        GLuint vbo;
-        GLuint cbo;
-        GLuint ebo;
-        Scene::InstanceList::RenderStrategy strategy;
-        unsigned int num_indices;
-        unsigned int num_instances;
-    };
 
-    bool init(int width, int height);
+} // namespace engine
 
-    void render_current_scene();
-
-    void load_scene(const Scene &scene);
-
-    void resize(int width, int height);
-
-    void cleanup();
-
-    void pan_horizontal(float diff);
-
-    void pan_vertical(float diff);
-
-    void move_forward();
-
-    void move_backward();
-
-    void move_left();
-
-    void move_right();
-
-    void move_up();
-
-    void move_down();
-
-private:
-    float screen_width, screen_height;
-    Camera camera;
-    GLuint current_shader;
-    std::unordered_map<std::string, VertexArrayObject> vaos;
-
-    bool init_window(int width, int height);
-
-    bool init_glfw();
-
-    bool init_glew();
-
-    bool init_shaders();
-VAR_GET(GLFWwindow*, window, public);
-};
-
-
-#endif //CIVILWAR_RENDERER_H
+#endif //ENGINE_RENDERER_H
