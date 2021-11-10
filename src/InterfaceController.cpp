@@ -4,9 +4,6 @@
 
 #include <engine/interface/InterfaceController.h>
 
-#include <engine/RenderContext.h>
-#include <engine/GameManager.h>
-
 #include <utility>
 
 
@@ -14,24 +11,26 @@ using namespace entt::literals;
 namespace fs = std::filesystem;
 
 namespace engine {
-    InterfaceController::InterfaceController(entt::registry &registry, Renderer &renderer)
-    : IndependentEntity(registry), renderer(renderer), context(renderer.get_context(registry)) {}
+    InterfaceController::InterfaceController(entt::registry &registry, const RenderContext& context)
+    : IndependentEntity(registry), m_context(context) {}
 
     void InterfaceController::tick() {
         if(m_state != nullptr)
-            m_state->update(context);
-        if(m_prev_state != nullptr)
-            m_prev_state = nullptr;
+            m_state->tick();
     }
 
     void InterfaceController::set_state(InterfaceView::Ptr state) {
         m_prev_state = std::move(m_state);
         m_state = std::move(state);
-        m_state->load(context);
+        m_state->load(m_context);
     }
 
     void InterfaceController::set_camera(Camera::Ptr camera) {
-        renderer.set_camera(registry, std::move(camera));
+        m_camera = std::move(camera);
+    }
+
+    Camera::Ptr InterfaceController::get_camera() {
+		return m_camera;
     }
 
     bool InterfaceController::trigger(double scroll_delta) {

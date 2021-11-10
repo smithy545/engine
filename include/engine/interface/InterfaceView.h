@@ -17,6 +17,7 @@
 #include <engine/IndependentEntity.h>
 #include <engine/input_events.h>
 #include <engine/RenderContext.h>
+#include <engine/Tickable.h>
 
 #include "InterfaceElement.h"
 
@@ -32,17 +33,18 @@ namespace engine {
         public InterfaceElement,
         public IndependentEntity,
         public Collidable,
-        public entt::emitter<InterfaceView> {
+        public entt::emitter<InterfaceView>,
+        public Tickable {
     public:
         PTR(InterfaceView);
 
         InterfaceView(InterfaceController& controller, entt::registry& registry);
 
-        virtual void update(const RenderContext& context);
-
         virtual void load(const RenderContext& context) = 0;
 
         virtual void unload();
+
+	    void tick() override;
 
         glm::vec2 get_center() override;
 
@@ -58,14 +60,13 @@ namespace engine {
 
         entt::registry& get_registry();
     protected:
-        void set_camera(Camera::Ptr camera);
+        InterfaceController& m_controller;
     private:
         static const int QUADTREE_MAX_DEPTH{4};
         static const int QUADTREE_BUCKET_SIZE{10};
         std::vector<Point_2> m_element_positions;
         std::unordered_map<std::string, InterfaceElement::Ptr> m_elements;
         std::shared_ptr<Quadtree> m_collision_tree{nullptr};
-        InterfaceController& m_controller;
 
         static std::string point_key(double x, double y) {
             return fmt::format("{}:{}", x, y);

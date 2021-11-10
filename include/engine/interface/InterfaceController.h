@@ -5,21 +5,12 @@
 #ifndef ENGINE_INTERFACECONTROLLER_H
 #define ENGINE_INTERFACECONTROLLER_H
 
-#include <entt/entt.hpp>
-#include <glm/glm.hpp>
-#include <string>
-#include <unordered_map>
-#include <utils/file_util.h>
-#include <utils/macros.h>
-#include <vector>
-
+#include <engine/Camera.h>
 #include <engine/IndependentEntity.h>
 #include <engine/KeyHandler.h>
 #include <engine/MouseButtonHandler.h>
 #include <engine/MouseMotionHandler.h>
-#include <engine/RenderContext.h>
-#include <engine/Renderer.h>
-#include <engine/TickableEntity.h>
+#include <engine/Tickable.h>
 
 #include "InterfaceView.h"
 
@@ -27,12 +18,12 @@
 namespace engine {
     class InterfaceController :
     		public IndependentEntity,
-            public TickableEntity,
             public KeyHandler,
             public MouseButtonHandler,
-            public MouseMotionHandler {
+            public MouseMotionHandler,
+            public Tickable {
     public:
-        InterfaceController(entt::registry &registry, Renderer &renderer);
+    	explicit InterfaceController(entt::registry &registry, const RenderContext& context);
 
         void tick() override;
 
@@ -40,9 +31,11 @@ namespace engine {
 
         void set_camera(Camera::Ptr camera);
 
+        Camera::Ptr get_camera();
+
     private:
-        const RenderContext& context;
-        Renderer& renderer;
+        const RenderContext& m_context;
+        Camera::Ptr m_camera{nullptr};
         InterfaceView::Ptr m_state{nullptr}, m_prev_state{nullptr};
 
         // mouse motion

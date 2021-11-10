@@ -75,7 +75,6 @@ namespace engine {
         	return false;
         }
 
-        context.camera = nullptr;
         // cull triangles facing away from camera
         glEnable(GL_CULL_FACE);
         // enable depth buffer
@@ -456,24 +455,23 @@ namespace engine {
 	        glDeleteBuffers(1, &instances.id);
     }
 
-    void Renderer::render(entt::registry &registry) {
+    void Renderer::render(entt::registry &registry, const Camera::Ptr& camera) {
         const auto& ctx = registry.get<RenderContext>(m_context_entity);
         glm::mat4 vp;
-        if(ctx.camera != nullptr) {
-            // 3D rendering
-            vp = glm::perspective(ctx.fovy, ctx.screen_width / ctx.screen_height, ctx.z_near, ctx.z_far)
-                      * ctx.camera->get_view();
-            glUseProgram(ctx.color_shader3d);
-            glUniformMatrix4fv(glGetUniformLocation(ctx.color_shader3d, "VP"), 1, GL_FALSE, &vp[0][0]);
-            auto view3d = registry.view<Mesh, InstanceList>();
-            for (const auto &entity: view3d) {
-            	auto[mesh, ilist] = view3d.get(entity);
-                if (mesh.visible) {
-                	glBindVertexArray(mesh.vao);
-                	glDrawElementsInstanced(ilist.render_strategy, mesh.num_indices, GL_UNSIGNED_INT, 0,
-                                            ilist.instances.size());
-                }
-            }
+        // 3D rendering
+        if(camera != nullptr) {
+        	vp = glm::perspective(ctx.fovy, ctx.screen_width / ctx.screen_height, ctx.z_near, ctx.z_far) * camera->get_view();
+        	glUseProgram(ctx.color_shader3d);
+        	glUniformMatrix4fv(glGetUniformLocation(ctx.color_shader3d, "VP"), 1, GL_FALSE, &vp[0][0]);
+        	auto view3d = registry.view<Mesh, InstanceList>();
+        	for (const auto &entity: view3d) {
+        		auto[mesh, ilist] = view3d.get(entity);
+        		if (mesh.visible) {
+        			glBindVertexArray(mesh.vao);
+        			glDrawElementsInstanced(ilist.render_strategy, mesh.num_indices, GL_UNSIGNED_INT, 0,
+											ilist.instances.size());
+        		}
+        	}
         }
 
         // 2D rendering (TODO: Add occlusion culling to prevent drawing 3D entities that are covered by 2D elements)
@@ -573,11 +571,6 @@ namespace engine {
 
     const RenderContext& Renderer::get_context(entt::registry& registry) const {
         return registry.get<RenderContext>(m_context_entity);
-    }
-
-    void Renderer::set_camera(entt::registry &registry, Camera::Ptr camera) {
-        auto& context = registry.get<RenderContext>(m_context_entity);
-        context.camera = std::move(camera);
     }
 
     GLuint Renderer::load_shader(const char* vertex_source, const char* frag_source) {

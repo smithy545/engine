@@ -5,6 +5,7 @@
 #ifndef ENGINE_RENDERER_H
 #define ENGINE_RENDERER_H
 
+#include <engine/Camera.h>
 #include <entt/entt.hpp>
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -25,13 +26,11 @@ namespace engine {
 
         bool init(entt::registry &registry);
 
-        void render(entt::registry &registry);
+        void render(entt::registry &registry, const Camera::Ptr& camera);
 
         void cleanup(entt::registry &registry);
 
         const RenderContext& get_context(entt::registry &registry) const;
-
-        void set_camera(entt::registry &registry, Camera::Ptr camera);
 
         static void load_mesh(entt::registry &registry, entt::entity entity);
 

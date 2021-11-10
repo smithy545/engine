@@ -3,7 +3,6 @@
 //
 
 #include <engine/interface/InterfaceView.h>
-
 #include <engine/interface/InterfaceController.h>
 #include <engine/ManagedEntity.h>
 #include <functional>
@@ -14,9 +13,9 @@ namespace engine {
     InterfaceView::InterfaceView(InterfaceController& controller, entt::registry& registry)
     : IndependentEntity(registry), m_controller(controller) {}
 
-    void InterfaceView::update(const RenderContext& context) {
+    void InterfaceView::tick() {
         for(auto [pos, element]: m_elements) {
-            if(auto* updatable = dynamic_cast<TickableEntity*>(element.get()))
+            if(auto* updatable = dynamic_cast<Tickable*>(element.get()))
 	            updatable->tick();
         }
     }
@@ -31,10 +30,6 @@ namespace engine {
     void InterfaceView::transition(InterfaceView::Ptr next_state) {
         unload();
         m_controller.set_state(std::move(next_state));
-    }
-
-    void InterfaceView::set_camera(Camera::Ptr camera) {
-        m_controller.set_camera(std::move(camera));
     }
 
     bool InterfaceView::collides(double x, double y) {
