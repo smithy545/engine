@@ -9,8 +9,8 @@
 
 namespace engine {
 
-    OrbitCam::OrbitCam(glm::vec3 position, glm::vec3 focal_point, bool filming)
-            : position(position), focal_point(focal_point), filming(filming) {}
+    OrbitCam::OrbitCam(glm::vec3 position, glm::vec3 focal_point)
+            : position(position), focal_point(focal_point) {}
 
     glm::vec3 OrbitCam::get_mouse_world_coords(glm::vec2 pos) {
         auto forward = get_forward_direction();

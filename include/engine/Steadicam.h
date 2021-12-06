@@ -13,9 +13,8 @@ namespace engine {
         PTR(Steadicam);
 
         glm::vec3 position;
-        bool filming;
 
-		Steadicam(glm::vec3 position, glm::vec3 forward, glm::vec3 up, bool filming = false);
+		Steadicam(glm::vec3 position, glm::vec3 forward, glm::vec3 up);
 
         glm::vec3 get_mouse_world_coords(glm::vec2 pos) override;
 
