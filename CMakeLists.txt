@@ -7,7 +7,6 @@ add_library(engine
         src/GameManager.cpp
         src/InterfaceController.cpp
         src/InterfaceView.cpp
-        src/BoxContainer.cpp
         src/BoxMesh.cpp
         src/BoxElement.cpp
         src/OrbitCam.cpp

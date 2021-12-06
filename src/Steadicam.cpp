@@ -9,8 +9,8 @@
 
 namespace engine {
 
-    Steadicam::Steadicam(glm::vec3 position, bool filming)
-    : position(position), filming(filming) {}
+    Steadicam::Steadicam(glm::vec3 position, glm::vec3 forward, glm::vec3 up, bool filming)
+    : position(position), forward(glm::normalize(forward)), up(glm::normalize(up)), filming(filming) {}
 
     glm::vec3 Steadicam::get_mouse_world_coords(glm::vec2 pos) {
         auto left = glm::cross(up, forward);

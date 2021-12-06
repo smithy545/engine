@@ -15,15 +15,21 @@ namespace engine {
 
     void InterfaceView::tick() {
         for(auto [pos, element]: m_elements) {
-            if(auto* updatable = dynamic_cast<Tickable*>(element.get()))
-	            updatable->tick();
+	        do {
+		        if(auto* updatable = dynamic_cast<Tickable*>(element.get()))
+		            updatable->tick();
+		        element = element->get_next();
+	        } while (element != nullptr);
         }
     }
 
     void InterfaceView::unload() {
         for(auto [pos, element]: m_elements) {
-            if(auto* managed = dynamic_cast<ManagedEntity*>(element.get()))
-                managed->deregister(registry);
+			do {
+				if (auto *managed = dynamic_cast<ManagedEntity *>(element.get()))
+					managed->deregister(registry);
+				element = element->get_next();
+			} while (element != nullptr);
         }
     }
 
@@ -41,53 +47,55 @@ namespace engine {
     }
 
     glm::vec2 InterfaceView::get_center() {
-        if(m_collision_tree == nullptr)
-            return {0,0};
-        auto bounds = m_collision_tree->bbox(m_collision_tree->root());
+    	auto& quadtree = m_element_finder->get_quadtree();
+    	auto bounds = quadtree.bbox(quadtree.root());
         return {(bounds.ymin() + bounds.ymax())/2.0, (bounds.xmin() + bounds.xmax())/2.0};
     }
 
     InterfaceElement::Ptr InterfaceView::get_nearest_element(double x, double y) {
-        if(m_collision_tree != nullptr) {
-            std::vector<Point_2> nearest(1);
-            m_collision_tree->nearest_neighbors(Point_2{x, y}, 1, nearest.begin());
-            return m_elements[point_key(nearest[0].x(), nearest[0].y())];
-        }
-        return nullptr;
+    	Point_2 p(x, y);
+    	if(m_elements.contains(p))
+    		return m_elements[p];
+    	return m_elements[m_element_finder->find_closest(p)];
     }
 
     void InterfaceView::insert_element(InterfaceElement::Ptr element) {
         auto center = element->get_center();
-        auto key = point_key(center.x, center.y);
+        Point_2 key(center.x, center.y);
         if(m_elements.contains(key)) {
             auto itr = m_elements[key];
             while(itr->get_next() != nullptr)
                 itr = itr->get_next();
             itr->set_next(element);
-        } else if(dynamic_cast<Collidable*>(element.get()) != nullptr) {
-            m_elements[key] = element;
-            m_element_positions.emplace_back(center.x, center.y);
-            m_collision_tree = std::make_shared<Quadtree>(m_element_positions);
-            m_collision_tree->refine(QUADTREE_MAX_DEPTH, QUADTREE_BUCKET_SIZE);
+        } else
+	        m_elements[key] = element;
+		if(dynamic_cast<Collidable*>(element.get())) {
+            std::vector<Point_2> positions;
+			positions.push_back(key);
+            for(const auto& pair: m_elements) {
+	            if(dynamic_cast<Collidable*>(pair.second.get()))
+		            positions.push_back(pair.first);
+            }
+            m_element_finder = std::make_shared<PointFinder>(positions);
         }
         if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
             entity->register_with(registry);
-        if(auto* handler = dynamic_cast<KeyEventSink*>(element.get()))
+        if(dynamic_cast<KeyEventSink *>(element.get()))
             on<KeyEvent>([element](KeyEvent& event, InterfaceView& emitter) {
                 auto* handler = dynamic_cast<KeyEventSink*>(element.get());
                 handler->handle(event, emitter);
             });
-        if(auto* handler = dynamic_cast<MouseButtonEventSink*>(element.get()))
+        if(dynamic_cast<MouseButtonEventSink *>(element.get()))
             on<MouseButtonEvent>([element](MouseButtonEvent& event, InterfaceView& emitter) {
                 auto* handler = dynamic_cast<MouseButtonEventSink*>(element.get());
                 handler->handle(event, emitter);
             });
-        if(auto* handler = dynamic_cast<MouseMotionEventSink*>(element.get()))
+        if(dynamic_cast<MouseMotionEventSink *>(element.get()))
             on<MouseMotionEvent>([element](MouseMotionEvent& event, InterfaceView& emitter) {
                 auto* handler = dynamic_cast<MouseMotionEventSink*>(element.get());
                 handler->handle(event, emitter);
             });
-        if(auto* handler = dynamic_cast<MouseScrollEventSink*>(element.get()))
+        if(dynamic_cast<MouseScrollEventSink *>(element.get()))
         	on<MouseScrollEvent>([element](MouseScrollEvent& event, InterfaceView& emitter) {
         		auto* handler = dynamic_cast<MouseScrollEventSink*>(element.get());
         		handler->handle(event, emitter);
@@ -97,7 +105,7 @@ namespace engine {
 
     void InterfaceView::remove_element(const InterfaceElement::Ptr& element) {
         auto center = element->get_center();
-        auto key = point_key(center.x, center.y);
+        Point_2 key(center.x, center.y);
         if(m_elements.contains(key)) {
             if(m_elements[key] == element) {
                 if(element->get_next() == nullptr)
@@ -114,15 +122,10 @@ namespace engine {
                 }
             }
             if(!m_elements.contains(key)) {
-                for(int i = 0; i < m_element_positions.size(); i++) {
-                    auto p = m_element_positions[i];
-                    if(point_key(p.x(), p.y()) == key) {
-                        m_element_positions.erase(m_element_positions.begin() + i);
-                        break;
-                    }
-                }
-                m_collision_tree = std::make_shared<Quadtree>(m_element_positions);
-                m_collision_tree->refine(QUADTREE_MAX_DEPTH, QUADTREE_BUCKET_SIZE);
+            	std::vector<Point_2> positions;
+            	for(const auto& pair: m_elements)
+            		positions.push_back(pair.first);
+            	m_element_finder = std::make_shared<PointFinder>(positions);
             }
         }
         if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))

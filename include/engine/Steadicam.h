@@ -15,7 +15,7 @@ namespace engine {
         glm::vec3 position;
         bool filming;
 
-        Steadicam(glm::vec3 position, bool filming = false);
+		Steadicam(glm::vec3 position, glm::vec3 forward, glm::vec3 up, bool filming = false);
 
         glm::vec3 get_mouse_world_coords(glm::vec2 pos) override;
 
@@ -40,9 +40,9 @@ namespace engine {
         void move_up(float scale) override;
 
         void move_down(float scale) override;
-    protected:
-        glm::vec3 forward{0, 0, 1};
-        glm::vec3 up{0, 1, 0};
+	protected:
+	    glm::vec3 forward;
+	    glm::vec3 up;
     };
 } // namespace engine
 

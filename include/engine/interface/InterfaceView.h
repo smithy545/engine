@@ -5,8 +5,6 @@
 #ifndef ENGINE_INTERFACEVIEW_H
 #define ENGINE_INTERFACEVIEW_H
 
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Quadtree.h>
 #include <fmt/format.h>
 #include <memory>
 #include <string>
@@ -18,15 +16,14 @@
 #include <engine/input_events.h>
 #include <engine/RenderContext.h>
 #include <engine/Tickable.h>
+#include <utils/math_util.h>
 
 #include "InterfaceElement.h"
 
 
-namespace engine {
-    typedef CGAL::Simple_cartesian<double> Kernel;
-    typedef Kernel::Point_2 Point_2;
-    typedef CGAL::Quadtree<Kernel, std::vector<Point_2>> Quadtree;
+using namespace utils::math;
 
+namespace engine {
     class InterfaceController;
 
     class InterfaceView :
@@ -62,15 +59,8 @@ namespace engine {
     protected:
         InterfaceController& m_controller;
     private:
-        static const int QUADTREE_MAX_DEPTH{4};
-        static const int QUADTREE_BUCKET_SIZE{10};
-        std::vector<Point_2> m_element_positions;
-        std::unordered_map<std::string, InterfaceElement::Ptr> m_elements;
-        std::shared_ptr<Quadtree> m_collision_tree{nullptr};
-
-        static std::string point_key(double x, double y) {
-            return fmt::format("{}:{}", x, y);
-        }
+        std::unordered_map<Point_2, InterfaceElement::Ptr> m_elements;
+        std::shared_ptr<PointFinder> m_element_finder{nullptr};
     };
 } // namespace engine
 
