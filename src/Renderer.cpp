@@ -153,11 +153,7 @@ namespace engine {
 
     bool Renderer::init_window(RenderContext& context) {
         // Open a window and create its OpenGL context
-        context.window = glfwCreateWindow(context.screen_width,
-                                          context.screen_height,
-                                          "Civil War",
-                                          nullptr,
-                                          nullptr);
+        context.window = glfwCreateWindow(context.screen_width, context.screen_height, "Civil War", nullptr, nullptr);
         if (context.window == nullptr) {
             std::cerr << "Failed to open GLFW window" << std::endl;
             glfwTerminate();
