@@ -21,7 +21,7 @@ namespace engine {
     struct InstanceList {
         GLuint id;
         GLuint render_strategy{GL_TRIANGLES};
-        std::vector<Instance> instances;
+        std::vector<Instance> instances{};
 
         explicit InstanceList(GLuint id) : id(id) {}
 
