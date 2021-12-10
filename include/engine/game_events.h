@@ -11,7 +11,9 @@
 namespace engine {
 	struct NoopEvent {};
 
-    struct CameraMoveEvent {
+	typedef NoopEvent TransitionEvent; // for transitioning between game states
+
+	struct CameraMoveEvent {
         const Camera::Ptr& camera;
     };
 } // namespace engine

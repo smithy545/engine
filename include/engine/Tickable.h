@@ -7,8 +7,7 @@
 
 
 namespace engine {
-    class Tickable {
-    public:
+    struct Tickable {
         virtual void tick() = 0;
     };
 } // namespace engine
