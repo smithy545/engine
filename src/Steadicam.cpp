@@ -43,24 +43,11 @@ namespace engine {
         position.z += scale * forward.z;
     }
 
-    void Steadicam::move_backward(float scale)  {
-        position.x -= scale * forward.x;
-        position.z -= scale * forward.z;
-    }
-
     void Steadicam::move_left(float scale)  {
         position -= scale * glm::cross(forward, up);
     }
 
-    void Steadicam::move_right(float scale)  {
-        position += scale * glm::cross(forward, up);
-    }
-
     void Steadicam::move_up(float scale)  {
         position += scale * up;
-    }
-
-    void Steadicam::move_down(float scale)  {
-        position -= scale * up;
     }
 } // namespace engine

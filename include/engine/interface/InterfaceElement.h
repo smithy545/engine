@@ -20,7 +20,7 @@ namespace engine {
 
         virtual glm::vec2 get_center() = 0;
 
-    REFVAR(Ptr, next, public, protected){nullptr};
+    CREFVAR(Ptr, next, public, protected){nullptr};
     };
 } // namespace engine
 

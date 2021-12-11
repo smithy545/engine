@@ -27,19 +27,11 @@ namespace engine {
 
         void move_toward(float scale);
 
-        void move_away(float scale);
-
         void move_forward(float scale) override;
-
-        void move_backward(float scale) override;
 
         void move_left(float scale) override;
 
-        void move_right(float scale) override;
-
         void move_up(float scale) override;
-
-        void move_down(float scale) override;
 
         void pan_horizontal(float diff) override;
 

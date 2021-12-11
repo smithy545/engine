@@ -30,15 +30,9 @@ namespace engine {
 
         void move_forward(float scale) override;
 
-        void move_backward(float scale) override;
-
         void move_left(float scale) override;
 
-        void move_right(float scale) override;
-
         void move_up(float scale) override;
-
-        void move_down(float scale) override;
 	protected:
 	    glm::vec3 forward;
 	    glm::vec3 up;

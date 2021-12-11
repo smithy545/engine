@@ -35,11 +35,6 @@ namespace engine {
         position += scale * forward;
     }
 
-    void OrbitCam::move_away(float scale) {
-        auto forward = glm::normalize(focal_point - position);
-        position -= scale * forward;
-    }
-
     void OrbitCam::move_forward(float scale) {
         auto forward = get_forward_direction();
         forward.y = 0;
@@ -47,27 +42,12 @@ namespace engine {
         position += scale * forward;
     }
 
-    void OrbitCam::move_backward(float scale) {
-        auto forward = get_forward_direction();
-        forward.y = 0;
-        focal_point -= scale * forward;
-        position -= scale * forward;
-    }
-
     void OrbitCam::move_left(float scale) {
         position -= scale * glm::cross(get_forward_direction(), up);
     }
 
-    void OrbitCam::move_right(float scale) {
-        position += scale * glm::cross(get_forward_direction(), up);
-    }
-
     void OrbitCam::move_up(float scale) {
         position += scale * up;
-    }
-
-    void OrbitCam::move_down(float scale) {
-        position -= scale * up;
     }
 
     void OrbitCam::pan_horizontal(float diff) {
