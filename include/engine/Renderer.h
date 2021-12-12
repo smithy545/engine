@@ -16,6 +16,7 @@
 #include <utils/macros.h>
 
 #include "RenderContext.h"
+#include "TextureRGB.h"
 #include "sprite/TextSprite.h"
 
 
@@ -31,6 +32,8 @@ namespace engine {
         void cleanup(entt::registry &registry);
 
         const RenderContext& get_context(entt::registry &registry) const;
+
+		void load_rgb_texture(entt::registry &registry, entt::entity entity);
 
         static void load_mesh(entt::registry &registry, entt::entity entity);
 
