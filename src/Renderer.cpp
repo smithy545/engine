@@ -8,6 +8,7 @@
 #include <engine/InstanceList.h>
 #include <engine/mesh/Mesh.h>
 #include <engine/sprite/ShapeSprite.h>
+#include <engine/sprite/TextSprite.h>
 #include <engine/sprite/TextureSprite.h>
 #include <fmt/format.h>
 #include <glm/glm.hpp>
@@ -90,7 +91,6 @@ namespace engine {
         	m_loaded_textures.insert({name, utils::file::read_png_file_to_texture(path)});
         }
 
-	    registry.on_construct<TextureRGB>().connect<&Renderer::load_rgb_texture>(this);
 	    registry.on_construct<Mesh>().connect<&load_mesh>();
         registry.on_construct<ShapeSprite>().connect<&load_shape_sprite>();
         registry.on_construct<TextureSprite>().connect<&Renderer::load_texture_sprite>(this);
@@ -208,19 +208,6 @@ namespace engine {
 
         return true;
     }
-
-	void Renderer::load_rgb_texture(entt::registry &registry, entt::entity entity) {
-		auto sprite = registry.get<TextureRGB>(entity);
-		GLuint texture;
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sprite.width, sprite.height, 0, GL_RGBA, GL_FLOAT, sprite.data);            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		m_loaded_textures[sprite.name] = texture;
-	}
 
     void Renderer::load_mesh(entt::registry &registry, entt::entity entity) {
         auto sizeof_vec4 = sizeof(glm::vec4);

@@ -10,7 +10,8 @@ add_library(engine
         src/BoxMesh.cpp
         src/BoxElement.cpp
         src/OrbitCam.cpp
-        src/Steadicam.cpp)
+        src/Steadicam.cpp
+        src/ShapeElement.cpp)
 target_link_directories(engine PRIVATE
         /opt/homebrew/Cellar/glew/2.2.0_1/lib
         /opt/homebrew/Cellar/glfw/3.3.4/lib)

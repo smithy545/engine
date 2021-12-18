@@ -16,8 +16,6 @@
 #include <utils/macros.h>
 
 #include "RenderContext.h"
-#include "TextureRGB.h"
-#include "sprite/TextSprite.h"
 
 
 namespace engine {
@@ -32,8 +30,6 @@ namespace engine {
         void cleanup(entt::registry &registry);
 
         const RenderContext& get_context(entt::registry &registry) const;
-
-		void load_rgb_texture(entt::registry &registry, entt::entity entity);
 
         static void load_mesh(entt::registry &registry, entt::entity entity);
 
@@ -79,11 +75,12 @@ namespace engine {
 
         static GLuint load_shader(const char* vertex_source, const char* frag_source);
 
-        static std::map<unsigned long, Glyph> load_font(FT_Library ft, const std::string& fontfile, unsigned int font_size,
-														const std::string& text = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,?!-:!@#$%^&*()_+|~");
+        static std::map<unsigned long, Glyph> load_font(
+				FT_Library ft,
+				const std::string& fontfile,
+				unsigned int font_size,
+				const std::string& text = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,?!-:!@#$%^&*()_+|~");
     };
-
-
 } // namespace engine
 
 #endif //ENGINE_RENDERER_H

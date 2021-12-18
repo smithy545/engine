@@ -17,7 +17,7 @@ namespace engine {
 	public:
 		PTR(BoxContainer);
 
-		BoxContainer(float x, float y, float width, float height, glm::vec3 color = glm::vec3(0.5,.5,.5))
+		BoxContainer(float x, float y, float width, float height, glm::vec3 color = glm::vec3(.5,.5,.5))
 		: BoxElement(x, y, width, height), m_color(color) {}
 
 		entt::entity register_with(entt::registry& registry) override {
