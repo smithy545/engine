@@ -9,7 +9,7 @@
 namespace engine {
     struct Collidable {
         virtual bool collides(double x, double y) {
-            return false;
+            return true;
         }
     };
 } // namespace engine

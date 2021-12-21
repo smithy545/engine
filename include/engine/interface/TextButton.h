@@ -5,10 +5,10 @@
 #ifndef ENGINE_TEXTBUTTON_H
 #define ENGINE_TEXTBUTTON_H
 
+#include <engine/sprite/TextSprite.h>
 #include <utility>
 
 #include "TexturedButton.h"
-#include <engine/sprite/TextSprite.h>
 
 
 namespace engine {

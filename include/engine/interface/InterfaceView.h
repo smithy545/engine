@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <engine/Collidable.h>
 #include <engine/IndependentEntity.h>
 #include <engine/input_events.h>
 #include <engine/RenderContext.h>
@@ -27,9 +26,7 @@ namespace engine {
     class InterfaceController;
 
     class InterfaceView :
-        public InterfaceElement,
         public IndependentEntity,
-        public Collidable,
         public entt::emitter<InterfaceView>,
         public Tickable {
     public:
@@ -37,15 +34,11 @@ namespace engine {
 
         InterfaceView(InterfaceController& controller, entt::registry& registry);
 
-        virtual void load(const RenderContext& context) = 0;
+        virtual void load(const RenderContext& context);
 
         virtual void unload();
 
 	    void tick() override;
-
-        glm::vec2 get_center() override;
-
-        bool collides(double x, double y) override;
 
         InterfaceElement::Ptr get_nearest_element(double x, double y);
 
