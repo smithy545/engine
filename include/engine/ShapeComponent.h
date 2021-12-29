@@ -6,22 +6,19 @@
 #define ENGINE_SHAPEELEMENT_H
 
 #include <cute_c2.h>
-#include <engine/Collidable.h>
 #include <glm/glm.hpp>
 #include <utils/macros.h>
 #include <vector>
 
-#include "InterfaceElement.h"
+#include "physics.h"
 
 
 namespace engine {
-	class ShapeElement : public InterfaceElement, public Collidable, public c2Poly {
+	class ShapeComponent : public Collidable, public c2Poly {
 	public:
-		PTR(ShapeElement);
+		PTR(ShapeComponent);
 
-		ShapeElement(float x, float y, const std::vector<glm::vec2>& vertices);
-
-		glm::vec2 get_center() override;
+		ShapeComponent(float x, float y, const std::vector<glm::vec2>& vertices);
 
 		bool collides(double x, double y) override;
 

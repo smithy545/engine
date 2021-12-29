@@ -5,20 +5,23 @@
 #ifndef ENGINE_BOXCONTAINER_H
 #define ENGINE_BOXCONTAINER_H
 
-#include "BoxElement.h"
+#include <engine/BoxComponent.h>
+#include <engine/interface/InterfaceEntity.h>
 #include <engine/InstanceList.h>
-#include <engine/ManagedEntity.h>
+#include <engine/entity.h>
 #include <engine/sprite/ShapeSprite.h>
 #include <vector>
 
 
 namespace engine {
-	class BoxContainer : public BoxElement, public ManagedEntity {
+	class BoxContainer : public BoxComponent, public InterfaceEntity {
 	public:
 		PTR(BoxContainer);
 
 		BoxContainer(float x, float y, float width, float height, glm::vec3 color = glm::vec3(.5,.5,.5))
-		: BoxElement(x, y, width, height), m_color(color) {}
+		: InterfaceEntity(Point_2(x + width * 0.5, y + height * 0.5)),
+		BoxComponent(x, y, width, height),
+		m_color(color) {}
 
 		entt::entity register_with(entt::registry& registry) override {
 			ShapeSprite sprite;
@@ -49,12 +52,7 @@ namespace engine {
 			});
 			return m_entity;
 		}
-
-		entt::entity get_entity() override {
-			return m_entity;
-		}
 	private:
-		entt::entity m_entity{entt::null};
 		glm::vec3 m_color;
 	};
 } // namespace engine

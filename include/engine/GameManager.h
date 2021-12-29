@@ -44,9 +44,11 @@ namespace engine {
 
         static double get_prev_mouse_y();
 
-        static void set_mouse_position(double x, double y);
+		static bool get_mouse_button(int button);
 
-        static void set_mouse_button(int button, bool value);
+	    static void set_mouse_button(int button, bool value);
+
+        static void set_mouse_position(double x, double y);
 
         static void set_mouse_scroll(double yoffset);
 

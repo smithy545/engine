@@ -6,11 +6,11 @@
 #define ENGINE_INTERFACECONTROLLER_H
 
 #include <engine/Camera.h>
-#include <engine/IndependentEntity.h>
+#include <engine/entity.h>
 #include <engine/KeyHandler.h>
 #include <engine/MouseButtonHandler.h>
 #include <engine/MouseMotionHandler.h>
-#include <engine/Tickable.h>
+#include <engine/lifecycle.h>
 
 #include "InterfaceView.h"
 

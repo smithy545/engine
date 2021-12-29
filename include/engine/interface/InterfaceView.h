@@ -7,17 +7,20 @@
 
 #include <fmt/format.h>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
-#include <vector>
+#include <utility>
 
-#include <engine/IndependentEntity.h>
+#include <engine/entity.h>
+#include <engine/physics.h>
 #include <engine/input_events.h>
+#include <engine/lifecycle.h>
 #include <engine/RenderContext.h>
-#include <engine/Tickable.h>
+#include <utils/macros.h>
 #include <utils/math_util.h>
 
-#include "InterfaceElement.h"
+#include "InterfaceEntity.h"
 
 
 using namespace utils::math;
@@ -25,10 +28,7 @@ using namespace utils::math;
 namespace engine {
     class InterfaceController;
 
-    class InterfaceView :
-        public IndependentEntity,
-        public entt::emitter<InterfaceView>,
-        public Tickable {
+	class InterfaceView : public IndependentEntity, public entt::emitter<InterfaceView> {
     public:
         PTR(InterfaceView);
 
@@ -38,22 +38,26 @@ namespace engine {
 
         virtual void unload();
 
-	    void tick() override;
+	    virtual void tick();
 
-        InterfaceElement::Ptr get_nearest_element(double x, double y);
+		InterfaceEntity::Ptr get_nearest(double x, double y);
 
-        void insert_element(InterfaceElement::Ptr element);
+	    entt::entity insert_element(const InterfaceEntity::Ptr& element);
 
-        void remove_element(const InterfaceElement::Ptr& element);
+        void remove_element(const InterfaceEntity::Ptr& element);
 
         void transition(Ptr next_state);
 
         entt::registry& get_registry();
     protected:
         InterfaceController& m_controller;
+
+	    virtual void mouse_button_callback(MouseButtonEvent& event, InterfaceView& emitter);
+
+		virtual void mouse_motion_callback(MouseMotionEvent& event, InterfaceView& emitter);
     private:
-        std::unordered_map<Point_2, InterfaceElement::Ptr> m_elements;
-        std::shared_ptr<PointFinder> m_element_finder{nullptr};
+		std::unordered_map<Point_2, InterfaceEntity::Ptr> m_entity_by_position;
+        std::shared_ptr<PointFinder> m_nearest_entity_finder{nullptr};
     };
 } // namespace engine
 

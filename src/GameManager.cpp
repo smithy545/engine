@@ -154,6 +154,16 @@ namespace engine {
             mouse_motion_chain->handle(x, y);
     }
 
+	bool GameManager::get_mouse_button(int button) {
+		if (button == GLFW_MOUSE_BUTTON_LEFT)
+			return entt::monostate<MOUSE_LEFT_KEY>{};
+		else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+			return entt::monostate<MOUSE_RIGHT_KEY>{};
+		else if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+			return entt::monostate<MOUSE_MIDDLE_KEY>{};
+		return false;
+	}
+
     void GameManager::set_mouse_button(int button, bool value) {
         if (button == GLFW_MOUSE_BUTTON_LEFT)
             entt::monostate<MOUSE_LEFT_KEY>{} = value;

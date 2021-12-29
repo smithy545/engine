@@ -6,26 +6,20 @@
 #define ENGINE_BOXELEMENT_H
 
 #include <cute_c2.h>
-#include <engine/Collidable.h>
 #include <glm/glm.hpp>
 #include <utils/macros.h>
 
-#include "InterfaceElement.h"
+#include "physics.h"
 
 
 namespace engine {
-    class BoxElement : public InterfaceElement, public Collidable, public c2AABB {
+    class BoxComponent : public Collidable, public c2AABB {
     public:
-        PTR(BoxElement);
+        PTR(BoxComponent);
 
-        BoxElement(float x, float y, float width, float height);
-
-        glm::vec2 get_center() override;
+        BoxComponent(float x, float y, float width, float height);
 
         bool collides(double x, double y) override;
-
-    private:
-        glm::vec2 m_center;
     };
 } // namespace engine
 

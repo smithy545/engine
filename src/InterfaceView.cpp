@@ -2,11 +2,10 @@
 // Created by Philip Smith on 6/7/21.
 //
 
-#include <engine/Collidable.h>
+#include <engine/physics.h>
 #include <engine/interface/InterfaceView.h>
 #include <engine/interface/InterfaceController.h>
-#include <engine/ManagedEntity.h>
-#include <functional>
+#include <memory>
 #include <utility>
 
 
@@ -15,90 +14,88 @@ namespace engine {
     : IndependentEntity(registry), m_controller(controller) {}
 
     void InterfaceView::tick() {
-        for(auto [pos, element]: m_elements) {
-	        do {
-		        if(auto* updatable = dynamic_cast<Tickable*>(element.get()))
-		            updatable->tick();
-				element = element->get_next();
-	        } while (element != nullptr);
+		auto view = registry.view<Tickable*>();
+        for(auto entity: view) {
+			auto [ticker] = view.get(entity);
+	        ticker->tick();
         }
     }
 
 	void InterfaceView::load(const RenderContext& context) {
 		on<MouseButtonEvent>([&](MouseButtonEvent& event, InterfaceView& emitter) {
-			auto element = get_nearest_element(event.x, event.y);
-			if(element != nullptr) {
-				if (auto *handler = dynamic_cast<MouseButtonEventSink *>(element.get())) {
-					auto *collidable = dynamic_cast<Collidable *>(element.get());
-					if (collidable != nullptr && collidable->collides(event.x, event.y))
-						handler->handle(event, emitter);
-				}
-			}
+			mouse_button_callback(event, emitter);
 		});
 		on<MouseMotionEvent>([&](MouseMotionEvent& event, InterfaceView& emitter) {
-			auto element = get_nearest_element(event.x, event.y);
-			if(element != nullptr) {
-				if (auto *handler = dynamic_cast<MouseMotionEventSink *>(element.get())) {
-					auto *collidable = dynamic_cast<Collidable *>(element.get());
-					if (collidable != nullptr && collidable->collides(event.x, event.y))
-						handler->handle(event, emitter);
-				}
-			}
+			mouse_motion_callback(event, emitter);
 		});
 	}
 
     void InterfaceView::unload() {
-        for(auto [pos, element]: m_elements) {
-			do {
-				if (auto *managed = dynamic_cast<ManagedEntity *>(element.get()))
-					managed->deregister(registry);
-				element = element->get_next();
-			} while (element != nullptr);
+        for(auto [key, element]: m_entity_by_position) {
+			if(auto managed = dynamic_cast<ManagedEntity*>(element.get()))
+				managed->deregister(registry);
         }
 		// clear event listeners
 		clear();
     }
 
-    void InterfaceView::transition(InterfaceView::Ptr next_state) {
+	void InterfaceView::mouse_button_callback(MouseButtonEvent& event, InterfaceView& emitter) {
+		if(auto element = get_nearest(event.x, event.y)) {
+			if (auto* handler = dynamic_cast<MouseButtonEventSink*>(element.get())) {
+				if (auto* collidable = dynamic_cast<Collidable*>(element.get())) {
+					if (collidable->collides(event.x, event.y))
+						handler->handle(event, emitter);
+				} else
+					handler->handle(event, emitter);
+			}
+		}
+	}
+
+	void InterfaceView::mouse_motion_callback(MouseMotionEvent& event, InterfaceView& emitter) {
+		// TODO: make "focused" entity base class that takes over mouse motion when focused
+		if(auto element = get_nearest(event.x, event.y)) {
+			if (auto* handler = dynamic_cast<MouseMotionEventSink*>(element.get())) {
+				if (auto *collidable = dynamic_cast<Collidable *>(element.get())) {
+					if (collidable->collides(event.x, event.y))
+						handler->handle(event, emitter);
+				} else
+					handler->handle(event, emitter);
+			}
+		}
+	}
+
+	void InterfaceView::transition(InterfaceView::Ptr next_state) {
         unload();
         m_controller.set_state(std::move(next_state));
     }
 
-    InterfaceElement::Ptr InterfaceView::get_nearest_element(double x, double y) {
-		if(m_elements.empty())
-			return nullptr;
+    InterfaceEntity::Ptr InterfaceView::get_nearest(double x, double y) {
     	Point_2 p(x, y);
-    	if (m_elements.contains(p))
-		    return m_elements.at(p);
-		if(m_element_finder == nullptr)
-			return nullptr;
-	    p = m_element_finder->find_closest(p);
-	    if (m_elements.contains(p))
-		    return m_elements.at(p);
+		if(m_entity_by_position.contains(p))
+			return m_entity_by_position.at(p);
+		if(m_nearest_entity_finder != nullptr) {
+			p = m_nearest_entity_finder->find_closest(p);
+			return m_entity_by_position.at(p);
+		}
 	    return nullptr;
 	}
 
-    void InterfaceView::insert_element(InterfaceElement::Ptr element) {
-	    auto center = element->get_center();
-	    Point_2 key(center.x, center.y);
-	    if(m_elements.contains(key)) {
-		    auto itr = m_elements.at(key);
-		    while(itr->get_next() != nullptr)
-			    itr = itr->get_next();
-		    itr->set_next(element);
-	    } else
-		    m_elements.insert({key, element});
-	    if(dynamic_cast<Collidable*>(element.get())) {
+	entt::entity InterfaceView::insert_element(const InterfaceEntity::Ptr& element) {
+	    if(m_entity_by_position.contains(element->pos)) {
+			auto itr = m_entity_by_position.at(element->pos);
+			while(itr->next != nullptr)
+				itr = itr->next;
+			itr->next = element;
+	    } else {
+		    // rebuild point finder upon position insertion
+		    m_entity_by_position.insert({element->pos, element});
 		    std::vector<Point_2> positions;
-		    positions.push_back(key);
-		    for (const auto &pair: m_elements) {
-			    if (dynamic_cast<Collidable *>(pair.second.get()))
-				    positions.push_back(pair.first);
-		    }
-		    m_element_finder = std::make_shared<PointFinder>(positions);
-	    }
-	    if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
-		    entity->register_with(registry);
+		    positions.push_back(element->pos);
+		    for (const auto &pair: m_entity_by_position)
+				positions.push_back(pair.first);
+		    m_nearest_entity_finder = std::make_shared<PointFinder>(positions);
+		}
+		element->register_with(registry);
 	    if(auto* handler = dynamic_cast<KeyEventSink*>(element.get()))
 		    on<KeyEvent>([handler](KeyEvent& event, InterfaceView& emitter) {
 			    handler->handle(event, emitter);
@@ -108,38 +105,37 @@ namespace engine {
 			    handler->handle(event, emitter);
 		    });
         // TODO: store the above event connections to allow for later disconnection
+		return element->get_entity();
     }
 
-    void InterfaceView::remove_element(const InterfaceElement::Ptr& element) {
-        auto center = element->get_center();
-        Point_2 key(center.x, center.y);
-        if(m_elements.contains(key)) {
-            if(m_elements[key] == element) {
-                if(element->get_next() == nullptr)
-                    m_elements.erase(key);
+    void InterfaceView::remove_element(const InterfaceEntity::Ptr& element) {
+	    auto key = element->pos;
+        if(m_entity_by_position.contains(key)) {
+            if(m_entity_by_position[key] == element) {
+                if(element->next == nullptr)
+	                m_entity_by_position.erase(key);
                 else
-                    m_elements[key] = element->get_next();
+	                m_entity_by_position[key] = element->next;
             } else {
-                auto itr = m_elements[key];
-                while(itr != nullptr && itr->get_next() != element)
-                    itr = itr->get_next();
-                if(itr != nullptr) {
-                    auto next = element->get_next();
-                    itr->set_next(next);
-                }
+                auto itr = m_entity_by_position[key];
+                while(itr != nullptr && itr->next != element)
+                    itr = itr->next;
+                if(itr != nullptr)
+                    itr->next = element->next;
             }
-            if(!m_elements.contains(key)) {
+            if(!m_entity_by_position.contains(key)) {
+				// rebuild point finder upon position removal
             	std::vector<Point_2> positions;
-            	for(const auto& pair: m_elements)
+            	for(const auto& pair: m_entity_by_position)
             		positions.push_back(pair.first);
-            	m_element_finder = std::make_shared<PointFinder>(positions);
+	            m_nearest_entity_finder = std::make_shared<PointFinder>(positions);
             }
         }
-        if(auto* entity = dynamic_cast<ManagedEntity*>(element.get()))
-            entity->deregister(registry);
+        if(auto* e = dynamic_cast<ManagedEntity*>(element.get()))
+            e->deregister(registry);
     }
 
-	entt::registry &InterfaceView::get_registry(){
+	entt::registry &InterfaceView::get_registry() {
     	return registry;
     }
 } // namespace engine

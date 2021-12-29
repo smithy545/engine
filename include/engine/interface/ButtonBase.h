@@ -5,10 +5,10 @@
 #ifndef ENGINE_BUTTONELEMENT_H
 #define ENGINE_BUTTONELEMENT_H
 
-#include "BoxElement.h"
-#include "InterfaceView.h"
+#include "InterfaceEntity.h"
 
-#include <engine/ManagedEntity.h>
+#include <engine/BoxComponent.h>
+#include <engine/entity.h>
 #include <engine/input_events.h>
 #include <engine/InstanceList.h>
 #include <engine/sprite/ShapeSprite.h>
@@ -16,11 +16,12 @@
 
 namespace engine {
     template<typename DownEvent, typename UpEvent>
-    class ButtonBase : public BoxElement, public ManagedEntity, public MouseButtonEventSink {
+    class ButtonBase : public BoxComponent, public InterfaceEntity, public MouseButtonEventSink {
     public:
         PTR(ButtonBase);
 
-        ButtonBase(float x, float y, float width, float height) : BoxElement(x, y, width, height) {}
+        ButtonBase(float x, float y, float width, float height)
+		: InterfaceEntity(Point_2(x + width * 0.5, y + height * 0.5)), BoxComponent(x, y, width, height) {}
 
         entt::entity register_with(entt::registry& registry) override {
             ShapeSprite sprite;
@@ -70,15 +71,10 @@ namespace engine {
             }
         }
 
-        entt::entity get_entity() override {
-            return m_entity;
-        }
-
         virtual UpEvent* build_up_event(MouseButtonEvent &event, InterfaceView &emitter) = 0;
 
         virtual DownEvent* build_down_event(MouseButtonEvent &event, InterfaceView &emitter) = 0;
     protected:
-        entt::entity m_entity{entt::null};
         bool m_down{false};
     };
 } // namespace engine

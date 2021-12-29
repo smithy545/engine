@@ -5,17 +5,17 @@
 #ifndef ENGINE_POLYGONCONTAINER_H
 #define ENGINE_POLYGONCONTAINER_H
 
-#include "ShapeElement.h"
+#include "ShapeComponent.h"
 
 #include <engine/InstanceList.h>
-#include <engine/ManagedEntity.h>
+#include <engine/interface/InterfaceEntity.h>
 #include <engine/sprite/ShapeSprite.h>
 #include <glm/gtx/transform.hpp>
 #include <vector>
 
 
 namespace engine {
-	class PolygonContainer : public ShapeElement, public ManagedEntity {
+	class PolygonContainer : public ShapeElement, public InterfaceEntity {
 	public:
 		PTR(PolygonContainer);
 
@@ -24,7 +24,6 @@ namespace engine {
 
 		entt::entity register_with(entt::registry& registry) override {
 			ShapeSprite sprite;
-			auto c = get_center();
 			for(auto v: verts) {
 				sprite.vertices.emplace_back(v.x - c.x, v.y - c.y);
 				sprite.colors.push_back(m_color);
@@ -43,12 +42,7 @@ namespace engine {
 			});
 			return m_entity;
 		}
-
-		entt::entity get_entity() override {
-			return m_entity;
-		}
 	private:
-		entt::entity m_entity{entt::null};
 		glm::vec3 m_color;
 	};
 } // namespace engine
