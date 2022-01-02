@@ -135,7 +135,7 @@ namespace engine {
             e->deregister(registry);
     }
 
-	entt::registry &InterfaceView::get_registry() {
+	entt::registry& InterfaceView::get_registry() {
     	return registry;
     }
 } // namespace engine

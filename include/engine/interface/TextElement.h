@@ -12,15 +12,11 @@
 
 
 namespace engine {
-	class TextComponent : public InterfaceEntity {
+	class TextElement : public InterfaceEntity {
 	public:
-		PTR(TextComponent);
+		PTR(TextElement);
 
-		TextComponent(std::string font, std::string text,
-					  float x = 0,
-					  float y = 0,
-					  float scale = 1,
-					  glm::vec3 color = glm::vec3(1, 1, 1))
+		TextElement(std::string font, std::string text, float x, float y, float scale = 1, glm::vec3 color = glm::vec3())
 		: InterfaceEntity(Point_2{x,y}),
 		m_font(std::move(font)),
 		m_text(std::move(text)),

@@ -15,7 +15,7 @@
 
 
 namespace engine {
-	class PolygonContainer : public ShapeElement, public InterfaceEntity {
+	class PolygonContainer : public ShapeComponent, public InterfaceEntity {
 	public:
 		PTR(PolygonContainer);
 

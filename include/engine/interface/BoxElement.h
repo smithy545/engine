@@ -6,19 +6,20 @@
 #define ENGINE_BOXCONTAINER_H
 
 #include <engine/BoxComponent.h>
-#include <engine/interface/InterfaceEntity.h>
 #include <engine/InstanceList.h>
 #include <engine/entity.h>
 #include <engine/sprite/ShapeSprite.h>
 #include <vector>
 
+#include "InterfaceEntity.h"
+
 
 namespace engine {
-	class BoxContainer : public BoxComponent, public InterfaceEntity {
+	class BoxElement : public BoxComponent, public InterfaceEntity {
 	public:
-		PTR(BoxContainer);
+		PTR(BoxElement);
 
-		BoxContainer(float x, float y, float width, float height, glm::vec3 color = glm::vec3(.5,.5,.5))
+		BoxElement(float x, float y, float width, float height, glm::vec3 color = glm::vec3(.5, .5, .5))
 		: InterfaceEntity(Point_2(x + width * 0.5, y + height * 0.5)),
 		BoxComponent(x, y, width, height),
 		m_color(color) {}

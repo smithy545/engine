@@ -17,7 +17,7 @@ namespace engine {
 		PTR(InterfaceEntity);
 
 		Point_2 pos;
-		InterfaceEntity::Ptr next{nullptr};
+		Ptr next{nullptr};
 
 		explicit InterfaceEntity(Point_2 pos) : pos(pos) {}
 
