@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 2/20/22.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_RENDERTREE_H
+#define ENGINE_RENDERTREE_H
 
+#include <engine/mixins.h>
 #include <entt/entt.hpp>
+#include <utils/concepts.h>
+#include <utils/macros.h>
+#include <vector>
 
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
-};
+template <typename Derived>
+struct RenderTreeNode {
+	USING_PTR(RenderTreeNode);
 
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
-};
+	virtual void render(entt::registry& registry) = 0;
 
-struct MouseMotionEvent {
-    double x;
-    double y;
+	virtual std::vector<Derived> children() = 0;
 };
-
-struct MouseWheelEvent {
-    double y_delta;
-};
-
-struct NoopEvent {};
 } // namespace engine
 
-#endif //ENGINE_EVENTS_H
+#endif //ENGINE_RENDERTREE_H

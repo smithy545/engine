@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 7/4/21.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_BOXMESH_H
+#define ENGINE_BOXMESH_H
 
-#include <entt/entt.hpp>
+#include "Mesh.h"
 
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
-};
+struct BoxMesh : public Mesh {
+    explicit BoxMesh(double x_offset = -0.5,
+            double y_offset = -0.5,
+            double z_offset = -0.5,
+            double width = 1.0,
+            double height = 1.0,
+            double depth = 1.0);
 
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
+    BoxMesh(glm::vec3 offset, glm::vec3 scale);
 };
-
-struct MouseMotionEvent {
-    double x;
-    double y;
-};
-
-struct MouseWheelEvent {
-    double y_delta;
-};
-
-struct NoopEvent {};
 } // namespace engine
 
-#endif //ENGINE_EVENTS_H
+
+#endif //ENGINE_BOXMESH_H

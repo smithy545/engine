@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 5/18/21.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_VERTEXARRAYOBJECT_H
+#define ENGINE_VERTEXARRAYOBJECT_H
 
-#include <entt/entt.hpp>
+#include <GL/glew.h>
 
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
+struct VertexArrayObject {
+    GLuint vao{0};
+    GLuint vbo{0};
+    GLuint ebo{0};
+    unsigned int num_indices{0};
+    GLuint cbo{0};
+    GLuint tex_id{0};
+    GLuint tex_uvs{0};
 };
-
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
-};
-
-struct MouseMotionEvent {
-    double x;
-    double y;
-};
-
-struct MouseWheelEvent {
-    double y_delta;
-};
-
-struct NoopEvent {};
 } // namespace engine
 
-#endif //ENGINE_EVENTS_H
+#endif //ENGINE_VERTEXARRAYOBJECT_H

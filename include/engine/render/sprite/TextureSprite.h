@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 10/10/21.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_TEXTURESPRITE_H
+#define ENGINE_TEXTURESPRITE_H
 
-#include <entt/entt.hpp>
+#include "Sprite.h"
 
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
+struct TextureSprite : public Sprite {
+	std::string name;
+	std::vector<glm::vec2> uvs;
 };
-
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
-};
-
-struct MouseMotionEvent {
-    double x;
-    double y;
-};
-
-struct MouseWheelEvent {
-    double y_delta;
-};
-
-struct NoopEvent {};
 } // namespace engine
 
-#endif //ENGINE_EVENTS_H
+#endif //ENGINE_TEXTURESPRITE_H

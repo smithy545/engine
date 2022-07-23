@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 6/14/21.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_RENDERCONTEXT_H
+#define ENGINE_RENDERCONTEXT_H
 
 #include <entt/entt.hpp>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
+struct RenderContext {
+    int screen_width;
+    int screen_height;
+    float fovy;
+    float z_near;
+    float z_far;
+    GLFWwindow* window;
 };
-
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
-};
-
-struct MouseMotionEvent {
-    double x;
-    double y;
-};
-
-struct MouseWheelEvent {
-    double y_delta;
-};
-
-struct NoopEvent {};
 } // namespace engine
 
-#endif //ENGINE_EVENTS_H
+
+#endif //ENGINE_RENDERCONTEXT_H

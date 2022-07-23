@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 12/22/21.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_MANAGEDENTITY_H
+#define ENGINE_MANAGEDENTITY_H
 
 #include <entt/entt.hpp>
 
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
-};
+struct ManagedEntity {
+	virtual entt::entity register_with(entt::registry& registry) = 0;
 
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
-};
+	virtual void deregister(entt::registry& registry) = 0;
 
-struct MouseMotionEvent {
-    double x;
-    double y;
+	virtual entt::entity get_entity() = 0;
 };
-
-struct MouseWheelEvent {
-    double y_delta;
-};
-
-struct NoopEvent {};
 } // namespace engine
 
-#endif //ENGINE_EVENTS_H
+#endif //ENGINE_MANAGEDENTITY_H

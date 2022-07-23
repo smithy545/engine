@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 10/13/21.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_TEXTSPRITE_H
+#define ENGINE_TEXTSPRITE_H
 
-#include <entt/entt.hpp>
+#include <engine/render/VertexArrayObject.h>
+#include <glm/glm.hpp>
+#include <string>
+#include <utility>
 
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
+struct TextSprite : VertexArrayObject {
+	TextSprite() = default;
+
+	TextSprite(std::string font, std::string text, float x, float y, float scale, glm::vec3 color)
+	: font(std::move(font)), text(std::move(text)), x(x), y(y), scale(scale), color(color) {}
+
+	std::string font;
+	std::string text;
+	float x{0}, y{0};
+	float scale{1};
+	glm::vec3 color{1,1,1};
+	bool visible{true};
 };
+} // namespace
 
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
-};
-
-struct MouseMotionEvent {
-    double x;
-    double y;
-};
-
-struct MouseWheelEvent {
-    double y_delta;
-};
-
-struct NoopEvent {};
-} // namespace engine
-
-#endif //ENGINE_EVENTS_H
+#endif //ENGINE_TEXTSPRITE_H

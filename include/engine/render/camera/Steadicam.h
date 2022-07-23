@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 6/14/21.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_STEADICAM_H
+#define ENGINE_STEADICAM_H
 
-#include <entt/entt.hpp>
+#include "Camera.h"
 
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
-};
+struct Steadicam : public Camera {
+    USING_PTR(Steadicam);
 
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
-};
+    glm::vec3 position;
 
-struct MouseMotionEvent {
-    double x;
-    double y;
-};
+	Steadicam(glm::vec3 position, glm::vec3 forward, glm::vec3 up);
 
-struct MouseWheelEvent {
-    double y_delta;
-};
+    glm::vec3 get_mouse_world_coords(glm::vec2 pos) override;
 
-struct NoopEvent {};
+    glm::vec3 get_forward_direction() const override;
+
+    glm::vec3 get_position() const override;
+
+    glm::mat4 get_view() const override;
+
+    void pan_horizontal(float diff) override;
+
+    void pan_vertical(float diff) override;
+
+    void move_forward(float scale) override;
+
+    void move_left(float scale) override;
+
+    void move_up(float scale) override;
+protected:
+    glm::vec3 forward;
+    glm::vec3 up;
+};
 } // namespace engine
 
-#endif //ENGINE_EVENTS_H
+
+#endif //ENGINE_STEADICAM_H

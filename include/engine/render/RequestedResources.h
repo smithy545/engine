@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 1/9/22.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_REQUESTEDRESOURCES_H
+#define ENGINE_REQUESTEDRESOURCES_H
 
-#include <entt/entt.hpp>
+#include <string>
+#include <vector>
 
+
+using std::string;
+using std::vector;
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
+struct FontResource {
+	string name;
+	string path;
+	int size;
 };
 
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
+struct ShaderResource {
+	string name;
+	string vertex_path;
+	string fragment_path;
 };
 
-struct MouseMotionEvent {
-    double x;
-    double y;
+struct TextureResource {
+	string name;
+	string path;
 };
 
-struct MouseWheelEvent {
-    double y_delta;
+struct RequestedResources {
+	vector<ShaderResource> shaders{};
+	vector<TextureResource> textures{};
+	vector<FontResource> fonts{};
 };
-
-struct NoopEvent {};
 } // namespace engine
 
-#endif //ENGINE_EVENTS_H
+#endif //ENGINE_REQUESTEDRESOURCES_H

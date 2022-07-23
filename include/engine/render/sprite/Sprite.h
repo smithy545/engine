@@ -1,4 +1,4 @@
-/* Created by Philip Smith on 6/13/21.
+/* Created by Philip Smith on 5/25/21.
 MIT License
 
 Copyright (c) 2021 Philip Arturo Smith
@@ -22,35 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_EVENTS_H
-#define ENGINE_EVENTS_H
+#ifndef ENGINE_SPRITE_H
+#define ENGINE_SPRITE_H
 
-#include <entt/entt.hpp>
+#include <engine/render/VertexArrayObject.h>
+#include <glm/glm.hpp>
+#include <utility>
+#include <vector>
 
 
 namespace engine {
-struct KeyEvent {
-    int key;
-    bool pressed;
-};
+struct Sprite : VertexArrayObject {
+	Sprite() = default;
 
-struct MouseButtonEvent {
-    double x;
-    double y;
-    int button;
-    bool pressed;
-};
+	Sprite(std::vector<glm::vec2> vertices, std::vector<unsigned int> indices) :
+	vertices(std::move(vertices)), indices(std::move(indices)) {}
 
-struct MouseMotionEvent {
-    double x;
-    double y;
+    std::vector<glm::vec2> vertices{};
+    std::vector<unsigned int> indices{};
+    bool visible{true};
 };
-
-struct MouseWheelEvent {
-    double y_delta;
-};
-
-struct NoopEvent {};
 } // namespace engine
 
-#endif //ENGINE_EVENTS_H
+#endif //ENGINE_SPRITE_H
