@@ -16,8 +16,7 @@ target_link_directories(engine
 target_link_libraries(engine utils OpenGL::GL GLEW GLFW freetype)
 target_include_directories(engine
         PRIVATE
-        ../../external/cute_headers
-        ../../external/freetype/include
+        /opt/homebrew/Cellar/freetype/2.12.1/include/freetype2
         /opt/homebrew/Cellar/cpp-gsl/4.0.0/include
         /opt/homebrew/Cellar/glew/2.2.0_1/include
         /opt/homebrew/Cellar/glm/0.9.9.8/include
