@@ -26,7 +26,6 @@ SOFTWARE.
 #define ENGINE_STATE_H
 
 #include <engine/event_handling.h>
-#include <engine/render/RenderTreeNode.h>
 #include <entt/entt.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

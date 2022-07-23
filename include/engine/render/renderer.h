@@ -29,7 +29,6 @@ SOFTWARE.
 #include <utils/graph_traversal.h>
 #include <engine/render/Glyph.h>
 #include <engine/render/RenderContext.h>
-#include <engine/render/RenderTreeNode.h>
 #include <engine/render/RequestedResources.h>
 #include <entt/entt.hpp>
 #include <ft2build.h>
