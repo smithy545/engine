@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <engine/render/camera/Camera.h>
 #include <engine/render/renderer.h>
 #include <engine/render/InstanceList.h>
 #include <engine/render/mesh/Mesh.h>
@@ -30,6 +31,7 @@ SOFTWARE.
 #include <engine/render/sprite/TextureSprite.h>
 #include <fmt/format.h>
 #include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <iostream>
 #include <stdexcept>
 #include <utils/file_util.h>
@@ -40,21 +42,22 @@ using namespace utils::concepts;
 namespace engine::renderer {
 namespace { // pseudo-member namespace
 RenderContext context{};
-RequestedResources resources{};
+RenderResources resources{};
+RenderAssets assets{};
 } // anonymous
 
 void render(entt::registry &registry) {
 	glm::mat4 vp;
-	/*
+	Camera::Ptr camera{nullptr};
 	// 3D rendering
 	if (camera != nullptr) {
 		vp = glm::perspective(
-				ctx.fovy,
-				ctx.screen_width / ctx.screen_height,
-				ctx.z_near,
-				ctx.z_far) * camera->get_view();
-		glUseProgram(ctx.color_shader3d);
-		glUniformMatrix4fv(glGetUniformLocation(ctx.color_shader3d, "VP"), 1, GL_FALSE, &vp[0][0]);
+				context.fovy,
+				((float)context.screen_width) / ((float)context.screen_height),
+				context.z_near,
+				context.z_far) * camera->get_view();
+		glUseProgram(assets.shaders["color_shader3d"]);
+		glUniformMatrix4fv(glGetUniformLocation(assets.shaders["color_shader3d"], "VP"), 1, GL_FALSE, &vp[0][0]);
 		auto view3d = registry.view<Mesh, InstanceList>();
 		for (const auto &entity: view3d) {
 			auto[mesh, ilist] = view3d.get(entity);
@@ -67,9 +70,9 @@ void render(entt::registry &registry) {
 	}
 
 	// 2D rendering (TODO: Add occlusion culling to prevent drawing 3D entities that are covered by 2D elements)
-	vp = glm::ortho(0.f, 1.f * ctx.screen_width, 1.f * ctx.screen_height, 0.f);
-	glUseProgram(ctx.color_shader2d);
-	glUniformMatrix4fv(glGetUniformLocation(ctx.color_shader2d, "VP"), 1, GL_FALSE, &vp[0][0]);
+	vp = glm::ortho(0.f, 1.f * context.screen_width, 1.f * context.screen_height, 0.f);
+	glUseProgram(assets.shaders["color_shader2d"]);
+	glUniformMatrix4fv(glGetUniformLocation(assets.shaders["color_shader2d"], "VP"), 1, GL_FALSE, &vp[0][0]);
 	auto color_view = registry.view<ShapeSprite, InstanceList>();
 	for (const auto &entity: color_view) {
 		auto[sprite, ilist] = color_view.get(entity);
@@ -81,9 +84,9 @@ void render(entt::registry &registry) {
 	}
 
 	// texture rendering
-	glUseProgram(ctx.tex_shader2d);
-	glUniformMatrix4fv(glGetUniformLocation(ctx.tex_shader2d, "VP"), 1, GL_FALSE, &vp[0][0]);
-	glUniform1i(glGetUniformLocation(ctx.tex_shader2d, "texSampler"), 0);
+	glUseProgram(assets.shaders["tex_shader2d"]);
+	glUniformMatrix4fv(glGetUniformLocation(assets.shaders["tex_shader2d"], "VP"), 1, GL_FALSE, &vp[0][0]);
+	glUniform1i(glGetUniformLocation(assets.shaders["tex_shader2d"], "texSampler"), 0);
 	auto tex_view = registry.view<TextureSprite, InstanceList>();
 	for (const auto &entity: tex_view) {
 		auto[sprite, ilist] = tex_view.get(entity);
@@ -98,21 +101,21 @@ void render(entt::registry &registry) {
 	}
 
 	// text rendering
-	glUseProgram(ctx.text_shader);
-	glUniformMatrix4fv(glGetUniformLocation(ctx.text_shader, "VP"), 1, GL_FALSE, &vp[0][0]);
-	glUniform1i(glGetUniformLocation(ctx.text_shader, "texSampler"), 0);
+	glUseProgram(assets.shaders["text_shader"]);
+	glUniformMatrix4fv(glGetUniformLocation(assets.shaders["text_shader"], "VP"), 1, GL_FALSE, &vp[0][0]);
+	glUniform1i(glGetUniformLocation(assets.shaders["text_shader"], "texSampler"), 0);
 	auto text_view = registry.view<TextSprite>();
 	for (const auto &entity: text_view) {
 		auto[sprite] = text_view.get(entity);
 		if (sprite.visible) {
-			if (!m_loaded_fonts.contains(sprite.font))
+			if (!assets.fonts.contains(sprite.font))
 				std::cerr << "Can't render sprite with unloaded font '" << sprite.font << "'" << std::endl;
 			else {
-				glUniform3f(glGetUniformLocation(ctx.text_shader, "textColor"),
+				glUniform3f(glGetUniformLocation(assets.shaders["text_shader"], "textColor"),
 				            sprite.color.x, sprite.color.y, sprite.color.z);
 				auto x = sprite.x;
 				for (std::string::const_iterator c = sprite.text.begin(); c != sprite.text.end(); c++) {
-					auto font = m_loaded_fonts.at(sprite.font);
+					auto font = assets.fonts.at(sprite.font);
 					if (!font.contains(*c)) {
 						std::cerr << "Todo: add 404 texture. Error on '" << *c << "'" << std::endl;
 						continue;
@@ -149,18 +152,20 @@ void render(entt::registry &registry) {
 			}
 		}
 	}
-	glUseProgram(0);*/
+	glUseProgram(0);
 }
 
 void init(entt::registry &registry) {
 	if (!init_context("../res/bootstrap.json"))
 		throw std::runtime_error("Failed to read config");
 	if (!init_glfw())
-		throw std::runtime_error("Failed to init_scene GLFW");
+		throw std::runtime_error("Failed to init GLFW");
 	if (!init_window())
-		throw std::runtime_error{"Failed to init_scene window"};
+		throw std::runtime_error{"Failed to init window"};
 	if (!init_glew())
-		throw std::runtime_error{"Failed to init_scene glew"};
+		throw std::runtime_error{"Failed to init GLEW"};
+	if(!init_resources())
+		throw std::runtime_error{"Failed to load initial resources"};
 
 	register_entt_callbacks(registry);
 
@@ -170,6 +175,43 @@ void init(entt::registry &registry) {
 	glEnable(GL_DEPTH_TEST);
 	// background color0
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+}
+
+bool init_resources() {
+	// load textures
+	for(auto [name, res]: resources.textures)
+		assets.textures[name] = load_texture(res);
+
+	// load fonts
+	FT_Library ft;
+	if(FT_Init_FreeType(&ft)) {
+		std::cerr << "Could not initialize FreeType library" << std::endl;
+		return false;
+	}
+	// enable blending for text transparency
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	for(auto [name, res]: resources.fonts) {
+		auto glyphs = load_font(ft, res.path, res.size);
+		if(glyphs.empty())
+			std::cerr << "Could not initialize font from '" << res.path << "'" << std::endl;
+		else
+			assets.fonts[name] = glyphs;
+	}
+	FT_Done_FreeType(ft);
+
+	// load shaders
+	for(auto [name, res]: resources.shaders) {
+		try {
+			auto vertex_src = utils::file::read_file_to_string(res.vertex_path);
+			auto fragment_src = utils::file::read_file_to_string(res.fragment_path);
+			assets.shaders[name] = load_shader(vertex_src.c_str(), fragment_src.c_str());
+		} catch (std::runtime_error& e) {
+			std::cerr << "Failed to load shader '" << name << "': " << e.what() << std::endl;
+			return false;
+		}
+	}
+	return true;
 }
 
 bool init_context(const std::string &config_path) {
@@ -199,10 +241,7 @@ bool init_context(const std::string &config_path) {
 			if (resource_json.contains("textures")) {
 				for (auto texture: resource_json["textures"]) {
 					if (texture.contains("name") && texture.contains("path")) {
-						TextureResource res;
-						res.name = texture["name"];
-						res.path = texture["path"];
-						resources.textures.push_back(res);
+						resources.textures[texture["name"]] = texture["path"];
 					} else
 						std::cerr << "Malformed texture resource" << std::endl;
 				}
@@ -211,10 +250,9 @@ bool init_context(const std::string &config_path) {
 				for (auto font: resource_json["fonts"]) {
 					if (font.contains("name") && font.contains("path") && font.contains("size")) {
 						FontResource res;
-						res.name = font["name"];
 						res.path = font["path"];
 						res.size = font["size"];
-						resources.fonts.push_back(res);
+						resources.fonts[font["name"]] = res;
 					} else
 						std::cerr << "Malformed font resource" << std::endl;
 				}
@@ -225,10 +263,9 @@ bool init_context(const std::string &config_path) {
 					&& shader.contains("vertex")
 					&& shader.contains("fragment")) {
 						ShaderResource res;
-						res.name = shader["name"];
 						res.vertex_path = shader["vertex"];
 						res.fragment_path = shader["fragment"];
-						resources.shaders.push_back(res);
+						resources.shaders[shader["name"]] = res;
 					} else
 						std::cerr << "Malformed shader resource" << std::endl;
 			}
@@ -283,73 +320,6 @@ bool init_window() {
 	return true;
 }
 
-bool init_fonts(const nlohmann::json& fonts) {
-	FT_Library ft;
-	if(FT_Init_FreeType(&ft)) {
-		std::cerr << "Could not initialize FreeType library" << std::endl;
-		return false;
-	}
-
-	// enable blending for text transparency
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	std::unordered_map<std::string, std::map<unsigned long, Glyph>> loaded_fonts;
-	for(auto font: fonts) {
-		auto glyphs = load_font(ft, font["path"], font["size"]);
-		if(glyphs.empty())
-			std::cerr << "Could not initialize font from '" << font["path"] << "'" << std::endl;
-		else
-			loaded_fonts[font["name"]] = glyphs;
-	}
-	FT_Done_FreeType(ft);
-
-	return true;
-}
-
-bool init_shaders() {
-	auto color_vshader_src = utils::file::read_file_to_string("../res/shaders/vert/color_vert.glsl");
-	auto color_vshader_src2d = utils::file::read_file_to_string("../res/shaders/vert/color_vert2d.glsl");
-	auto color_fshader_src = utils::file::read_file_to_string("../res/shaders/frag/color_frag.glsl");
-	auto tex_vshader_src = utils::file::read_file_to_string("../res/shaders/vert/tex_vert.glsl");
-	auto tex_vshader_src2d = utils::file::read_file_to_string("../res/shaders/vert/tex_vert2d.glsl");
-	auto tex_fshader_src = utils::file::read_file_to_string("../res/shaders/frag/tex_frag.glsl");
-	auto text_vshader_src = utils::file::read_file_to_string("../res/shaders/vert/text_vert.glsl");
-	auto text_fshader_src = utils::file::read_file_to_string("../res/shaders/frag/text_frag.glsl");
-
-	try {
-		//context.color_shader2d = load_shader(color_vshader_src2d.c_str(), color_fshader_src.c_str());
-	} catch (std::runtime_error& e) {
-		std::cerr << "2d color shader failed to init: " << e.what() << std::endl;
-		return false;
-	}
-	try {
-		//context.color_shader3d = load_shader(color_vshader_src.c_str(), color_fshader_src.c_str());
-	} catch (std::runtime_error& e) {
-		std::cerr << "3d color shader failed to init: " << e.what() << std::endl;
-		return false;
-	}
-	try {
-		//context.tex_shader2d = load_shader(tex_vshader_src2d.c_str(), tex_fshader_src.c_str());
-	} catch (std::runtime_error& e) {
-		std::cerr << "2d texture shader failed to init: " << e.what() << std::endl;
-		return false;
-	}
-	try {
-		//context.tex_shader3d = load_shader(tex_vshader_src.c_str(), tex_fshader_src.c_str());
-	} catch (std::runtime_error& e) {
-		std::cerr << "3d texture shader failed to init: " << e.what() << std::endl;
-		return false;
-	}
-	try {
-		//context.text_shader = load_shader(text_vshader_src.c_str(), text_fshader_src.c_str());
-	} catch (std::runtime_error& e) {
-		std::cerr << "Text shader failed to init: " << e.what() << std::endl;
-		return false;
-	}
-	return true;
-}
-
 void register_entt_callbacks(entt::registry &registry) {
 	registry.on_construct<Mesh>().connect<&construct_mesh>();
 	registry.on_construct<ShapeSprite>().connect<&construct_shape_sprite>();
@@ -363,13 +333,8 @@ void register_entt_callbacks(entt::registry &registry) {
 }
 
 void cleanup(entt::registry& registry) {
-	/*
-	glDeleteProgram(context.color_shader2d);
-	glDeleteProgram(context.color_shader3d);
-	glDeleteProgram(context.tex_shader2d);
-	glDeleteProgram(context.tex_shader3d);
-	glDeleteProgram(context.text_shader);
-	*/
+	for(auto [name, shader]: assets.shaders)
+		glDeleteProgram(shader);
 	glfwTerminate();
 }
 

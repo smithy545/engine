@@ -29,7 +29,7 @@ SOFTWARE.
 #include <utils/graph_traversal.h>
 #include <engine/render/Glyph.h>
 #include <engine/render/RenderContext.h>
-#include <engine/render/RequestedResources.h>
+#include <engine/render/RenderResources.h>
 #include <entt/entt.hpp>
 #include <ft2build.h>
 #include <freetype/freetype.h>
@@ -53,9 +53,7 @@ bool init_glfw();
 
 bool init_glew();
 
-bool init_fonts();
-
-bool init_shaders();
+bool init_resources();
 
 void register_entt_callbacks(entt::registry &registry);
 

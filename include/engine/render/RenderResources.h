@@ -25,36 +25,47 @@ SOFTWARE.
 #ifndef ENGINE_REQUESTEDRESOURCES_H
 #define ENGINE_REQUESTEDRESOURCES_H
 
+#include <engine/render/Glyph.h>
+#include <GL/glew.h>
+#include <map>
 #include <string>
-#include <vector>
 
 
 using std::string;
-using std::vector;
+using std::map;
 
 namespace engine {
+
 struct FontResource {
-	string name;
 	string path;
 	int size;
 };
 
 struct ShaderResource {
-	string name;
 	string vertex_path;
 	string fragment_path;
 };
 
-struct TextureResource {
-	string name;
-	string path;
+typedef string TextureResource;
+
+typedef map<unsigned long, Glyph> FontAsset;
+
+typedef GLuint ShaderAsset;
+
+typedef GLuint TextureAsset;
+
+struct RenderResources {
+	map<string, ShaderResource> shaders{};
+	map<string, TextureResource> textures{};
+	map<string, FontResource> fonts{};
 };
 
-struct RequestedResources {
-	vector<ShaderResource> shaders{};
-	vector<TextureResource> textures{};
-	vector<FontResource> fonts{};
+struct RenderAssets {
+	map<string, ShaderAsset> shaders{};
+	map<string, TextureAsset> textures{};
+	map<string, FontAsset> fonts{};
 };
+
 } // namespace engine
 
 #endif //ENGINE_REQUESTEDRESOURCES_H
