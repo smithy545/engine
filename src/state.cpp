@@ -69,12 +69,63 @@ void set_key(int key, bool value) {
 	key_input_chain.handle(KeyEvent{key, value});
 }
 
+
+void key_cb(GLFWwindow *window, int key, int scancode, int action, int mods) {
+	switch (action) {
+		case GLFW_PRESS:
+			set_key(key, true);
+			break;
+		case GLFW_RELEASE:
+			set_key(key, false);
+			break;
+		case GLFW_REPEAT:
+			break;
+		default:
+			std::cerr << "Key action \"" << action << "\" not handled" << std::endl;
+	}
+}
+
+void cursor_pos_cb(GLFWwindow *window, double xpos, double ypos) {
+	set_mouse_position(xpos, ypos);
+}
+
+void mouse_wheel_cb(GLFWwindow *window, double xoffset, double yoffset) {
+	set_mouse_scroll(yoffset);
+}
+
+void mouse_button_cb(GLFWwindow *window, int button, int action, int mods) {
+	switch (action) {
+		case GLFW_PRESS:
+			set_mouse_button(button, true);
+			break;
+		case GLFW_RELEASE:
+			set_mouse_button(button, false);
+			break;
+		default:
+			std::cerr << "Mouse action \"" << action << "\" not handled" << std::endl;
+	}
+}
+
+void resize_cb(GLFWwindow *window, int width, int height) {
+	entt::monostate<WIDTH_KEY>{} = width;
+	entt::monostate<HEIGHT_KEY>{} = height;
+	entt::monostate<RESIZED_KEY>{} = true;
+}
+
 } // anonymous
 
 bool init() {
 	const auto& ctx = render::get_context();
 
-	register_input_callbacks(ctx.window);
+	for (auto &k: keys)
+		k = false;
+
+	glfwSetInputMode(ctx.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	glfwSetKeyCallback(ctx.window, key_cb);
+	glfwSetCursorPosCallback(ctx.window, cursor_pos_cb);
+	glfwSetScrollCallback(ctx.window, mouse_wheel_cb);
+	glfwSetMouseButtonCallback(ctx.window, mouse_button_cb);
+	glfwSetFramebufferSizeCallback(ctx.window, resize_cb);
 
 	return true;
 }
@@ -85,48 +136,6 @@ void poll() {
 	reset_prev_mouse_coords();
 	if(glfwWindowShouldClose(ctx.window) || get_key(GLFW_KEY_ESCAPE))
 		stop();
-}
-
-void key_cb(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    switch (action) {
-        case GLFW_PRESS:
-            set_key(key, true);
-            break;
-        case GLFW_RELEASE:
-            set_key(key, false);
-            break;
-        case GLFW_REPEAT:
-            break;
-        default:
-            std::cerr << "Key action \"" << action << "\" not handled" << std::endl;
-    }
-}
-
-void cursor_pos_cb(GLFWwindow *window, double xpos, double ypos) {
-    set_mouse_position(xpos, ypos);
-}
-
-void mouse_wheel_cb(GLFWwindow *window, double xoffset, double yoffset) {
-    set_mouse_scroll(yoffset);
-}
-
-void mouse_button_cb(GLFWwindow *window, int button, int action, int mods) {
-    switch (action) {
-        case GLFW_PRESS:
-            set_mouse_button(button, true);
-            break;
-        case GLFW_RELEASE:
-            set_mouse_button(button, false);
-            break;
-        default:
-            std::cerr << "Mouse action \"" << action << "\" not handled" << std::endl;
-    }
-}
-
-void resize_cb(GLFWwindow *window, int width, int height) {
-    entt::monostate<WIDTH_KEY>{} = width;
-    entt::monostate<HEIGHT_KEY>{} = height;
-    entt::monostate<RESIZED_KEY>{} = true;
 }
 
 double get_mouse_x() {
@@ -210,47 +219,36 @@ void clear_resize() {
     entt::monostate<RESIZED_KEY>{} = false;
 }
 
-void register_input_callbacks(GLFWwindow *window) {
-	for (auto &k: keys)
-		k = false;
-
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	glfwSetKeyCallback(window, key_cb);
-	glfwSetCursorPosCallback(window, cursor_pos_cb);
-	glfwSetScrollCallback(window, mouse_wheel_cb);
-	glfwSetMouseButtonCallback(window, mouse_button_cb);
-	glfwSetFramebufferSizeCallback(window, resize_cb);
+KeyHandlerNode register_key_input_handler(KeyCallback callback) {
+	return key_input_chain.set_next(std::move(callback));
 }
 
-KeyHandlerNode register_key_input_handler(entt::poly<KeyHandler> handler) {
-	return key_input_chain.set_next(std::move(handler));
+MouseButtonHandlerNode register_mouse_button_handler(MouseButtonCallback callback) {
+	return mouse_button_chain.set_next(std::move(callback));
 }
 
-void unregister_key_input_handler(KeyHandlerNode handler) {
-	key_input_chain.remove(std::move(handler));
+MouseMotionHandlerNode register_mouse_motion_handler(MouseMotionCallback callback) {
+	return mouse_motion_chain.set_next(std::move(callback));
 }
 
-MouseButtonHandlerNode register_mouse_button_handler(entt::poly<MouseButtonHandler> handler) {
-	return mouse_button_chain.set_next(std::move(handler));
+MouseWheelHandlerNode register_mouse_wheel_handler(MouseWheelCallback callback) {
+	return mouse_wheel_chain.set_next(std::move(callback));
 }
 
-void unregister_mouse_button_handler(MouseButtonHandlerNode handler) {
-	mouse_button_chain.remove(std::move(handler));
+void unregister_key_input_handler(KeyHandlerNode node) {
+	key_input_chain.remove(std::move(node));
 }
 
-MouseMotionHandlerNode register_mouse_motion_handler(entt::poly<MouseMotionHandler> handler) {
-	return mouse_motion_chain.set_next(std::move(handler));
+void unregister_mouse_button_handler(MouseButtonHandlerNode node) {
+	mouse_button_chain.remove(std::move(node));
 }
 
-void unregister_mouse_motion_handler(MouseMotionHandlerNode handler) {
-	mouse_motion_chain.remove(std::move(handler));
+void unregister_mouse_motion_handler(MouseMotionHandlerNode node) {
+	mouse_motion_chain.remove(std::move(node));
 }
 
-MouseWheelHandlerNode register_mouse_wheel_handler(entt::poly<MouseWheelHandler> handler) {
-	return mouse_wheel_chain.set_next(std::move(handler));
+void unregister_mouse_wheel_handler(MouseWheelHandlerNode node) {
+	mouse_wheel_chain.remove(std::move(node));
 }
 
-void unregister_mouse_wheel_handler(MouseWheelHandlerNode handler) {
-	mouse_wheel_chain.remove(std::move(handler));
-}
 } // namespace engine::state

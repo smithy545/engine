@@ -18,25 +18,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <boost/graph/adjacency_list.hpp>
 #include <engine/interface/interface.h>
+#include <engine/state.h>
+#include <memory>
 
+
+using namespace utils;
 
 namespace engine::interface {
 
+namespace {
+
+using IGraph = boost::adjacency_list<boost::listS, boost::setS, boost::directedS, InterfaceNode::Ptr>;
+using IGraphTraits = boost::graph_traits<IGraph>;
+IGraph graph;
+IGraphTraits::vertex_descriptor root_descriptor;
+
+} // anonymous
+
 bool init(entt::registry &registry) {
-	registry.on_construct<Widget>().connect<&construct_widget>();
-	registry.on_update<Widget>().connect<&update_widget>();
-	registry.on_destroy<Widget>().connect<&destroy_widget>();
+	auto node = std::make_shared<InterfaceNode>(math::bounds{{0.,0.},{0.,0.}});
+	root_descriptor = boost::add_vertex(node, graph);
+
+	state::register_key_input_handler([&](KeyEvent event) {
+		return true;
+	});
+	state::register_mouse_button_handler([&](MouseButtonEvent event) {
+		return true;
+	});
+	state::register_mouse_motion_handler([&](MouseMotionEvent event) {
+		return true;
+	});
+	state::register_mouse_wheel_handler([&](MouseWheelEvent event) {
+		return true;
+	});
 
 	return true;
 }
 
 void cleanup(entt::registry &registry) {}
 
-void construct_widget(entt::registry& registry, entt::entity entity) {}
-
-void update_widget(entt::registry& registry, entt::entity entity) {}
-
-void destroy_widget(entt::registry& registry, entt::entity entity) {}
+InterfaceNode::Ptr root() {
+	return graph[root_descriptor];
+}
 
 } // namespace engine::interface

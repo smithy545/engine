@@ -27,6 +27,7 @@ SOFTWARE.
 
 #include <engine/event_handling.h>
 #include <entt/entt.hpp>
+#include <functional>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -52,6 +53,11 @@ using KeyHandlerNode = KeyHandlerChain::HandlerNode::Ptr;
 using MouseButtonHandlerNode = MouseButtonHandlerChain::HandlerNode::Ptr;
 using MouseMotionHandlerNode = MouseMotionHandlerChain::HandlerNode::Ptr;
 using MouseWheelHandlerNode = MouseWheelHandlerChain::HandlerNode::Ptr;
+
+using KeyCallback = EventCallback<KeyEvent>;
+using MouseButtonCallback = EventCallback<MouseButtonEvent>;
+using MouseMotionCallback = EventCallback<MouseMotionEvent>;
+using MouseWheelCallback = EventCallback<MouseWheelEvent>;
 
 bool init();
 
@@ -95,23 +101,22 @@ bool is_paused();
 
 bool has_started();
 
-void register_input_callbacks(GLFWwindow* window);
+KeyHandlerNode register_key_input_handler(KeyCallback callback);
 
-KeyHandlerNode register_key_input_handler(entt::poly<KeyHandler> handler);
+void unregister_key_input_handler(KeyHandlerNode node);
 
-void unregister_key_input_handler(KeyHandlerChain::HandlerNode::Ptr handler);
+MouseButtonHandlerNode register_mouse_button_handler(MouseButtonCallback callback);
 
-MouseButtonHandlerNode register_mouse_button_handler(entt::poly<MouseButtonHandler> handler);
+void unregister_mouse_button_handler(MouseButtonHandlerNode node);
 
-void unregister_mouse_button_handler(MouseButtonHandlerNode handler);
+MouseMotionHandlerNode register_mouse_motion_handler(MouseMotionCallback callback);
 
-MouseMotionHandlerNode register_mouse_motion_handler(entt::poly<MouseMotionHandler> handler);
+void unregister_mouse_motion_handler(MouseMotionHandlerNode node);
 
-void unregister_mouse_motion_handler(MouseMotionHandlerNode handler);
+MouseWheelHandlerNode register_mouse_wheel_handler(MouseWheelCallback callback);
 
-MouseWheelHandlerNode register_mouse_wheel_handler(entt::poly<MouseWheelHandler> handler);
+void unregister_mouse_wheel_handler(MouseWheelHandlerNode node);
 
-void unregister_mouse_wheel_handler(MouseWheelHandlerNode handler);
 } // namespace engine::state
 
 

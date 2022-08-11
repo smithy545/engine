@@ -22,20 +22,30 @@ SOFTWARE.
 #define ENGINE_INTERFACE_H
 
 #include <entt/entt.hpp>
-#include <engine/interface/Widget.h>
+#include <set>
+#include <utils/macros.h>
+#include <utils/math_util.h>
 
 
 namespace engine::interface {
+
+struct InterfaceNode {
+	PTR(InterfaceNode);
+
+	utils::math::bounds bounds;
+
+	explicit InterfaceNode(utils::math::bounds bounds) : bounds(bounds) {}
+
+	[[nodiscard]] virtual bool collides(glm::vec2 p) const {
+		return in_bounds(p, bounds);
+	}
+};
 
 bool init(entt::registry &registry);
 
 void cleanup(entt::registry &registry);
 
-void construct_widget(entt::registry& registry, entt::entity entity);
-
-void update_widget(entt::registry& registry, entt::entity entity);
-
-void destroy_widget(entt::registry& registry, entt::entity entity);
+InterfaceNode::Ptr root();
 
 } // namespace engine::interface
 

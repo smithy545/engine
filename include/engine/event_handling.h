@@ -25,77 +25,22 @@ SOFTWARE.
 #ifndef ENGINE_EVENT_HANDLING_H
 #define ENGINE_EVENT_HANDLING_H
 
-#include <entt/entt.hpp>
+#include <functional>
 #include <gsl/gsl>
-#include <utility>
-#include <utils/concepts.h>
-#include <utils/macros.h>
-#include <vector>
 
 #include "events.h"
 
 
-using std::shared_ptr;
-
 namespace engine {
-// entt event handlers (observer)
-template <typename Event, typename Emitter>
-struct EventSink : entt::type_list<void(Event)> {
-	template <typename Base>
-	struct type: Base {
-		void handle(Event& event, Emitter& emitter) {
-			entt::poly_call<0>(*this, event, emitter);
-		}
-	};
 
-	template <typename Type>
-	using impl = entt::value_list<&Type::handle>;
-};
-
-template <typename Emitter>
-using KeyEventSink = EventSink<KeyEvent, Emitter>;
-
-template <typename Emitter>
-using MouseButtonEventSink = EventSink<MouseButtonEvent, Emitter>;
-
-template <typename Emitter>
-using MouseMotionEventSink = EventSink<MouseMotionEvent, Emitter>;
-
-template <typename Emitter>
-using MouseWheelEventSink = EventSink<MouseWheelEvent, Emitter>;
-
-// GLFW/input event handlers (chain-of-responsibility)
-namespace {
-	// define handle in anonymous namespace to ensure Event is part of template signature, thereby distinguishing
-	// between handlers of different event types in multiple inheritance
-	template<typename Type, typename Event>
-	bool handle(Type &self, Event event) {
-		return self.handle(event);
-	}
-} // anonymous
-
-template <typename Event>
-struct Handler : entt::type_list<bool(Event)> {
-	template <typename Base>
-	struct type: Base {
-		bool handle(Event event) {
-			return entt::poly_call<0>(*this, event);
-		}
-	};
-
-	template <typename Type>
-	using impl = entt::value_list<&handle<Type, Event>>;
-};
-
-using KeyHandler = Handler<KeyEvent>;
-using MouseButtonHandler = Handler<MouseButtonEvent>;
-using MouseMotionHandler = Handler<MouseMotionEvent>;
-using MouseWheelHandler = Handler<MouseWheelEvent>;
+// return false when event handled
+template <typename EventType>
+using EventCallback = std::function<bool(EventType)>;
 
 template <typename Event>
 class HandlerChain {
 public:
-	using HandlerType = Handler<Event>;
+	using Handler = EventCallback<Event>;
 
 	class HandlerNode {
 	public:
@@ -103,31 +48,30 @@ public:
 
 		friend class HandlerChain<Event>;
 
-		explicit HandlerNode(entt::poly<HandlerType> handler, Ptr next = nullptr)
+		explicit HandlerNode(Handler handler, Ptr next = nullptr)
 		: m_handler(handler), m_next(next) {}
 	private:
-		entt::poly<HandlerType> m_handler{};
+		Handler m_handler;
 		Ptr m_next{nullptr};
 	};
 
 	void handle(Event event) {
 		auto ptr = m_head;
 		while(ptr != nullptr) {
-			if(!ptr->m_handler->handle(event))
+			if(!ptr->m_handler(event))
 				return;
 			ptr = ptr->m_next;
 		}
 	}
 
-	typename HandlerNode::Ptr set_next(entt::poly<HandlerType> handler) {
+	typename HandlerNode::Ptr set_next(Handler handler) {
 		auto node = std::make_shared<HandlerNode>(handler);
-		if(m_head == nullptr)
+		if(m_tail == nullptr) {
 			m_head = node;
-		else {
-			auto ptr = m_head;
-			while (ptr->m_next != nullptr)
-				ptr = ptr->m_next;
-			ptr->m_next = node;
+			m_tail = node;
+		} else {
+			m_tail->m_next = node;
+			m_tail = node;
 		}
 		return node;
 	}
@@ -146,22 +90,26 @@ public:
 	}
 
 	virtual ~HandlerChain() {
-		auto ptr = m_head;
-		while(ptr != nullptr) {
-			auto next = ptr->m_next;
-			ptr->m_next = nullptr;
-			ptr = next;
+		if(m_head != nullptr) {
+			auto ptr = m_head;
+			do {
+				auto next = ptr->m_next;
+				ptr->m_next = nullptr;
+				ptr = next;
+			} while (ptr != nullptr);
+			m_head = nullptr;
 		}
-		m_head = nullptr;
+		m_tail = nullptr;
 	}
 private:
-	typename HandlerNode::Ptr m_head{nullptr};
+	typename HandlerNode::Ptr m_head{nullptr}, m_tail{nullptr};
 };
 
 using KeyHandlerChain = HandlerChain<KeyEvent>;
 using MouseButtonHandlerChain = HandlerChain<MouseButtonEvent>;
 using MouseMotionHandlerChain = HandlerChain<MouseMotionEvent>;
 using MouseWheelHandlerChain = HandlerChain<MouseWheelEvent>;
+
 } // namespace engine
 
 #endif //ENGINE_EVENT_HANDLING_H
