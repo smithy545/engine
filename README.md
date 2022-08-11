@@ -10,8 +10,6 @@ The following code will setup a blank window and exit on pressing escape:
 #include <engine/state.h>
 #include <iostream>
 
-#include "Game.h"
-
 
 using namespace engine;
 
@@ -34,9 +32,6 @@ int main() {
 		std::cerr << "Error during interface initialization. Exiting." << std::endl;
 		return 3;
 	}
-
-	// specialized game class which loads initial interface
-	Game();
 
 	state::start();
 	do {
