@@ -26,7 +26,6 @@ SOFTWARE.
 #define ENGINE_RENDERER_H
 
 #include <concepts>
-#include <utils/graph_traversal.h>
 #include <engine/render/Glyph.h>
 #include <engine/render/RenderContext.h>
 #include <engine/render/RenderResources.h>
@@ -40,10 +39,11 @@ SOFTWARE.
 #include <utils/macros.h>
 
 
-namespace engine::renderer {
+namespace engine::render {
+
 void render(entt::registry& registry);
 
-void init(entt::registry &registry);
+bool init(entt::registry &registry);
 
 bool init_context(const std::string &config_path);
 
@@ -61,12 +61,6 @@ void cleanup(entt::registry &registry);
 
 // state access
 const RenderContext &get_context();
-
-std::map<unsigned long, Glyph> get_font(const string &name);
-
-GLuint get_shader(const string &name);
-
-GLuint get_texture(const string &name);
 
 // entt object lifecycles
 void construct_mesh(entt::registry& registry, entt::entity entity);
@@ -98,6 +92,6 @@ std::map<unsigned long, Glyph> load_font(
 		unsigned int font_size,
 		const std::string& text =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,?!-:!@#$%^&*()_+|~");
-} // namespace engine::renderer
+} // namespace engine::render
 
 #endif //ENGINE_RENDERER_H

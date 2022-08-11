@@ -33,7 +33,6 @@ SOFTWARE.
 #include <vector>
 
 #include "events.h"
-#include "mixins.h"
 
 
 using std::shared_ptr;

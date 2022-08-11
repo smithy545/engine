@@ -25,8 +25,6 @@ SOFTWARE.
 #ifndef ENGINE_REQUESTEDRESOURCES_H
 #define ENGINE_REQUESTEDRESOURCES_H
 
-#include <engine/render/Glyph.h>
-#include <GL/glew.h>
 #include <map>
 #include <string>
 
@@ -48,23 +46,12 @@ struct ShaderResource {
 
 typedef string TextureResource;
 
-typedef map<unsigned long, Glyph> FontAsset;
-
-typedef GLuint ShaderAsset;
-
-typedef GLuint TextureAsset;
-
 struct RenderResources {
 	map<string, ShaderResource> shaders{};
 	map<string, TextureResource> textures{};
 	map<string, FontResource> fonts{};
 };
 
-struct RenderAssets {
-	map<string, ShaderAsset> shaders{};
-	map<string, TextureAsset> textures{};
-	map<string, FontAsset> fonts{};
-};
 
 } // namespace engine
 

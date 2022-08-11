@@ -22,25 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <engine/state.h>
-
-#include <engine/mixins.h>
 #include <engine/render/renderer.h>
+#include <engine/state.h>
 #include <iostream>
 #include <utility>
 #include <utils/graph_traversal.h>
 
 
-using namespace engine::mixins;
-
 namespace engine::state {
+
 namespace { // pseudo-member namespace
+
 bool keys[GLFW_KEY_LAST]{};
 KeyHandlerChain key_input_chain{};
 MouseButtonHandlerChain mouse_button_chain{};
 MouseMotionHandlerChain mouse_motion_chain{};
 MouseWheelHandlerChain mouse_wheel_chain{};
-entt::registry registry{};
 
 void set_mouse_position(double x, double y) {
 	entt::monostate<PREV_MOUSE_X_KEY>{} = ((double) entt::monostate<MOUSE_X_KEY>{});
@@ -71,40 +68,23 @@ void set_key(int key, bool value) {
 	keys[key] = value;
 	key_input_chain.handle(KeyEvent{key, value});
 }
+
 } // anonymous
 
 bool init() {
-	const auto& ctx = renderer::get_context();
+	const auto& ctx = render::get_context();
 
-	renderer::init(registry);
 	register_input_callbacks(ctx.window);
 
 	return true;
 }
 
-void render() {
-	renderer::render(registry);
-}
-
-void tick() {
-	auto view = registry.view<entt::poly<Tickable>>();
-	for (auto e: view) {
-		auto &ticker = view.get<entt::poly<Tickable>>(e);
-		ticker->tick(registry);
-	}
-}
-
 void poll() {
-	const auto& ctx = renderer::get_context();
+	const auto& ctx = render::get_context();
 	glfwPollEvents();
 	reset_prev_mouse_coords();
 	if(glfwWindowShouldClose(ctx.window) || get_key(GLFW_KEY_ESCAPE))
 		stop();
-}
-
-void cleanup() {
-	renderer::cleanup(registry);
-	registry.clear();
 }
 
 void key_cb(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -147,10 +127,6 @@ void resize_cb(GLFWwindow *window, int width, int height) {
     entt::monostate<WIDTH_KEY>{} = width;
     entt::monostate<HEIGHT_KEY>{} = height;
     entt::monostate<RESIZED_KEY>{} = true;
-}
-
-entt::registry& get_registry() {
-	return registry;
 }
 
 double get_mouse_x() {

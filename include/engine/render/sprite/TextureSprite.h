@@ -30,7 +30,6 @@ SOFTWARE.
 
 namespace engine {
 struct TextureSprite : public Sprite {
-	std::string name;
 	std::vector<glm::vec2> uvs;
 };
 } // namespace engine

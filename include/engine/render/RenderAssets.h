@@ -1,18 +1,14 @@
-/* Created by Philip Smith on 5/25/21.
+/*
 MIT License
-
-Copyright (c) 2021 Philip Arturo Smith
-
+Copyright (c) 2022 Philip Arturo Smith
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,25 +18,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_SPRITE_H
-#define ENGINE_SPRITE_H
+#ifndef ENGINE_RENDERASSETS_H
+#define ENGINE_RENDERASSETS_H
 
-#include <engine/render/VertexArrayObject.h>
-#include <glm/glm.hpp>
-#include <utility>
-#include <vector>
+#include <engine/render/Glyph.h>
+#include <GL/glew.h>
+#include <map>
+#include <string>
 
+
+using std::map;
+using std::string;
 
 namespace engine {
-struct Sprite : VertexArrayObject {
-	Sprite() = default;
 
-	Sprite(std::vector<glm::vec2> vertices, std::vector<unsigned int> indices) :
-	vertices(std::move(vertices)), indices(std::move(indices)) {}
+typedef map<unsigned long, Glyph> FontGlyphs;
 
-    std::vector<glm::vec2> vertices{};
-    std::vector<unsigned int> indices{};
+typedef GLuint GLShader;
+
+typedef GLuint GLTexture;
+
+struct RenderAssets {
+	map<string, GLShader> shaders{};
+	map<string, GLTexture> textures{};
+	map<string, FontGlyphs> fonts{};
 };
+
 } // namespace engine
 
-#endif //ENGINE_SPRITE_H
+#endif //ENGINE_RENDERASSETS_H

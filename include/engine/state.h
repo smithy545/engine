@@ -32,6 +32,7 @@ SOFTWARE.
 
 
 namespace engine::state {
+
 constexpr entt::hashed_string MOUSE_X_KEY{"mouse_x"};
 constexpr entt::hashed_string MOUSE_Y_KEY{"mouse_y"};
 constexpr entt::hashed_string PREV_MOUSE_X_KEY{"prev_mouse_x"};
@@ -54,13 +55,7 @@ using MouseWheelHandlerNode = MouseWheelHandlerChain::HandlerNode::Ptr;
 
 bool init();
 
-void tick();
-
-void render();
-
 void poll();
-
-void cleanup();
 
 entt::registry& get_registry();
 
