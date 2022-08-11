@@ -45,7 +45,7 @@ void render(entt::registry& registry);
 
 bool init(entt::registry &registry);
 
-bool init_context(const std::string &config_path);
+bool read_config(const std::string &config_path);
 
 bool init_window();
 

@@ -28,7 +28,6 @@ SOFTWARE.
 #include <glm/gtc/matrix_transform.hpp>
 
 
-
 namespace engine::interface {
 
 namespace {
@@ -51,7 +50,7 @@ bool init(entt::registry& registry) {
 			glm::vec2(100,100),
 	};
 	sprite.indices = {
-			0, 1, 2, 2, 1, 3
+			1, 0, 2, 3, 1, 2
 	};
 	sprite.colors = {
 			glm::vec3(100,0,0),
@@ -74,7 +73,7 @@ bool init(entt::registry& registry) {
 		return true;
 	});
 	state::register_mouse_motion_handler([&](MouseMotionEvent event) {
-		active_entity = locator->at(event.x, event.y);
+		//active_entity = locator->at(event.x, event.y);
 		return true;
 	});
 	state::register_mouse_wheel_handler([&](MouseWheelEvent event) {
