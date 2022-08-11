@@ -127,6 +127,12 @@ bool init() {
 	glfwSetMouseButtonCallback(ctx.window, mouse_button_cb);
 	glfwSetFramebufferSizeCallback(ctx.window, resize_cb);
 
+	// set initial window size
+	int width{0}, height{0};
+	glfwGetFramebufferSize(ctx.window, &width, &height);
+	entt::monostate<WIDTH_KEY>{} = width;
+	entt::monostate<HEIGHT_KEY>{} = height;
+
 	return true;
 }
 

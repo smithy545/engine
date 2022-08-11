@@ -27,6 +27,7 @@ SOFTWARE.
 
 #include <functional>
 #include <gsl/gsl>
+#include <utils/macros.h>
 
 #include "events.h"
 

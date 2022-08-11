@@ -18,18 +18,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_INTERFACE_H
-#define ENGINE_INTERFACE_H
-
-#include <entt/entt.hpp>
+#include <engine/interface/EntityMap.h>
 
 
 namespace engine::interface {
 
-bool init(entt::registry &registry);
+EntityMap::EntityMap(vector<Point_2> points) : m_points(std::move(points)) {
+	for(auto p: m_points)
+		m_value_map[p] = entt::null;
+}
 
-void cleanup(entt::registry &registry);
+entity EntityMap::operator[](const Point_2& query) {
+	return m_value_map.at(utils::math::query_closest(m_points, query));
+}
+
+entity EntityMap::at(double x, double y) {
+	if(m_value_map.empty())
+		return entt::null;
+	return m_value_map.at(utils::math::query_closest(m_points, Point_2(x, y)));
+}
+
+const map<Point_2, entity>& EntityMap::get_value_map() const {
+	return m_value_map;
+}
+
+const vector<Point_2>& EntityMap::get_points() const {
+	return m_points;
+}
+
+void EntityMap::put(const Point_2& query, entity ent) {
+	if(!m_value_map.contains(query))
+		m_points.push_back(query);
+	m_value_map[query] = ent;
+}
+
+void EntityMap::erase(const Point_2& query) {
+	if(m_value_map.contains(query))
+		m_value_map.erase(query);
+	int index{0};
+	for(auto p: m_points) {
+		if (p == query)
+			break;
+		index++;
+	}
+	if(index < m_points.size())
+		m_points.erase(m_points.begin() + index);
+}
 
 } // namespace engine::interface
-
-#endif //ENGINE_INTERFACE_H

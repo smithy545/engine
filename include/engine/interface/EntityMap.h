@@ -18,14 +18,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_WIDGET_H
-#define ENGINE_WIDGET_H
+#ifndef ENGINE_ENTITYMAP_H
+#define ENGINE_ENTITYMAP_H
 
+#include <entt/entt.hpp>
+#include <map>
+#include <utils/math_util.h>
+#include <vector>
+
+
+using entt::entity;
+using std::map;
+using std::vector;
+using utils::math::Point_2;
 
 namespace engine::interface {
 
-struct Widget {};
+class EntityMap {
+public:
+	EntityMap() = default;
+
+	explicit EntityMap(vector<Point_2> points);
+
+	virtual ~EntityMap() = default;
+
+	entity operator[](const Point_2& query);
+
+	entity at(double x, double y);
+
+	[[nodiscard]] const map<Point_2, entity>& get_value_map() const;
+
+	[[nodiscard]] const vector<Point_2>& get_points() const;
+
+	void put(const Point_2& query, entity ent);
+
+	void erase(const Point_2& query);
+private:
+	vector<Point_2> m_points{};
+	map<Point_2, entity> m_value_map{};
+};
 
 } // namespace engine::interface
 
-#endif //ENGINE_WIDGET_H
+#endif //ENGINE_ENTITYMAP_H

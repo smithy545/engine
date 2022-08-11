@@ -18,28 +18,54 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <boost/graph/adjacency_list.hpp>
 #include <engine/interface/interface.h>
+#include <engine/interface/EntityMap.h>
+#include <engine/render/InstanceList.h>
+#include <engine/render/sprite/ShapeSprite.h>
 #include <engine/state.h>
-#include <memory>
+#include <entt/entt.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 
-using namespace utils;
 
 namespace engine::interface {
 
 namespace {
 
-using IGraph = boost::adjacency_list<boost::listS, boost::setS, boost::directedS, InterfaceNode::Ptr>;
-using IGraphTraits = boost::graph_traits<IGraph>;
-IGraph graph;
-IGraphTraits::vertex_descriptor root_descriptor;
+// EntityMap maps screen position to the nearest interface entity by object center
+// Overlapping objects or 3D objects require more complex collision detection TBA
+std::unique_ptr<EntityMap> locator{nullptr};
+entt::entity active_entity{entt::null};
 
 } // anonymous
 
-bool init(entt::registry &registry) {
-	auto node = std::make_shared<InterfaceNode>(math::bounds{{0.,0.},{0.,0.}});
-	root_descriptor = boost::add_vertex(node, graph);
+bool init(entt::registry& registry) {
+	locator = std::make_unique<EntityMap>();
+	active_entity = registry.create();
+	ShapeSprite sprite;
+	sprite.vertices = {
+			glm::vec2(0,0),
+			glm::vec2(100,0),
+			glm::vec2(0,100),
+			glm::vec2(100,100),
+	};
+	sprite.indices = {
+			0, 1, 2, 2, 1, 3
+	};
+	sprite.colors = {
+			glm::vec3(100,0,0),
+			glm::vec3(100,0,0),
+			glm::vec3(100,0,0),
+			glm::vec3(100,0,0),
+	};
+	registry.emplace<ShapeSprite>(active_entity, sprite);
+	registry.patch<InstanceList>(active_entity, [](auto& instances) {
+		instances.add_instance(glm::mat4(1));
+		instances.add_instance(glm::translate(glm::mat4(1), glm::vec3(700,0,0)));
+		instances.add_instance(glm::translate(glm::mat4(1), glm::vec3(0,500,0)));
+		instances.add_instance(glm::translate(glm::mat4(1), glm::vec3(700,500,0)));
+	});
 
 	state::register_key_input_handler([&](KeyEvent event) {
 		return true;
@@ -48,6 +74,7 @@ bool init(entt::registry &registry) {
 		return true;
 	});
 	state::register_mouse_motion_handler([&](MouseMotionEvent event) {
+		active_entity = locator->at(event.x, event.y);
 		return true;
 	});
 	state::register_mouse_wheel_handler([&](MouseWheelEvent event) {
@@ -57,10 +84,6 @@ bool init(entt::registry &registry) {
 	return true;
 }
 
-void cleanup(entt::registry &registry) {}
-
-InterfaceNode::Ptr root() {
-	return graph[root_descriptor];
-}
+void cleanup(entt::registry& registry) {}
 
 } // namespace engine::interface

@@ -4,8 +4,8 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(OpenGL REQUIRED)
 add_library(engine
         src/BoxMesh.cpp
+        src/EntityMap.cpp
         src/OrbitCam.cpp
-        src/PointFinder.cpp
         src/renderer.cpp
         src/state.cpp
         src/Steadicam.cpp

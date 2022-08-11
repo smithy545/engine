@@ -31,6 +31,7 @@ SOFTWARE.
 #include <engine/render/sprite/TextureSprite.h>
 #include <fmt/format.h>
 #include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <iostream>
 #include <stdexcept>
 #include <utils/file_util.h>
@@ -47,7 +48,7 @@ RenderAssets assets{};
 } // anonymous
 
 bool init(entt::registry &registry) {
-	if (!init_context("../res/bootstrap.json")) {
+	if (!read_config("../res/bootstrap.json")) {
 		std::cerr << "Failed to read config" << std::endl;
 		return false;
 	}
@@ -110,6 +111,7 @@ bool init_resources() {
 			auto vertex_src = utils::file::read_file_to_string(res.vertex_path);
 			auto fragment_src = utils::file::read_file_to_string(res.fragment_path);
 			assets.shaders[name] = load_shader(vertex_src.c_str(), fragment_src.c_str());
+			std::cout << "Loaded shader '" << name << "'" << std::endl;
 		} catch (std::runtime_error& e) {
 			std::cerr << "Failed to load shader '" << name << "': " << e.what() << std::endl;
 			return false;
@@ -118,7 +120,7 @@ bool init_resources() {
 	return true;
 }
 
-bool init_context(const std::string &config_path) {
+bool read_config(const std::string &config_path) {
 	// TODO: write json serialization/deserialization code for resource structs
 	context.screen_width = 800;
 	context.screen_height = 600;
@@ -212,8 +214,124 @@ bool init_window() {
 }
 
 void render(entt::registry &registry) {
-	glm::mat4 vp;
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glm::mat4 vp;
+	vp = glm::ortho(0.f, 1.f * context.screen_width, 1.f * context.screen_height, 0.f);
+	auto shader = assets.shaders["color"];
+	glUseProgram(shader);
+	glUniformMatrix4fv(glGetUniformLocation(shader, "VP"), 1, GL_FALSE, &vp[0][0]);
+	auto view = registry.view<ShapeSprite, InstanceList>();
+	for(auto e: view) {
+		auto [obj, ilist] = view.get(e);
+		glBindVertexArray(obj.vao);
+		glDrawElementsInstanced(ilist.render_strategy, obj.num_indices, GL_UNSIGNED_INT, 0,
+		                        ilist.instances.size());
+	}
+
+	glfwSwapBuffers(context.window);
+	/*
+	auto view = registry.view<ShaderPrepNode>();
+	for(auto entity: view) {
+		auto& node = view.get<ShaderPrepNode>(entity);
+		node.setup_uniforms();
+	}
+
+	auto shader = assets.shaders["texture"];
+	glUseProgram(shader);
+	glUniformMatrix4fv(glGetUniformLocation(shader, "VP"), 1, GL_FALSE, &vp[0][0]);
+	glUniform1i(glGetUniformLocation(shader, "texSampler"), 0);
+	auto tex_view = registry.view<MeshNode>();
+	for(auto entity: tex_view) {
+		auto node = registry.get<MeshNode>(entity);
+		node.render(context);
+	}
+
+	// 2D rendering (TODO: Add occlusion culling to prevent drawing 3D entities that are covered by 2D elements)
+	vp = glm::ortho(0.f, 1.f * context.screen_width, 1.f * context.screen_height, 0.f);
+	shader = assets.shaders["color"];
+	glUseProgram(shader);
+	glUniformMatrix4fv(glGetUniformLocation(shader, "VP"), 1, GL_FALSE, &vp[0][0]);
+	auto flat_view = registry.view<SpriteNode>();
+	for(auto entity: flat_view) {
+		auto node = registry.get<SpriteNode>(entity);
+		node.render(context);
+	}
+
+	// text rendering
+	glUseProgram(assets.shaders["text_shader"]);
+	glUniformMatrix4fv(glGetUniformLocation(assets.shaders["text_shader"], "VP"), 1, GL_FALSE, &vp[0][0]);
+	glUniform1i(glGetUniformLocation(assets.shaders["text_shader"], "texSampler"), 0);
+	auto text_view = registry.view<TextSprite>();
+	for (const auto &entity: text_view) {
+		auto[sprite] = text_view.get(entity);
+		if (sprite.visible) {
+			if (!assets.fonts.contains(sprite.font))
+				std::cerr << "Can't render sprite with unloaded font '" << sprite.font << "'" << std::endl;
+			else {
+				glUniform3f(glGetUniformLocation(assets.shaders["text_shader"], "textColor"),
+							sprite.color.x, sprite.color.y, sprite.color.z);
+				auto x = sprite.x;
+				for (std::string::const_iterator c = sprite.text.begin(); c != sprite.text.end(); c++) {
+					auto font = assets.fonts.at(sprite.font);
+					if (!font.contains(*c)) {
+						std::cerr << "Todo: add 404 texture. Error on '" << *c << "'" << std::endl;
+						continue;
+					}
+					auto glyph = font[*c];
+					float xpos = x + glyph.bearing.x * sprite.scale;
+					float ypos = sprite.y - (glyph.size.y - glyph.bearing.y) * sprite.scale;
+
+					float w = glyph.size.x * sprite.scale;
+					float h = glyph.size.y * sprite.scale;
+					// update VBO for each character
+					float vertices[6][4] = {
+							{xpos,     ypos - h, 0.0f, 0.0f},
+							{xpos,     ypos,     0.0f, 1.0f},
+							{xpos + w, ypos,     1.0f, 1.0f},
+							{xpos,     ypos - h, 0.0f, 0.0f},
+							{xpos + w, ypos,     1.0f, 1.0f},
+							{xpos + w, ypos - h, 1.0f, 0.0f}
+					};
+					glBindVertexArray(sprite.vao);
+					// render glyph texture over quad
+					glBindTexture(GL_TEXTURE_2D, glyph.tex_id);
+					// update content of VBO memory
+					glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
+					glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
+					// render quad
+					glDrawArrays(GL_TRIANGLES, 0, 6);
+					// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+					x += (glyph.advance >> 6) * sprite.scale; // bitshift by 6 to get value in pixels (2^6 = 64)
+					glBindTexture(GL_TEXTURE_2D, 0);
+					glBindVertexArray(0);
+				}
+			}
+		}
+	}
+
+	Camera::Ptr camera{nullptr};
+	// 3D rendering
+	if (camera != nullptr) {
+		vp = glm::perspective(
+				context.fovy,
+				((float)context.screen_width) / ((float)context.screen_height),
+				context.z_near,
+				context.z_far) * camera->get_view();
+		glUseProgram(assets.shaders["color_shader3d"]);
+		glUniformMatrix4fv(glGetUniformLocation(assets.shaders["color_shader3d"], "VP"), 1, GL_FALSE, &vp[0][0]);
+		auto view3d = registry.view<Mesh, InstanceList>();
+		for (const auto &entity: view3d) {
+			auto[mesh, ilist] = view3d.get(entity);
+			if (mesh.visible) {
+				glBindVertexArray(mesh.vao);
+				glDrawElementsInstanced(ilist.render_strategy, mesh.num_indices, GL_UNSIGNED_INT, 0,
+										ilist.instances.size());
+			}
+		}
+	}
+	*/
 }
 
 void register_entt_callbacks(entt::registry &registry) {
@@ -232,85 +350,6 @@ void cleanup(entt::registry& registry) {
 	for(auto [name, shader]: assets.shaders)
 		glDeleteProgram(shader);
 	glfwTerminate();
-}
-
-void update_mesh(entt::registry& registry, entt::entity entity) {
-	auto sizeof_vec3 = sizeof(glm::vec3);
-	auto &mesh = registry.get<Mesh>(entity);
-	glBindVertexArray(mesh.vao);
-	// verts
-	glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.vertices.size(), &mesh.vertices[0], GL_STATIC_DRAW);
-	// colors
-	glBindBuffer(GL_ARRAY_BUFFER, mesh.cbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.colors.size(), &mesh.colors[0], GL_STATIC_DRAW);
-	// indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh.indices.size(), &mesh.indices[0],
-	             GL_STATIC_DRAW);
-	glBindVertexArray(0);
-}
-
-void update_shape_sprite(entt::registry& registry, entt::entity entity) {
-	auto sizeof_vec3 = sizeof(glm::vec3);
-	auto sizeof_vec2 = sizeof(glm::vec2);
-	auto &sprite = registry.get<ShapeSprite>(entity);
-	glBindVertexArray(sprite.vao);
-	// verts
-	glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
-	// colors
-	glBindBuffer(GL_ARRAY_BUFFER, sprite.cbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * sprite.colors.size(), &sprite.colors[0], GL_STATIC_DRAW);
-	// indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
-	             GL_STATIC_DRAW);
-	glBindVertexArray(0);
-}
-
-void update_texture_sprite(entt::registry& registry, entt::entity entity) {
-	auto sizeof_vec2 = sizeof(glm::vec2);
-	auto &sprite = registry.get<TextureSprite>(entity);
-	glBindVertexArray(sprite.vao);
-	// verts
-	glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
-	// uvs
-	glBindBuffer(GL_ARRAY_BUFFER, sprite.tex_uvs);
-	glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.uvs.size(), &sprite.uvs[0], GL_STATIC_DRAW);
-	// indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
-	             GL_STATIC_DRAW);
-	// texture sampler
-	//sprite.tex_id = m_loaded_textures[sprite.name];
-	glBindVertexArray(0);
-}
-
-void destroy_vao(entt::registry& registry, entt::entity entity) {
-	auto vao = registry.get<VertexArrayObject>(entity);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	if (vao.vao)
-		glDeleteVertexArrays(1, &vao.vao);
-	if (vao.vbo)
-		glDeleteBuffers(1, &vao.vbo);
-	if (vao.ebo)
-		glDeleteBuffers(1, &vao.ebo);
-	if (vao.cbo)
-		glDeleteBuffers(1, &vao.cbo);
-	if (vao.tex_id)
-		glDeleteTextures(1, &vao.tex_id);
-	if (vao.tex_uvs)
-		glDeleteBuffers(1, &vao.tex_uvs);
-}
-
-void destroy_instances(entt::registry& registry, entt::entity entity) {
-	auto instances = registry.get<InstanceList>(entity);
-	if (instances.id)
-		glDeleteBuffers(1, &instances.id);
 }
 
 void construct_mesh(entt::registry& registry, entt::entity entity) {
@@ -475,6 +514,86 @@ void construct_texture_sprite(entt::registry& registry, entt::entity entity) {
 	sprite.num_indices = sprite.indices.size();
 	registry.emplace<InstanceList>(entity, ibo);
 }
+
+void update_mesh(entt::registry& registry, entt::entity entity) {
+	auto sizeof_vec3 = sizeof(glm::vec3);
+	auto &mesh = registry.get<Mesh>(entity);
+	glBindVertexArray(mesh.vao);
+	// verts
+	glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.vertices.size(), &mesh.vertices[0], GL_STATIC_DRAW);
+	// colors
+	glBindBuffer(GL_ARRAY_BUFFER, mesh.cbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * mesh.colors.size(), &mesh.colors[0], GL_STATIC_DRAW);
+	// indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh.indices.size(), &mesh.indices[0],
+	             GL_STATIC_DRAW);
+	glBindVertexArray(0);
+}
+
+void update_shape_sprite(entt::registry& registry, entt::entity entity) {
+	auto sizeof_vec3 = sizeof(glm::vec3);
+	auto sizeof_vec2 = sizeof(glm::vec2);
+	auto &sprite = registry.get<ShapeSprite>(entity);
+	glBindVertexArray(sprite.vao);
+	// verts
+	glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
+	// colors
+	glBindBuffer(GL_ARRAY_BUFFER, sprite.cbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof_vec3 * sprite.colors.size(), &sprite.colors[0], GL_STATIC_DRAW);
+	// indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite.ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
+	             GL_STATIC_DRAW);
+	glBindVertexArray(0);
+}
+
+void update_texture_sprite(entt::registry& registry, entt::entity entity) {
+	auto sizeof_vec2 = sizeof(glm::vec2);
+	auto &sprite = registry.get<TextureSprite>(entity);
+	glBindVertexArray(sprite.vao);
+	// verts
+	glBindBuffer(GL_ARRAY_BUFFER, sprite.vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.vertices.size(), &sprite.vertices[0], GL_STATIC_DRAW);
+	// uvs
+	glBindBuffer(GL_ARRAY_BUFFER, sprite.tex_uvs);
+	glBufferData(GL_ARRAY_BUFFER, sizeof_vec2 * sprite.uvs.size(), &sprite.uvs[0], GL_STATIC_DRAW);
+	// indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite.ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sprite.indices.size(), &sprite.indices[0],
+	             GL_STATIC_DRAW);
+	// texture sampler
+	//sprite.tex_id = m_loaded_textures[sprite.name];
+	glBindVertexArray(0);
+}
+
+void destroy_vao(entt::registry& registry, entt::entity entity) {
+	auto vao = registry.get<VertexArrayObject>(entity);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	if (vao.vao)
+		glDeleteVertexArrays(1, &vao.vao);
+	if (vao.vbo)
+		glDeleteBuffers(1, &vao.vbo);
+	if (vao.ebo)
+		glDeleteBuffers(1, &vao.ebo);
+	if (vao.cbo)
+		glDeleteBuffers(1, &vao.cbo);
+	if (vao.tex_id)
+		glDeleteTextures(1, &vao.tex_id);
+	if (vao.tex_uvs)
+		glDeleteBuffers(1, &vao.tex_uvs);
+}
+
+void destroy_instances(entt::registry& registry, entt::entity entity) {
+	auto instances = registry.get<InstanceList>(entity);
+	if (instances.id)
+		glDeleteBuffers(1, &instances.id);
+}
+
 
 GLuint load_texture(const std::string& path) {
 	// TODO
