@@ -4,6 +4,7 @@ My ongoing work on a small game engine with a focus of procedural generation and
 
 The following code will setup a blank window and exit on pressing escape:
 ```
+#include <chrono>
 #include <engine/execution.h>
 #include <engine/interface/interface.h>
 #include <engine/render/renderer.h>
@@ -14,12 +15,10 @@ The following code will setup a blank window and exit on pressing escape:
 using namespace engine;
 
 int main() {
-	entt::registry registry{};
-
 	// render must be initialized before state
-	if(!render::init(registry)) {
+	if(!render::init()) {
 		std::cerr << "Error during renderer initialization. Exiting." << std::endl;
-		render::cleanup(registry);
+		render::cleanup();
 		return 1;
 	}
 
@@ -28,20 +27,28 @@ int main() {
 		return 2;
 	}
 
-	if(!interface::init(registry)) {
+	if(!interface::init()) {
 		std::cerr << "Error during interface initialization. Exiting." << std::endl;
 		return 3;
 	}
 
+	execution::append_ticker([](std::chrono::nanoseconds dt) {
+	    std::cout << dt << " nanoseconds elapsed since last frame." << std::endl;
+	});
+
 	state::start();
+	auto initial = std::chrono::system_clock::now();
+	auto start = initial;
 	do {
-		execution::tick(registry);
-		render::render(registry);
+		auto dt = std::chrono::system_clock::now() - start;
+		start = std::chrono::system_clock::now();
+		execution::tick(dt);
+		render::render();
 		state::poll();
 	} while (!state::is_stopped());
 
-	interface::cleanup(registry);
-	render::cleanup(registry);
+	interface::cleanup();
+	render::cleanup();
 
 	return 0;
 }
