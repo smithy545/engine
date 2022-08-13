@@ -20,6 +20,7 @@ SOFTWARE.
 
 #include <engine/interface/interface.h>
 #include <engine/interface/EntityMap.h>
+#include <engine/render/renderer.h>
 #include <engine/state.h>
 #include <entt/entt.hpp>
 #include <map>
@@ -36,7 +37,9 @@ std::map<entt::entity, Widget::Ptr> loaded_widgets;
 
 } // anonymous
 
-bool init(entt::registry& registry) {
+bool init() {
+	auto& registry = render::get_registry();
+
 	state::register_key_input_handler([&](KeyEvent event) {
 		return true;
 	});
@@ -73,12 +76,12 @@ bool init(entt::registry& registry) {
 	return true;
 }
 
-void cleanup(entt::registry& registry) {}
+void cleanup() {}
 
-entt::entity create_widget(entt::registry& registry) {
+entt::entity create_widget() {
+	auto& registry = render::get_registry();
 	auto entity = registry.create();
 	loaded_widgets[entity] = Widget::create(registry);
 	return entity;
 }
-
 } // namespace engine::interface

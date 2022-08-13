@@ -30,9 +30,9 @@ std::list<TickCallback> execution_order;
 
 } // anonymous
 
-void tick(entt::registry& registry) {
+void tick(std::chrono::nanoseconds dt) {
 	for(const auto& callback: execution_order)
-		callback(registry);
+		callback(dt);
 }
 
 void append_ticker(const TickCallback& ticker) {

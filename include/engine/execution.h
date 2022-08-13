@@ -21,15 +21,16 @@ SOFTWARE.
 #ifndef ENGINE_EXECUTION_H
 #define ENGINE_EXECUTION_H
 
+#include <chrono>
 #include <entt/entt.hpp>
 #include <functional>
 
 
 namespace engine::execution {
 
-using TickCallback = std::function<void(entt::registry&)>;
+using TickCallback = std::function<void(std::chrono::nanoseconds)>;
 
-void tick(entt::registry& registry);
+void tick(std::chrono::nanoseconds dt);
 
 void append_ticker(const TickCallback& ticker);
 

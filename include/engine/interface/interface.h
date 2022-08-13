@@ -27,11 +27,11 @@ SOFTWARE.
 
 namespace engine::interface {
 
-bool init(entt::registry &registry);
+bool init();
 
-void cleanup(entt::registry &registry);
+void cleanup();
 
-entt::entity create_widget(entt::registry& registry);
+entt::entity create_widget();
 
 } // namespace engine::interface
 

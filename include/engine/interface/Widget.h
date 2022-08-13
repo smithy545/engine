@@ -32,7 +32,7 @@ class Widget : public entt::emitter<Widget> {
 public:
 	PTR(Widget);
 
-	friend entt::entity create_widget(entt::registry& registry);
+	friend entt::entity create_widget();
 
 	Widget() = delete;
 
@@ -47,6 +47,8 @@ public:
 	bool is_visible();
 
 	void set_visible(bool val);
+
+	entt::entity get_entity();
 
 protected:
 	explicit Widget(entt::registry& registry);

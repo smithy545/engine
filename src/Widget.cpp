@@ -46,6 +46,10 @@ void Widget::attach_key_handler(const EnttKeyCallback& callback) {
 	});
 }
 
+entt::entity Widget::get_entity() {
+	return m_entity;
+}
+
 bool Widget::is_clickable() {
 	return !this->empty<MouseButtonEvent>();
 }

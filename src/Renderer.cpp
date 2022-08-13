@@ -43,10 +43,11 @@ namespace { // pseudo-member namespace
 RenderContext context{};
 RenderResources resources{};
 RenderAssets assets{};
+entt::registry registry;
 
 } // anonymous
 
-bool init(entt::registry& registry) {
+bool init() {
 	if (!read_config("../res/bootstrap.json")) {
 		std::cerr << "Failed to read config" << std::endl;
 		return false;
@@ -68,7 +69,7 @@ bool init(entt::registry& registry) {
 		return false;
 	}
 
-	register_entt_callbacks(registry);
+	register_entt_callbacks();
 
 	// cull triangles facing away from camera
 	glEnable(GL_CULL_FACE);
@@ -212,7 +213,7 @@ bool init_window() {
 	return true;
 }
 
-void render(entt::registry& registry) {
+void render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	auto vp = glm::ortho(0.f, 1.f * context.screen_width, 1.f * context.screen_height, 0.f);
@@ -332,7 +333,7 @@ void render(entt::registry& registry) {
 	*/
 }
 
-void register_entt_callbacks(entt::registry& registry) {
+void register_entt_callbacks() {
 	registry.on_construct<Mesh>().connect<&construct_mesh>();
 	registry.on_construct<ShapeSprite>().connect<&construct_shape_sprite>();
 	registry.on_construct<TextureSprite>().connect<&construct_texture_sprite>();
@@ -344,10 +345,14 @@ void register_entt_callbacks(entt::registry& registry) {
 	registry.on_destroy<InstanceList>().connect<&destroy_instances>();
 }
 
-void cleanup(entt::registry& registry) {
+void cleanup() {
 	for(auto [name, shader]: assets.shaders)
 		glDeleteProgram(shader);
 	glfwTerminate();
+}
+
+entt::registry& get_registry() {
+	return registry;
 }
 
 void construct_mesh(entt::registry& registry, entt::entity entity) {

@@ -42,9 +42,9 @@ SOFTWARE.
 
 namespace engine::render {
 
-void render(entt::registry& registry);
+void render();
 
-bool init(entt::registry& registry);
+bool init();
 
 bool read_config(const std::string& config_path);
 
@@ -56,12 +56,14 @@ bool init_glew();
 
 bool init_resources();
 
-void register_entt_callbacks(entt::registry& registry);
+void register_entt_callbacks();
 
-void cleanup(entt::registry& registry);
+void cleanup();
 
 // state access
 const RenderContext& get_context();
+
+entt::registry& get_registry();
 
 // entt object lifecycles
 void construct_mesh(entt::registry& registry, entt::entity entity);
