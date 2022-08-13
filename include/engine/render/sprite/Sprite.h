@@ -32,6 +32,7 @@ SOFTWARE.
 
 
 namespace engine {
+
 struct Sprite : VertexArrayObject {
 	Sprite() = default;
 
@@ -41,6 +42,7 @@ struct Sprite : VertexArrayObject {
     std::vector<glm::vec2> vertices{};
     std::vector<unsigned int> indices{};
 };
+
 } // namespace engine
 
 #endif //ENGINE_SPRITE_H

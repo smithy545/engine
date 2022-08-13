@@ -46,6 +46,8 @@ public:
 
 	entity at(double x, double y);
 
+	std::vector<entity> closest_n(double x, double y, std::size_t n);
+
 	[[nodiscard]] const map<Point_2, entity>& get_value_map() const;
 
 	[[nodiscard]] const vector<Point_2>& get_points() const;
@@ -53,6 +55,8 @@ public:
 	void put(const Point_2& query, entity ent);
 
 	void erase(const Point_2& query);
+
+	void clear();
 private:
 	vector<Point_2> m_points{};
 	map<Point_2, entity> m_value_map{};

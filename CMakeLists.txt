@@ -10,7 +10,8 @@ add_library(engine
         src/state.cpp
         src/Steadicam.cpp
         src/interface.cpp
-        src/execution.cpp)
+        src/execution.cpp
+        src/Widget.cpp)
 target_link_directories(engine
         PRIVATE
         /opt/homebrew/Cellar/glew/2.2.0_1/lib

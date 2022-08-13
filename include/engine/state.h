@@ -54,11 +54,6 @@ using MouseButtonHandlerNode = MouseButtonHandlerChain::HandlerNode::Ptr;
 using MouseMotionHandlerNode = MouseMotionHandlerChain::HandlerNode::Ptr;
 using MouseWheelHandlerNode = MouseWheelHandlerChain::HandlerNode::Ptr;
 
-using KeyCallback = EventCallback<KeyEvent>;
-using MouseButtonCallback = EventCallback<MouseButtonEvent>;
-using MouseMotionCallback = EventCallback<MouseMotionEvent>;
-using MouseWheelCallback = EventCallback<MouseWheelEvent>;
-
 bool init();
 
 void poll();

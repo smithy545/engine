@@ -34,6 +34,7 @@ SOFTWARE.
 #include <freetype/freetype.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
 #include <utils/macros.h>
@@ -43,9 +44,9 @@ namespace engine::render {
 
 void render(entt::registry& registry);
 
-bool init(entt::registry &registry);
+bool init(entt::registry& registry);
 
-bool read_config(const std::string &config_path);
+bool read_config(const std::string& config_path);
 
 bool init_window();
 
@@ -55,12 +56,12 @@ bool init_glew();
 
 bool init_resources();
 
-void register_entt_callbacks(entt::registry &registry);
+void register_entt_callbacks(entt::registry& registry);
 
-void cleanup(entt::registry &registry);
+void cleanup(entt::registry& registry);
 
 // state access
-const RenderContext &get_context();
+const RenderContext& get_context();
 
 // entt object lifecycles
 void construct_mesh(entt::registry& registry, entt::entity entity);

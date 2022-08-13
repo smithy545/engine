@@ -20,12 +20,9 @@ SOFTWARE.
 
 #include <engine/interface/interface.h>
 #include <engine/interface/EntityMap.h>
-#include <engine/render/InstanceList.h>
-#include <engine/render/sprite/ShapeSprite.h>
 #include <engine/state.h>
 #include <entt/entt.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <map>
 
 
 namespace engine::interface {
@@ -34,46 +31,39 @@ namespace {
 
 // EntityMap maps screen position to the nearest interface entity by object center
 // Overlapping objects or 3D objects require more complex collision detection TBA
-std::unique_ptr<EntityMap> locator{nullptr};
-entt::entity active_entity{entt::null};
+EntityMap entity_locator;
+std::map<entt::entity, Widget::Ptr> loaded_widgets;
 
 } // anonymous
 
 bool init(entt::registry& registry) {
-	locator = std::make_unique<EntityMap>();
-	active_entity = registry.create();
-	ShapeSprite sprite;
-	sprite.vertices = {
-			glm::vec2(0,0),
-			glm::vec2(100,0),
-			glm::vec2(0,100),
-			glm::vec2(100,100),
-	};
-	sprite.indices = {
-			1, 0, 2, 3, 1, 2
-	};
-	sprite.colors = {
-			glm::vec3(100,0,0),
-			glm::vec3(100,0,0),
-			glm::vec3(100,0,0),
-			glm::vec3(100,0,0),
-	};
-	registry.emplace<ShapeSprite>(active_entity, sprite);
-	registry.patch<InstanceList>(active_entity, [](auto& instances) {
-		instances.add_instance(glm::mat4(1));
-		instances.add_instance(glm::translate(glm::mat4(1), glm::vec3(700,0,0)));
-		instances.add_instance(glm::translate(glm::mat4(1), glm::vec3(0,500,0)));
-		instances.add_instance(glm::translate(glm::mat4(1), glm::vec3(700,500,0)));
-	});
-
 	state::register_key_input_handler([&](KeyEvent event) {
 		return true;
 	});
+
 	state::register_mouse_button_handler([&](MouseButtonEvent event) {
+		auto mouse_pos = Point_2(event.x, event.y);
+		auto entities = entity_locator.closest_n(event.x, event.y, loaded_widgets.size() < 5 ? loaded_widgets.size() : 5);
+		for(auto entity: entities) {
+			auto bounds = registry.get<utils::math::bounds>(entity);
+			if (utils::math::in_bounds(mouse_pos, bounds)) {
+				loaded_widgets[entity]->publish<MouseButtonEvent>(event);
+				return true; // trigger widget
+			}
+		}
+
 		return true;
 	});
 	state::register_mouse_motion_handler([&](MouseMotionEvent event) {
-		//active_entity = locator->at(event.x, event.y);
+		auto mouse_pos = Point_2(event.x, event.y);
+		auto entities = entity_locator.closest_n(event.x, event.y, loaded_widgets.size() < 5 ? loaded_widgets.size() : 5);
+		for(auto entity: entities) {
+			auto bounds = registry.get<utils::math::bounds>(entity);
+			if (utils::math::in_bounds(mouse_pos, bounds)) {
+				return true; // highlight widget
+			}
+		}
+
 		return true;
 	});
 	state::register_mouse_wheel_handler([&](MouseWheelEvent event) {
@@ -84,5 +74,11 @@ bool init(entt::registry& registry) {
 }
 
 void cleanup(entt::registry& registry) {}
+
+entt::entity create_widget(entt::registry& registry) {
+	auto entity = registry.create();
+	loaded_widgets[entity] = Widget::create(registry);
+	return entity;
+}
 
 } // namespace engine::interface

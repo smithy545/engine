@@ -29,11 +29,13 @@ SOFTWARE.
 
 
 namespace engine {
+
 struct ShapeSprite : public Sprite {
 	ShapeSprite() = default;
 
 	std::vector<glm::vec3> colors{};
 };
+
 } // namespace engine
 
 

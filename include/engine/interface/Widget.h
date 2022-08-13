@@ -1,18 +1,14 @@
-/* Created by Philip Smith on 5/18/21.
+/*
 MIT License
-
-Copyright (c) 2021 Philip Arturo Smith
-
+Copyright (c) 2022 Philip Arturo Smith
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,24 +18,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_VERTEXARRAYOBJECT_H
-#define ENGINE_VERTEXARRAYOBJECT_H
+#ifndef ENGINE_WIDGET_H
+#define ENGINE_WIDGET_H
 
-#include <GL/glew.h>
+#include <engine/event_handling.h>
+#include <entt/entt.hpp>
+#include <utils/macros.h>
 
 
-namespace engine {
+namespace engine::interface {
 
-struct VertexArrayObject {
-    GLuint vao{0};
-    GLuint vbo{0};
-    GLuint ebo{0};
-    unsigned int num_indices{0};
-    GLuint cbo{0};
-    GLuint tex_id{0};
-    GLuint tex_uvs{0};
+class Widget : public entt::emitter<Widget> {
+public:
+	PTR(Widget);
+
+	friend entt::entity create_widget(entt::registry& registry);
+
+	Widget() = delete;
+
+	~Widget() override;
+
+	bool is_clickable();
+
+	bool is_scrollable();
+
+	bool is_typable();
+
+	bool is_visible();
+
+	void set_visible(bool val);
+
+protected:
+	explicit Widget(entt::registry& registry);
+
+	void attach_mouse_click_handler(const EnttMouseButtonCallback& callback);
+
+	void attach_mouse_wheel_handler(const EnttMouseWheelCallback& callback);
+
+	void attach_key_handler(const EnttKeyCallback& callback);
+
+private:
+	static Ptr create(entt::registry& registry);
+
+	entt::entity m_entity{entt::null};
+	bool m_visible{true};
 };
 
-} // namespace engine
+} // namespace engine::interface
 
-#endif //ENGINE_VERTEXARRAYOBJECT_H
+#endif //ENGINE_WIDGET_H

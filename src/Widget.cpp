@@ -18,21 +18,56 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_INTERFACE_H
-#define ENGINE_INTERFACE_H
-
 #include <engine/interface/Widget.h>
-#include <entt/entt.hpp>
 
 
 namespace engine::interface {
 
-bool init(entt::registry &registry);
+Widget::Widget(entt::registry& registry) : m_entity(registry.create()) {}
 
-void cleanup(entt::registry &registry);
+Widget::~Widget() {
+	clear();
+}
 
-entt::entity create_widget(entt::registry& registry);
+void Widget::attach_mouse_click_handler(const EnttMouseButtonCallback& callback) {
+	this->on<MouseButtonEvent>([callback](const MouseButtonEvent& event, Widget& emitter) {
+		callback(event);
+	});
+}
+
+void Widget::attach_mouse_wheel_handler(const EnttMouseWheelCallback& callback) {
+	this->on<MouseWheelEvent>([callback](const MouseWheelEvent& event, Widget& emitter) {
+		callback(event);
+	});}
+
+void Widget::attach_key_handler(const EnttKeyCallback& callback) {
+	this->on<KeyEvent>([callback](const KeyEvent& event, Widget& emitter) {
+		callback(event);
+	});
+}
+
+bool Widget::is_clickable() {
+	return !this->empty<MouseButtonEvent>();
+}
+
+bool Widget::is_scrollable() {
+	return !this->empty<MouseWheelEvent>();
+}
+
+bool Widget::is_typable() {
+	return !this->empty<KeyEvent>();
+}
+
+bool Widget::is_visible() {
+	return m_visible;
+}
+
+void Widget::set_visible(bool val) {
+	m_visible = val;
+}
+
+Widget::Ptr Widget::create(entt::registry& registry) {
+	return Ptr(new Widget(registry));
+}
 
 } // namespace engine::interface
-
-#endif //ENGINE_INTERFACE_H

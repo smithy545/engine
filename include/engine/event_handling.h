@@ -38,6 +38,10 @@ namespace engine {
 template <typename EventType>
 using EventCallback = std::function<bool(EventType)>;
 
+// entt callback
+template <typename EventType>
+using EnttCallback = std::function<void(EventType)>;
+
 template <typename Event>
 class HandlerChain {
 public:
@@ -110,6 +114,16 @@ using KeyHandlerChain = HandlerChain<KeyEvent>;
 using MouseButtonHandlerChain = HandlerChain<MouseButtonEvent>;
 using MouseMotionHandlerChain = HandlerChain<MouseMotionEvent>;
 using MouseWheelHandlerChain = HandlerChain<MouseWheelEvent>;
+
+using KeyCallback = EventCallback<KeyEvent>;
+using MouseButtonCallback = EventCallback<MouseButtonEvent>;
+using MouseMotionCallback = EventCallback<MouseMotionEvent>;
+using MouseWheelCallback = EventCallback<MouseWheelEvent>;
+
+using EnttKeyCallback = EnttCallback<KeyEvent>;
+using EnttMouseButtonCallback = EnttCallback<MouseButtonEvent>;
+using EnttMouseMotionCallback = EnttCallback<MouseMotionEvent>;
+using EnttMouseWheelCallback = EnttCallback<MouseWheelEvent>;
 
 } // namespace engine
 

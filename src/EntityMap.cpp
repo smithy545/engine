@@ -29,14 +29,25 @@ EntityMap::EntityMap(vector<Point_2> points) : m_points(std::move(points)) {
 }
 
 entity EntityMap::operator[](const Point_2& query) {
-	return m_value_map.at(utils::math::query_closest(m_points, query));
+	return m_value_map.at(utils::math::query_closest(m_points, query)[0]);
 }
 
 entity EntityMap::at(double x, double y) {
 	if(m_value_map.empty())
 		return entt::null;
-	return m_value_map.at(utils::math::query_closest(m_points, Point_2(x, y)));
+	return m_value_map.at(utils::math::query_closest(m_points, Point_2(x, y))[0]);
 }
+
+std::vector<entity> EntityMap::closest_n(double x, double y, std::size_t n) {
+	if(m_value_map.empty())
+		return {};
+	std::vector<entity> entities;
+	auto points = utils::math::query_closest(m_points, Point_2(x, y), n);
+	for(auto p: points)
+		entities.push_back(m_value_map[p]);
+	return entities;
+}
+
 
 const map<Point_2, entity>& EntityMap::get_value_map() const {
 	return m_value_map;
@@ -63,6 +74,11 @@ void EntityMap::erase(const Point_2& query) {
 	}
 	if(index < m_points.size())
 		m_points.erase(m_points.begin() + index);
+}
+
+void EntityMap::clear() {
+	m_points.clear();
+	m_value_map.clear();
 }
 
 } // namespace engine::interface

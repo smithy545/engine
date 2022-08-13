@@ -30,7 +30,6 @@ SOFTWARE.
 #include <engine/render/sprite/TextSprite.h>
 #include <engine/render/sprite/TextureSprite.h>
 #include <fmt/format.h>
-#include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <iostream>
 #include <stdexcept>
@@ -47,7 +46,7 @@ RenderAssets assets{};
 
 } // anonymous
 
-bool init(entt::registry &registry) {
+bool init(entt::registry& registry) {
 	if (!read_config("../res/bootstrap.json")) {
 		std::cerr << "Failed to read config" << std::endl;
 		return false;
@@ -120,7 +119,7 @@ bool init_resources() {
 	return true;
 }
 
-bool read_config(const std::string &config_path) {
+bool read_config(const std::string& config_path) {
 	// TODO: write json serialization/deserialization code for resource structs
 	context.screen_width = 800;
 	context.screen_height = 600;
@@ -213,11 +212,10 @@ bool init_window() {
 	return true;
 }
 
-void render(entt::registry &registry) {
+void render(entt::registry& registry) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 vp;
-	vp = glm::ortho(0.f, 1.f * context.screen_width, 1.f * context.screen_height, 0.f);
+	auto vp = glm::ortho(0.f, 1.f * context.screen_width, 1.f * context.screen_height, 0.f);
 	auto shader = assets.shaders["color"];
 	glUseProgram(shader);
 	glUniformMatrix4fv(glGetUniformLocation(shader, "VP"), 1, GL_FALSE, &vp[0][0]);
@@ -334,7 +332,7 @@ void render(entt::registry &registry) {
 	*/
 }
 
-void register_entt_callbacks(entt::registry &registry) {
+void register_entt_callbacks(entt::registry& registry) {
 	registry.on_construct<Mesh>().connect<&construct_mesh>();
 	registry.on_construct<ShapeSprite>().connect<&construct_shape_sprite>();
 	registry.on_construct<TextureSprite>().connect<&construct_texture_sprite>();
