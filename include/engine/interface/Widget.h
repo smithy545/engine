@@ -32,7 +32,11 @@ class Widget : public entt::emitter<Widget> {
 public:
 	PTR(Widget);
 
-	friend entt::entity create_widget();
+	friend entt::entity create_widget(const EnttMouseButtonCallback& click_cb,
+	                                  const EnttMouseWheelCallback& scroll_cb,
+	                                  const EnttKeyCallback& key_cb);
+
+	friend entt::entity attach_widget(const gsl::not_null<Widget::Ptr>& widget);
 
 	Widget() = delete;
 
@@ -43,13 +47,6 @@ public:
 	bool is_scrollable();
 
 	bool is_typable();
-
-	bool is_visible();
-
-	void set_visible(bool val);
-
-	entt::entity get_entity();
-
 protected:
 	explicit Widget(entt::registry& registry);
 
@@ -59,11 +56,16 @@ protected:
 
 	void attach_key_handler(const EnttKeyCallback& callback);
 
+	entt::entity get_entity();
+
 private:
-	static Ptr create(entt::registry& registry);
+	static Ptr create(
+			entt::registry& registry,
+			const EnttMouseButtonCallback& click_cb = nullptr,
+			const EnttMouseWheelCallback& scroll_cb = nullptr,
+			const EnttKeyCallback& key_cb = nullptr);
 
 	entt::entity m_entity{entt::null};
-	bool m_visible{true};
 };
 
 } // namespace engine::interface

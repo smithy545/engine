@@ -26,6 +26,8 @@ SOFTWARE.
 #include <engine/render/mesh/Mesh.h>
 #include <engine/render/renderer.h>
 #include <engine/render/RenderAssets.h>
+#include <engine/render/RenderContext.h>
+#include <engine/render/RenderResources.h>
 #include <engine/render/sprite/ShapeSprite.h>
 #include <engine/render/sprite/TextSprite.h>
 #include <engine/render/sprite/TextureSprite.h>
@@ -40,10 +42,10 @@ namespace engine::render {
 
 namespace { // pseudo-member namespace
 
-RenderContext context{};
-RenderResources resources{};
-RenderAssets assets{};
 entt::registry registry;
+entt::entity window_entity;
+RenderResources resources;
+RenderAssets assets;
 
 } // anonymous
 
@@ -121,6 +123,8 @@ bool init_resources() {
 }
 
 bool read_config(const std::string& config_path) {
+	window_entity = registry.create();
+	auto& context = registry.emplace<RenderContext>(window_entity);
 	// TODO: write json serialization/deserialization code for resource structs
 	context.screen_width = 800;
 	context.screen_height = 600;
@@ -196,24 +200,29 @@ bool init_glew() {
 }
 
 bool init_window() {
+	auto& context = registry.get<RenderContext>(window_entity);
+	auto& window = registry.emplace<GLFWwindow*>(window_entity);
 	// Open a window and create its OpenGL context
-	context.window = glfwCreateWindow(
+	window = glfwCreateWindow(
 			context.screen_width,
 			context.screen_height,
 			"Civil War",
 			nullptr,
 			nullptr);
-	if (context.window == nullptr) {
+	if (window == nullptr) {
 		std::cerr << "Failed to open GLFW window" << std::endl;
 		glfwTerminate();
 		return false;
 	}
-	glfwMakeContextCurrent(context.window);
+	glfwMakeContextCurrent(window);
 
 	return true;
 }
 
 void render() {
+	auto& context = registry.get<RenderContext>(window_entity);
+	auto window = registry.get<GLFWwindow*>(window_entity);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	auto vp = glm::ortho(0.f, 1.f * context.screen_width, 1.f * context.screen_height, 0.f);
@@ -228,7 +237,7 @@ void render() {
 		                        ilist.instances.size());
 	}
 
-	glfwSwapBuffers(context.window);
+	glfwSwapBuffers(window);
 	/*
 	auto view = registry.view<ShaderPrepNode>();
 	for(auto entity: view) {
@@ -349,10 +358,15 @@ void cleanup() {
 	for(auto [name, shader]: assets.shaders)
 		glDeleteProgram(shader);
 	glfwTerminate();
+	registry.clear();
 }
 
 entt::registry& get_registry() {
 	return registry;
+}
+
+GLFWwindow* get_window() {
+	return registry.get<GLFWwindow*>(window_entity);
 }
 
 void construct_mesh(entt::registry& registry, entt::entity entity) {
@@ -697,7 +711,4 @@ std::map<unsigned long, Glyph> load_font(FT_Library ft,
 	return glyphs;
 }
 
-const RenderContext& get_context() {
-	return context;
-}
 } // namespace engine::render

@@ -23,6 +23,7 @@ SOFTWARE.
 
 #include <engine/interface/Widget.h>
 #include <entt/entt.hpp>
+#include <gsl/gsl>
 
 
 namespace engine::interface {
@@ -31,7 +32,15 @@ bool init();
 
 void cleanup();
 
-entt::entity create_widget();
+entt::entity create_widget(const EnttMouseButtonCallback& click_cb = nullptr,
+						   const EnttMouseWheelCallback& scroll_cb = nullptr,
+						   const EnttKeyCallback& key_cb = nullptr);
+
+entt::entity attach_widget(const gsl::not_null<Widget::Ptr>& widget);
+
+void construct_bounds(entt::registry& registry, entt::entity entity);
+
+void destroy_bounds(entt::registry& registry, entt::entity entity);
 
 } // namespace engine::interface
 

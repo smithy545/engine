@@ -31,14 +31,15 @@ SOFTWARE.
 
 
 namespace engine {
+
 struct RenderContext {
     int screen_width;
     int screen_height;
     float fovy;
     float z_near;
     float z_far;
-    GLFWwindow* window;
 };
+
 } // namespace engine
 
 

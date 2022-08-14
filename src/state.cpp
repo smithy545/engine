@@ -115,21 +115,21 @@ void resize_cb(GLFWwindow *window, int width, int height) {
 } // anonymous
 
 bool init() {
-	const auto& ctx = render::get_context();
+	auto window = render::get_window();
 
 	for (auto &k: keys)
 		k = false;
 
-	glfwSetInputMode(ctx.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	glfwSetKeyCallback(ctx.window, key_cb);
-	glfwSetCursorPosCallback(ctx.window, cursor_pos_cb);
-	glfwSetScrollCallback(ctx.window, mouse_wheel_cb);
-	glfwSetMouseButtonCallback(ctx.window, mouse_button_cb);
-	glfwSetFramebufferSizeCallback(ctx.window, resize_cb);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	glfwSetKeyCallback(window, key_cb);
+	glfwSetCursorPosCallback(window, cursor_pos_cb);
+	glfwSetScrollCallback(window, mouse_wheel_cb);
+	glfwSetMouseButtonCallback(window, mouse_button_cb);
+	glfwSetFramebufferSizeCallback(window, resize_cb);
 
 	// set initial window size
 	int width{0}, height{0};
-	glfwGetFramebufferSize(ctx.window, &width, &height);
+	glfwGetFramebufferSize(window, &width, &height);
 	entt::monostate<WIDTH_KEY>{} = width;
 	entt::monostate<HEIGHT_KEY>{} = height;
 
@@ -137,10 +137,10 @@ bool init() {
 }
 
 void poll() {
-	const auto& ctx = render::get_context();
+	auto window = render::get_window();
 	glfwPollEvents();
 	reset_prev_mouse_coords();
-	if(glfwWindowShouldClose(ctx.window) || get_key(GLFW_KEY_ESCAPE))
+	if(glfwWindowShouldClose(window) || get_key(GLFW_KEY_ESCAPE))
 		stop();
 }
 

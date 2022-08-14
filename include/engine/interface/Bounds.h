@@ -9,7 +9,7 @@ copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EBoundsPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -18,53 +18,54 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_ENTITYMAP_H
-#define ENGINE_ENTITYMAP_H
+#ifndef ENGINE_BOUNDS_H
+#define ENGINE_BOUNDS_H
 
-#include <entt/entt.hpp>
-#include <map>
-#include <set>
-#include <utils/macros.h>
+#include <cute_c2.h>
 #include <utils/math_util.h>
-#include <vector>
 
-
-using entt::entity;
-using std::map;
-using std::vector;
-using std::set;
-using utils::math::Point_2;
 
 namespace engine::interface {
 
-class EntityMap {
+
+class Bounds {
 public:
-	EntityMap() = default;
+	explicit Bounds(c2x* transform = nullptr);
 
-	explicit EntityMap(vector<Point_2> points);
+	explicit Bounds(c2Circle circle, c2x* transform = nullptr);
 
-	virtual ~EntityMap() = default;
+	explicit Bounds(c2AABB box, c2x* transform = nullptr);
 
-	set<entity> operator[](const Point_2& query);
+	explicit Bounds(c2Capsule capsule, c2x* transform = nullptr);
 
-	set<entity> at(double x, double y);
+	explicit Bounds(c2Poly polygon, c2x* transform = nullptr);
 
-	vector<entity> closest_n(double x, double y, std::size_t n);
+	virtual ~Bounds() = default;
 
-	[[nodiscard]] const map<Point_2, set<entity>>& get_value_map() const;
+	Bounds(const Bounds&) = default;             // copy constructor
 
-	[[nodiscard]] const vector<Point_2>& get_points() const;
+	Bounds& operator=(const Bounds&) = default;  // copy assignment
 
-	void put(const Point_2& query, entity e);
+	Bounds(Bounds&&) = default;                  // move constructor
 
-	void erase(const Point_2& query, entity e);
+	Bounds& operator=(Bounds&&) = default;       // move assignment
 
-	void clear();
+	bool collides(float x, float y);
+
+	bool collides(Bounds other);
+
+	utils::math::Point_2 get_position();
 private:
-	vector<Point_2> m_points{};
-	map<Point_2, set<entity>> m_value_map{};
+	C2_TYPE m_type{C2_TYPE_NONE};
+	union c2Structure {
+		c2Circle circle;
+		c2AABB aabb;
+		c2Capsule capsule;
+		c2Poly polygon;
+	} m_structure{};
+	c2x* m_transform;
 };
 
 } // namespace engine::interface
 
-#endif //ENGINE_ENTITYMAP_H
+#endif //ENGINE_BOUNDS_H

@@ -25,17 +25,13 @@ SOFTWARE.
 #ifndef ENGINE_RENDERER_H
 #define ENGINE_RENDERER_H
 
-#include <concepts>
 #include <engine/render/Glyph.h>
-#include <engine/render/RenderContext.h>
-#include <engine/render/RenderResources.h>
 #include <entt/entt.hpp>
 #include <ft2build.h>
 #include <freetype/freetype.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <nlohmann/json.hpp>
 #include <string>
 #include <utils/macros.h>
 
@@ -61,7 +57,7 @@ void register_entt_callbacks();
 void cleanup();
 
 // state access
-const RenderContext& get_context();
+GLFWwindow* get_window();
 
 entt::registry& get_registry();
 

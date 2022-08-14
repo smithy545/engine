@@ -62,16 +62,18 @@ bool Widget::is_typable() {
 	return !this->empty<KeyEvent>();
 }
 
-bool Widget::is_visible() {
-	return m_visible;
-}
-
-void Widget::set_visible(bool val) {
-	m_visible = val;
-}
-
-Widget::Ptr Widget::create(entt::registry& registry) {
-	return Ptr(new Widget(registry));
+Widget::Ptr Widget::create(entt::registry& registry,
+                           const EnttMouseButtonCallback& click_cb,
+                           const EnttMouseWheelCallback& scroll_cb,
+                           const EnttKeyCallback& key_cb) {
+	auto widget = new Widget(registry);
+	if(click_cb != nullptr)
+		widget->attach_mouse_click_handler(click_cb);
+	if(scroll_cb != nullptr)
+		widget->attach_mouse_wheel_handler(scroll_cb);
+	if(key_cb != nullptr)
+		widget->attach_key_handler(key_cb);
+	return Ptr(widget);
 }
 
 } // namespace engine::interface
