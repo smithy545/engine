@@ -62,9 +62,6 @@ void construct_mesh(entt::registry& registry, entt::entity entity);
 
 void update_mesh(entt::registry& registry, entt::entity entity);
 
-// external resource management
-GLuint load_texture(const std::string& path);
-
 GLuint load_shader(const char* vertex_source, const char* frag_source, const char* geom_source = nullptr);
 
 std::map<unsigned long, Glyph> load_font(
