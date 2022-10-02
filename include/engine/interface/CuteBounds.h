@@ -18,8 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_BOUNDS_H
-#define ENGINE_BOUNDS_H
+#ifndef ENGINE_CUTE_BOUNDS_H
+#define ENGINE_CUTE_BOUNDS_H
 
 #include <cute_c2.h>
 #include <utils/math_util.h>
@@ -28,36 +28,36 @@ SOFTWARE.
 namespace engine::interface {
 
 
-class Bounds {
+class CuteBounds {
 public:
-	explicit Bounds(c2x* transform = nullptr);
+	explicit CuteBounds(c2x* transform = nullptr);
 
-	explicit Bounds(c2Circle circle, c2x* transform = nullptr);
+	explicit CuteBounds(c2Circle circle, c2x* transform = nullptr);
 
-	explicit Bounds(c2AABB box, c2x* transform = nullptr);
+	explicit CuteBounds(c2AABB box, c2x* transform = nullptr);
 
-	explicit Bounds(c2Capsule capsule, c2x* transform = nullptr);
+	explicit CuteBounds(c2Capsule capsule, c2x* transform = nullptr);
 
-	explicit Bounds(c2Poly polygon, c2x* transform = nullptr);
+	explicit CuteBounds(c2Poly polygon, c2x* transform = nullptr);
 
-	virtual ~Bounds() = default;
+	virtual ~CuteBounds() = default;
 
-	Bounds(const Bounds&) = default;             // copy constructor
+	CuteBounds(const CuteBounds&) = default;             // copy constructor
 
-	Bounds& operator=(const Bounds&) = default;  // copy assignment
+	CuteBounds& operator=(const CuteBounds&) = default;  // copy assignment
 
-	Bounds(Bounds&&) = default;                  // move constructor
+	CuteBounds(CuteBounds&&) = default;                  // move constructor
 
-	Bounds& operator=(Bounds&&) = default;       // move assignment
+	CuteBounds& operator=(CuteBounds&&) = default;       // move assignment
 
 	bool collides(float x, float y);
 
-	bool collides(Bounds other);
+	bool collides(CuteBounds other);
 
-	utils::math::Point_2 get_position();
+	c2x get_transform();
 private:
 	C2_TYPE m_type{C2_TYPE_NONE};
-	union c2Structure {
+	union c2Data {
 		c2Circle circle;
 		c2AABB aabb;
 		c2Capsule capsule;
@@ -68,4 +68,4 @@ private:
 
 } // namespace engine::interface
 
-#endif //ENGINE_BOUNDS_H
+#endif //ENGINE_CUTE_BOUNDS_H

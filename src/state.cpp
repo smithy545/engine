@@ -33,18 +33,18 @@ namespace engine::state {
 
 namespace { // pseudo-member namespace
 
-bool keys[GLFW_KEY_LAST]{};
-KeyHandlerChain key_input_chain{};
-MouseButtonHandlerChain mouse_button_chain{};
-MouseMotionHandlerChain mouse_motion_chain{};
-MouseWheelHandlerChain mouse_wheel_chain{};
+bool s_keys[GLFW_KEY_LAST]{};
+KeyHandlerChain s_key_input_chain{};
+MouseButtonHandlerChain s_mouse_button_chain{};
+MouseMotionHandlerChain s_mouse_motion_chain{};
+MouseWheelHandlerChain s_mouse_wheel_chain{};
 
 void set_mouse_position(double x, double y) {
 	entt::monostate<PREV_MOUSE_X_KEY>{} = ((double) entt::monostate<MOUSE_X_KEY>{});
 	entt::monostate<PREV_MOUSE_Y_KEY>{} = ((double) entt::monostate<MOUSE_Y_KEY>{});
 	entt::monostate<MOUSE_X_KEY>{} = x;
 	entt::monostate<MOUSE_Y_KEY>{} = y;
-	mouse_motion_chain.handle(MouseMotionEvent{x, y});
+	s_mouse_motion_chain.handle(MouseMotionEvent{x, y});
 }
 
 void set_mouse_button(int button, bool value) {
@@ -54,19 +54,19 @@ void set_mouse_button(int button, bool value) {
 		entt::monostate<MOUSE_RIGHT_KEY>{} = value;
 	else if (button == GLFW_MOUSE_BUTTON_MIDDLE)
 		entt::monostate<MOUSE_MIDDLE_KEY>{} = value;
-	mouse_button_chain.handle(MouseButtonEvent{get_mouse_x(), get_mouse_y(), button, value});
+	s_mouse_button_chain.handle(MouseButtonEvent{get_mouse_x(), get_mouse_y(), button, value});
 }
 
 void set_mouse_scroll(double yoffset) {
 	entt::monostate<MOUSE_SCROLL_KEY>{} = yoffset;
-	mouse_wheel_chain.handle(MouseWheelEvent{yoffset});
+	s_mouse_wheel_chain.handle(MouseWheelEvent{yoffset});
 }
 
 void set_key(int key, bool value) {
 	Expects(key >= 0);
 	Expects(key < GLFW_KEY_LAST);
-	keys[key] = value;
-	key_input_chain.handle(KeyEvent{key, value});
+	s_keys[key] = value;
+	s_key_input_chain.handle(KeyEvent{key, value});
 }
 
 
@@ -117,7 +117,7 @@ void resize_cb(GLFWwindow *window, int width, int height) {
 bool init() {
 	auto window = render::get_window();
 
-	for (auto &k: keys)
+	for (auto &k: s_keys)
 		k = false;
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -196,7 +196,7 @@ bool has_started() {
 }
 
 bool get_key(int key) {
-	return keys[key];
+	return s_keys[key];
 }
 
 bool get_mouse_button(int button) {
@@ -226,35 +226,35 @@ void clear_resize() {
 }
 
 KeyHandlerNode register_key_input_handler(KeyCallback callback) {
-	return key_input_chain.set_next(std::move(callback));
+	return s_key_input_chain.set_next(std::move(callback));
 }
 
 MouseButtonHandlerNode register_mouse_button_handler(MouseButtonCallback callback) {
-	return mouse_button_chain.set_next(std::move(callback));
+	return s_mouse_button_chain.set_next(std::move(callback));
 }
 
 MouseMotionHandlerNode register_mouse_motion_handler(MouseMotionCallback callback) {
-	return mouse_motion_chain.set_next(std::move(callback));
+	return s_mouse_motion_chain.set_next(std::move(callback));
 }
 
 MouseWheelHandlerNode register_mouse_wheel_handler(MouseWheelCallback callback) {
-	return mouse_wheel_chain.set_next(std::move(callback));
+	return s_mouse_wheel_chain.set_next(std::move(callback));
 }
 
 void unregister_key_input_handler(KeyHandlerNode node) {
-	key_input_chain.remove(std::move(node));
+	s_key_input_chain.remove(std::move(node));
 }
 
 void unregister_mouse_button_handler(MouseButtonHandlerNode node) {
-	mouse_button_chain.remove(std::move(node));
+	s_mouse_button_chain.remove(std::move(node));
 }
 
 void unregister_mouse_motion_handler(MouseMotionHandlerNode node) {
-	mouse_motion_chain.remove(std::move(node));
+	s_mouse_motion_chain.remove(std::move(node));
 }
 
 void unregister_mouse_wheel_handler(MouseWheelHandlerNode node) {
-	mouse_wheel_chain.remove(std::move(node));
+	s_mouse_wheel_chain.remove(std::move(node));
 }
 
 } // namespace engine::state

@@ -30,7 +30,7 @@ SOFTWARE.
 #include <GLFW/glfw3.h>
 
 
-namespace engine {
+namespace engine::render {
 
 struct RenderContext {
     int screen_width;
@@ -40,7 +40,7 @@ struct RenderContext {
     float z_far;
 };
 
-} // namespace engine
+} // namespace engine::render
 
 
 #endif //ENGINE_RENDERCONTEXT_H

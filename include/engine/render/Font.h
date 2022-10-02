@@ -18,32 +18,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_RENDERASSETS_H
-#define ENGINE_RENDERASSETS_H
+#ifndef ENGINE_FONT_H
+#define ENGINE_FONT_H
 
 #include <engine/render/Glyph.h>
+#include <engine/render/Font.h>
+#include <engine/render/renderer.h>
+#include <fmt/format.h>
 #include <GL/glew.h>
+#include <iostream>
 #include <map>
-#include <string>
+#include <nlohmann/json.hpp>
 
 
-using std::map;
-using std::string;
+namespace engine::render {
 
-namespace engine {
-
-typedef map<unsigned long, Glyph> FontGlyphs;
-
-typedef GLuint GLShader;
-
-typedef GLuint GLTexture;
-
-struct RenderAssets {
-	map<string, GLShader> shaders{};
-	map<string, GLTexture> textures{};
-	map<string, FontGlyphs> fonts{};
+class Font {
+public:
+	Font(const FT_Library& ft, const nlohmann::json& data) {
+		// enable blending for text transparency
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		m_glyphs = load_font(ft, data["path"], data["size"]);
+		if(m_glyphs.empty())
+			throw fmt::format("Could not initialize font from '{}'", data["path"]);
+	}
+private:
+	std::map<unsigned long, Glyph> m_glyphs;
 };
 
-} // namespace engine
+} // namespace engine::render
 
-#endif //ENGINE_RENDERASSETS_H
+#endif //ENGINE_FONT_H

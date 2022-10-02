@@ -18,43 +18,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_VERTEXARRAYOBJECT_H
-#define ENGINE_VERTEXARRAYOBJECT_H
+#ifndef ENGINE_GLM_STORAGE_H
+#define ENGINE_GLM_STORAGE_H
 
 #include <engine/render/BufferObject.h>
 #include <engine/render/VertexAttribute.h>
-#include <GL/glew.h>
-#include <utility>
-#include <vector>
+#include <glm/glm.hpp>
 
 
 namespace engine::render {
 
-class VertexArrayObject {
-public:
-	USING_PTR(VertexArrayObject);
+using Vec3Buffer = VectoredBufferObject<glm::vec3>;
 
-	virtual ~VertexArrayObject() {
-		if (m_id)
-			glDeleteVertexArrays(1, &m_id);
-	}
+struct Vec2Attribute : public VertexAttribute {
+	explicit Vec2Attribute(GLenum type = GL_FLOAT,
+	                       bool normalized = false,
+	                       GLsizei stride = 0,
+	                       const void* initial_offset = nullptr)
+						   : VertexAttribute(2, type, normalized, stride, initial_offset) {}
+};
 
-	void generate() {
-		glGenVertexArrays(1, &m_id);
-	}
+struct Vec3Attribute : public VertexAttribute {
+	explicit Vec3Attribute(GLenum type = GL_FLOAT,
+				  bool normalized = false,
+				  GLsizei stride = 0,
+				  const void* initial_offset = nullptr)
+				  : VertexAttribute(3, type, normalized, stride, initial_offset) {}
+};
 
-	void bind() const {
-		glBindVertexArray(m_id);
-	}
-
-	virtual ElementBuffer::Ptr get_element_buffer() = 0;
-
-	virtual std::vector<std::pair<BufferObject::Ptr, VertexAttribute>> get_attribute_buffers() = 0;
-
-private:
-	GLuint m_id{0};
+struct Vec4Attribute : public VertexAttribute {
+	explicit Vec4Attribute(GLenum type = GL_FLOAT,
+				  bool normalized = false,
+				  GLsizei stride = 0,
+				  const void* initial_offset = nullptr)
+				  : VertexAttribute(4, type, normalized, stride, initial_offset) {}
 };
 
 } // namespace engine::render
 
-#endif //ENGINE_VERTEXARRAYOBJECT_H
+#endif //ENGINE_GLM_STORAGE_H

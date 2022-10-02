@@ -25,24 +25,48 @@ SOFTWARE.
 #ifndef ENGINE_MESH_H
 #define ENGINE_MESH_H
 
+#include <engine/render/BufferObject.h>
 #include <engine/render/VertexArrayObject.h>
+#include <engine/render/glm_attributes.h>
 #include <glm/glm.hpp>
 #include <utility>
 #include <vector>
 
 
-namespace engine {
-struct Mesh : VertexArrayObject {
-	Mesh() = default;
+namespace engine::render {
 
-	Mesh(std::vector<glm::vec3> vertices, std::vector<glm::vec3> colors, std::vector<unsigned int> indices) :
-	vertices(std::move(vertices)), colors(std::move(colors)), indices(std::move(indices)) {}
+class Mesh : public VertexArrayObject {
+public:
+	Mesh() : VertexArrayObject(),
+	m_vertices(std::make_shared<Vec3Buffer>(GL_ARRAY_BUFFER)),
+	m_colors(std::make_shared<Vec3Buffer>(GL_ARRAY_BUFFER)),
+	m_indices{std::make_shared<ElementBuffer>()} {}
 
-    std::vector<glm::vec3> vertices{};
-    std::vector<glm::vec3> colors{};
-    std::vector<unsigned int> indices{};
-    bool visible{true};
+	std::vector<std::pair<BufferObject::Ptr, VertexAttribute>> get_attribute_buffers() override {
+		return {
+			std::pair<BufferObject::Ptr, VertexAttribute>{m_vertices, Vec3Attribute()},
+			std::pair<BufferObject::Ptr, VertexAttribute>{m_colors, Vec3Attribute()}
+		};
+	}
+
+	ElementBuffer::Ptr get_element_buffer() override {
+		return m_indices;
+	}
+
+	Vec3Buffer::Ptr get_vertex_buffer() {
+		return m_vertices;
+	}
+
+	Vec3Buffer::Ptr get_color_buffer() {
+		return m_colors;
+	}
+private:
+	GLuint m_id;
+	Vec3Buffer::Ptr m_vertices;
+	Vec3Buffer::Ptr m_colors;
+	ElementBuffer::Ptr m_indices;
 };
-} // namespace engine
+
+} // namespace engine::render
 
 #endif //ENGINE_MESH_H

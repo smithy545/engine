@@ -31,7 +31,7 @@ SOFTWARE.
 #include <vector>
 
 
-namespace engine {
+namespace engine::render {
 
 struct Sprite : VertexArrayObject {
 	Sprite() = default;
@@ -43,6 +43,6 @@ struct Sprite : VertexArrayObject {
     std::vector<unsigned int> indices{};
 };
 
-} // namespace engine
+} // namespace engine::render
 
 #endif //ENGINE_SPRITE_H

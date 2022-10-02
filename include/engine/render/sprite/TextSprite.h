@@ -31,7 +31,7 @@ SOFTWARE.
 #include <utility>
 
 
-namespace engine {
+namespace engine::render {
 struct TextSprite : VertexArrayObject {
 	TextSprite() = default;
 
@@ -45,6 +45,6 @@ struct TextSprite : VertexArrayObject {
 	glm::vec3 color{1,1,1};
 	bool visible{true};
 };
-} // namespace
+} // namespace engine::render
 
 #endif //ENGINE_TEXTSPRITE_H

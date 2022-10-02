@@ -26,17 +26,17 @@ namespace engine::execution {
 
 namespace {
 
-std::list<TickCallback> execution_order;
+std::list<TickCallback> s_execution_order;
 
 } // anonymous
 
 void tick(std::chrono::nanoseconds dt) {
-	for(const auto& callback: execution_order)
+	for(const auto& callback: s_execution_order)
 		callback(dt);
 }
 
 void append_ticker(const TickCallback& ticker) {
-	execution_order.push_back(ticker);
+	s_execution_order.push_back(ticker);
 }
 
 } // namespace engine::execution

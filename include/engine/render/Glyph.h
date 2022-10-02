@@ -28,13 +28,13 @@ SOFTWARE.
 #include <glm/glm.hpp>
 
 
-namespace engine {
+namespace engine::render {
 struct Glyph {
 	unsigned int tex_id;
 	glm::ivec2 size;
 	glm::ivec2 bearing;
 	long advance;
 };
-} // namespace engine
+} // namespace engine::render
 
 #endif //ENGINE_GLYPH_H

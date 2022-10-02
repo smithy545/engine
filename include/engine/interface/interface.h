@@ -34,9 +34,10 @@ void cleanup();
 
 entt::entity create_widget(const EnttMouseButtonCallback& click_cb = nullptr,
 						   const EnttMouseWheelCallback& scroll_cb = nullptr,
-						   const EnttKeyCallback& key_cb = nullptr);
+						   const EnttKeyCallback& key_cb = nullptr,
+						   bool focus = false);
 
-entt::entity attach_widget(const gsl::not_null<Widget::Ptr>& widget);
+void focus(entt::entity entity);
 
 void construct_bounds(entt::registry& registry, entt::entity entity);
 

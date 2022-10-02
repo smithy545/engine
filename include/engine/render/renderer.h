@@ -38,19 +38,15 @@ SOFTWARE.
 
 namespace engine::render {
 
-void render();
+void render(entt::entity scene_entity = entt::null);
 
 bool init();
-
-bool read_config(const std::string& config_path);
 
 bool init_window();
 
 bool init_glfw();
 
 bool init_glew();
-
-bool init_resources();
 
 void register_entt_callbacks();
 
@@ -64,26 +60,12 @@ entt::registry& get_registry();
 // entt object lifecycles
 void construct_mesh(entt::registry& registry, entt::entity entity);
 
-void construct_shape_sprite(entt::registry& registry, entt::entity entity);
-
-void construct_text_sprite(entt::registry& registry, entt::entity entity);
-
-void construct_texture_sprite(entt::registry& registry, entt::entity entity);
-
-void update_texture_sprite(entt::registry& registry, entt::entity entity);
-
 void update_mesh(entt::registry& registry, entt::entity entity);
-
-void update_shape_sprite(entt::registry& registry, entt::entity entity);
-
-void destroy_vao(entt::registry& registry, entt::entity entity);
-
-void destroy_instances(entt::registry& registry, entt::entity entity);
 
 // external resource management
 GLuint load_texture(const std::string& path);
 
-GLuint load_shader(const char* vertex_source, const char* frag_source);
+GLuint load_shader(const char* vertex_source, const char* frag_source, const char* geom_source = nullptr);
 
 std::map<unsigned long, Glyph> load_font(
 		FT_Library ft,

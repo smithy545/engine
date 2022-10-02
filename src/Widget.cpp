@@ -23,7 +23,16 @@ SOFTWARE.
 
 namespace engine::interface {
 
-Widget::Widget(entt::registry& registry) : m_entity(registry.create()) {}
+Widget::Widget(const EnttMouseButtonCallback& click_cb,
+               const EnttMouseWheelCallback& scroll_cb,
+               const EnttKeyCallback& key_cb) {
+	if(click_cb != nullptr)
+		attach_mouse_click_handler(click_cb);
+	if(scroll_cb != nullptr)
+		attach_mouse_wheel_handler(scroll_cb);
+	if(key_cb != nullptr)
+		attach_key_handler(key_cb);
+}
 
 Widget::~Widget() {
 	clear();
@@ -41,13 +50,9 @@ void Widget::attach_mouse_wheel_handler(const EnttMouseWheelCallback& callback) 
 	});}
 
 void Widget::attach_key_handler(const EnttKeyCallback& callback) {
-	this->on<KeyEvent>([callback](const KeyEvent& event, Widget& emitter) {
+	this->on<KeyEvent>([callback](const KeyEvent &event, Widget &emitter) {
 		callback(event);
 	});
-}
-
-entt::entity Widget::get_entity() {
-	return m_entity;
 }
 
 bool Widget::is_clickable() {
@@ -60,20 +65,6 @@ bool Widget::is_scrollable() {
 
 bool Widget::is_typable() {
 	return !this->empty<KeyEvent>();
-}
-
-Widget::Ptr Widget::create(entt::registry& registry,
-                           const EnttMouseButtonCallback& click_cb,
-                           const EnttMouseWheelCallback& scroll_cb,
-                           const EnttKeyCallback& key_cb) {
-	auto widget = new Widget(registry);
-	if(click_cb != nullptr)
-		widget->attach_mouse_click_handler(click_cb);
-	if(scroll_cb != nullptr)
-		widget->attach_mouse_wheel_handler(scroll_cb);
-	if(key_cb != nullptr)
-		widget->attach_key_handler(key_cb);
-	return Ptr(widget);
 }
 
 } // namespace engine::interface

@@ -19,31 +19,30 @@ SOFTWARE.
 */
 
 #define CUTE_C2_IMPLEMENTATION
-#include <engine/interface/Bounds.h>
-
+#include <engine/interface/CuteBounds.h>
 
 
 namespace engine::interface {
 
-Bounds::Bounds(c2x* transform) : m_type(C2_TYPE_NONE), m_transform(transform) {}
+CuteBounds::CuteBounds(c2x* transform) : m_type(C2_TYPE_NONE), m_transform(transform) {}
 
-Bounds::Bounds(c2Circle circle, c2x* transform) : m_type (C2_TYPE_CIRCLE), m_transform(transform) {
+CuteBounds::CuteBounds(c2Circle circle, c2x* transform) : m_type (C2_TYPE_CIRCLE), m_transform(transform) {
 	m_structure.circle = circle;
 }
 
-Bounds::Bounds(c2AABB box, c2x* transform) : m_type (C2_TYPE_AABB), m_transform(transform) {
+CuteBounds::CuteBounds(c2AABB box, c2x* transform) : m_type (C2_TYPE_AABB), m_transform(transform) {
 	m_structure.aabb = box;
 }
 
-Bounds::Bounds(c2Capsule capsule, c2x* transform) : m_type (C2_TYPE_CAPSULE), m_transform(transform) {
+CuteBounds::CuteBounds(c2Capsule capsule, c2x* transform) : m_type (C2_TYPE_CAPSULE), m_transform(transform) {
 	m_structure.capsule = capsule;
 }
 
-Bounds::Bounds(c2Poly polygon, c2x* transform) : m_type (C2_TYPE_POLY), m_transform(transform) {
+CuteBounds::CuteBounds(c2Poly polygon, c2x* transform) : m_type (C2_TYPE_POLY), m_transform(transform) {
 	m_structure.polygon = polygon;
 }
 
-bool Bounds::collides(float x, float y) {
+bool CuteBounds::collides(float x, float y) {
 	c2Circle point{
 		c2v{x, y},
 		0.f
@@ -51,14 +50,14 @@ bool Bounds::collides(float x, float y) {
 	return c2Collided(&m_structure, m_transform, m_type, &point, nullptr, C2_TYPE_CIRCLE);
 }
 
-bool Bounds::collides(Bounds other) {
+bool CuteBounds::collides(CuteBounds other) {
 	return c2Collided(&m_structure, m_transform, m_type, &other.m_structure, other.m_transform, other.m_type);
 }
 
-utils::math::Point_2 Bounds::get_position() {
+c2x CuteBounds::get_transform() {
 	if(m_transform == nullptr)
-		return utils::math::Point_2(0,0);
-	return {m_transform->p.x, m_transform->p.y};
+		return c2xIdentity();
+	return *m_transform;
 }
 
 } // namespace engine::interface

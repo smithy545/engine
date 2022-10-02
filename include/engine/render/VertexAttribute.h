@@ -1,18 +1,14 @@
-/* Created by Philip Smith on 10/10/21.
+/*
 MIT License
-
-Copyright (c) 2021 Philip Arturo Smith
-
+Copyright (c) 2022 Philip Arturo Smith
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,21 +18,57 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_SHAPESPRITE_H
-#define ENGINE_SHAPESPRITE_H
+#ifndef ENGINE_VERTEXATTRIBUTE_H
+#define ENGINE_VERTEXATTRIBUTE_H
 
-#include "Sprite.h"
+#include <GL/glew.h>
 
+namespace engine::render {
 
-namespace engine {
+// Attribute info storage class
+class VertexAttribute {
+public:
+	USING_PTR(VertexAttribute);
 
-struct ShapeSprite : public Sprite {
-	ShapeSprite() = default;
+	explicit VertexAttribute(
+			GLint num_components,
+			GLenum type = GL_FLOAT,
+			bool normalized = false,
+			GLsizei stride = 0,
+			const void* initial_offset = nullptr)
+			: m_size(num_components),
+			  m_data_type(type),
+			  m_normalized(normalized),
+			  m_stride(stride),
+			  m_offset(initial_offset) {}
 
-	std::vector<glm::vec3> colors{};
+	GLint get_num_components() const {
+		return m_size;
+	}
+
+	GLenum get_data_type() const {
+		return m_data_type;
+	}
+
+	bool normalized() const {
+		return m_normalized;
+	}
+
+	GLsizei get_stride() const {
+		return m_stride;
+	}
+
+	const void* get_pointer_offset() const {
+		return m_offset;
+	}
+private:
+	GLint m_size;
+	GLenum m_data_type;
+	bool m_normalized;
+	GLsizei m_stride;
+	const void* m_offset;
 };
 
-} // namespace engine
+} // namespace engine::render
 
-
-#endif //ENGINE_SHAPESPRITE_H
+#endif //ENGINE_VERTEXATTRIBUTE_H

@@ -32,40 +32,26 @@ class Widget : public entt::emitter<Widget> {
 public:
 	PTR(Widget);
 
-	friend entt::entity create_widget(const EnttMouseButtonCallback& click_cb,
-	                                  const EnttMouseWheelCallback& scroll_cb,
-	                                  const EnttKeyCallback& key_cb);
-
-	friend entt::entity attach_widget(const gsl::not_null<Widget::Ptr>& widget);
-
-	Widget() = delete;
+	explicit Widget(const EnttMouseButtonCallback& click_cb = nullptr,
+		   const EnttMouseWheelCallback& scroll_cb = nullptr,
+		   const EnttKeyCallback& key_cb = nullptr);
 
 	~Widget() override;
+
+	Widget& operator=(Widget&& other) = default;
 
 	bool is_clickable();
 
 	bool is_scrollable();
 
 	bool is_typable();
-protected:
-	explicit Widget(entt::registry& registry);
 
+private:
 	void attach_mouse_click_handler(const EnttMouseButtonCallback& callback);
 
 	void attach_mouse_wheel_handler(const EnttMouseWheelCallback& callback);
 
 	void attach_key_handler(const EnttKeyCallback& callback);
-
-	entt::entity get_entity();
-
-private:
-	static Ptr create(
-			entt::registry& registry,
-			const EnttMouseButtonCallback& click_cb = nullptr,
-			const EnttMouseWheelCallback& scroll_cb = nullptr,
-			const EnttKeyCallback& key_cb = nullptr);
-
-	entt::entity m_entity{entt::null};
 };
 
 } // namespace engine::interface

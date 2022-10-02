@@ -3,7 +3,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(OpenGL REQUIRED)
 add_library(engine
-        src/BoxMesh.cpp
         src/EntityMap.cpp
         src/OrbitCam.cpp
         src/renderer.cpp
@@ -12,16 +11,18 @@ add_library(engine
         src/interface.cpp
         src/execution.cpp
         src/Widget.cpp
-        src/Bounds.cpp)
+        src/CuteBounds.cpp)
 target_link_directories(engine
         PRIVATE
+        /opt/homebrew/Cellar/fmt/8.1.1_1/lib
         /opt/homebrew/Cellar/glew/2.2.0_1/lib
         /opt/homebrew/Cellar/glfw/3.3.8/lib)
-target_link_libraries(engine utils OpenGL::GL GLEW GLFW freetype)
+target_link_libraries(engine utils OpenGL::GL GLEW GLFW freetype fmt)
 target_include_directories(engine
         PRIVATE
         ../../external/cute_headers
         /opt/homebrew/Cellar/cpp-gsl/4.0.0/include
+        /opt/homebrew/Cellar/fmt/8.1.1_1/include
         /opt/homebrew/Cellar/freetype/2.12.1/include/freetype2
         /opt/homebrew/Cellar/glew/2.2.0_1/include
         /opt/homebrew/Cellar/glm/0.9.9.8/include
