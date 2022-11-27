@@ -18,44 +18,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_GLM_ATTRIBUTES_H
-#define ENGINE_GLM_ATTRIBUTES_H
+#ifndef ENGINE_GL_HELPERS_H
+#define ENGINE_GL_HELPERS_H
 
-#include <engine/render/buffer_objects.h>
+#include <engine/render/instance_containers.h>
 #include <engine/render/VertexAttribute.h>
-#include <glm/glm.hpp>
+#include <gsl/gsl>
 
 
 namespace engine::render {
 
-using Vec2Buffer = ArrayBuffer<glm::vec2>;
-using Vec3Buffer = ArrayBuffer<glm::vec3>;
-using Vec4Buffer = ArrayBuffer<glm::vec4>;
+void bind_gl_attribute(const VertexAttribute &info, GLuint index, GLuint divisor = 0) {
+	glEnableVertexAttribArray(index);
+	glVertexAttribPointer(
+			index,
+			info.get_num_components(),
+			info.get_data_type(),
+			info.normalized(),
+			info.get_stride(),
+			info.get_pointer_offset());
+	glVertexAttribDivisor(index, divisor);
+}
 
-struct Vec2Attribute : public VertexAttribute {
-	explicit Vec2Attribute(GLenum type = GL_FLOAT,
-	                       bool normalized = false,
-	                       GLsizei stride = 0,
-	                       const void *initial_offset = nullptr)
-			: VertexAttribute(2, type, normalized, stride, initial_offset) {}
-};
-
-struct Vec3Attribute : public VertexAttribute {
-	explicit Vec3Attribute(GLenum type = GL_FLOAT,
-				  bool normalized = false,
-				  GLsizei stride = 0,
-				  const void* initial_offset = nullptr)
-				  : VertexAttribute(3, type, normalized, stride, initial_offset) {}
-};
-
-struct Vec4Attribute : public VertexAttribute {
-	explicit Vec4Attribute(GLenum type = GL_FLOAT,
-				  bool normalized = false,
-				  GLsizei stride = 0,
-				  const void* initial_offset = nullptr)
-				  : VertexAttribute(4, type, normalized, stride, initial_offset) {}
-};
+void bind_instance_set(gsl::not_null<InstanceSet *> instances, GLuint index_offset = 0) {
+	auto index = index_offset;
+	auto attrs = instances->get_attributes();
+	auto divisor = instances->get_divisor();
+	for (const auto &attr: attrs) {
+		bind_gl_attribute(attr, index, divisor);
+		++index;
+	}
+}
 
 } // namespace engine::render
 
-#endif //ENGINE_GLM_ATTRIBUTES_H
+#endif //ENGINE_GL_HELPERS_H

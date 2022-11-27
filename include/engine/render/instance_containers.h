@@ -18,10 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_INSTANCECONTAINER_H
-#define ENGINE_INSTANCECONTAINER_H
+#ifndef ENGINE_INSTANCE_CONTAINERS_H
+#define ENGINE_INSTANCE_CONTAINERS_H
 
-#include <engine/render/BufferObject.h>
+#include <engine/render/buffer_objects.h>
 #include <engine/render/VertexAttribute.h>
 #include <engine/render/glm_attributes.h>
 #include <GL/glew.h>
@@ -50,8 +50,8 @@ class InstanceVector : public InstanceSet, public BufferObject {
 public:
 	USING_PTR(InstanceVector);
 
-	InstanceVector(GLuint render_strat, GLsizeiptr index_count)
-	: BufferObject(GL_ARRAY_BUFFER), m_render_strategy(render_strat), m_num_indices(index_count) {}
+	InstanceVector(GLuint render_strategy, GLsizeiptr index_count)
+			: BufferObject(GL_ARRAY_BUFFER), m_render_strategy(render_strategy), m_num_indices(index_count) {}
 
 	GLuint get_divisor() const override {
 		return 1;
@@ -125,4 +125,4 @@ struct Mat4Instances : public InstanceVector<glm::mat4> {
 
 } // namespace engine::render
 
-#endif //ENGINE_INSTANCECONTAINER_H
+#endif //ENGINE_INSTANCE_CONTAINERS_H

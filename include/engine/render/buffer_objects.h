@@ -84,11 +84,14 @@ public:
 
 	explicit VectoredBufferObject(GLenum target) : BufferObject(target) {}
 
+	VectoredBufferObject(GLenum target, std::vector<DataType> initial_data)
+			: BufferObject(target), m_data(std::move(initial_data)) {}
+
 	GLsizeiptr get_byte_size() override {
 		return m_data.size() * sizeof(DataType);
 	}
 
-	const void* get_data() override {
+	const void *get_data() override {
 		return &m_data[0];
 	}
 
@@ -100,11 +103,24 @@ protected:
 	std::vector<DataType> m_data;
 };
 
+template<typename DataType>
+struct ArrayBuffer : public VectoredBufferObject<DataType> {
+	USING_PTR(ArrayBuffer<DataType>);
+
+	ArrayBuffer() : VectoredBufferObject<DataType>(GL_ELEMENT_ARRAY_BUFFER) {}
+
+	explicit ArrayBuffer(std::vector<DataType> initial_data)
+			: VectoredBufferObject<DataType>(GL_ELEMENT_ARRAY_BUFFER, std::move(initial_data)) {}
+};
+
 // Buffer data to be used as indices
 struct ElementBuffer : public VectoredBufferObject<unsigned int> {
 	USING_PTR(ElementBuffer);
 
 	ElementBuffer() : VectoredBufferObject<unsigned int>(GL_ELEMENT_ARRAY_BUFFER) {}
+
+	explicit ElementBuffer(std::vector<unsigned int> initial_data)
+			: VectoredBufferObject<unsigned int>(GL_ELEMENT_ARRAY_BUFFER, std::move(initial_data)) {}
 
 	GLuint count() {
 		return this->get_byte_size() / sizeof(unsigned int);

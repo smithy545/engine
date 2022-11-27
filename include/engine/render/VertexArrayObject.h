@@ -21,7 +21,7 @@ SOFTWARE.
 #ifndef ENGINE_VERTEXARRAYOBJECT_H
 #define ENGINE_VERTEXARRAYOBJECT_H
 
-#include <engine/render/BufferObject.h>
+#include <engine/render/buffer_objects.h>
 #include <engine/render/VertexAttribute.h>
 #include <GL/glew.h>
 #include <utility>

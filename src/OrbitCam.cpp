@@ -27,15 +27,15 @@ SOFTWARE.
 #include <glm/gtx/rotate_vector.hpp>
 
 
-namespace engine {
+namespace engine::render {
 
 OrbitCam::OrbitCam(glm::vec3 position, glm::vec3 focal_point)
-        : position(position), focal_point(focal_point) {}
+		: position(position), focal_point(focal_point) {}
 
 glm::vec3 OrbitCam::get_mouse_world_coords(glm::vec2 pos) {
-    auto forward = get_forward_direction();
-    auto right = glm::normalize(glm::cross(forward, up));
-    return position + right*pos.x + glm::cross(right, forward)*pos.y;
+	auto forward = get_forward_direction();
+	auto right = glm::normalize(glm::cross(forward, up));
+	return position + right * pos.x + glm::cross(right, forward) * pos.y;
 }
 
 glm::vec3 OrbitCam::get_forward_direction() const {
@@ -71,13 +71,14 @@ void OrbitCam::move_up(float scale) {
 }
 
 void OrbitCam::pan_horizontal(float diff) {
-    auto dv = glm::length(focal_point - position);
-    auto forward = glm::rotate(get_forward_direction(), diff, up);
-    focal_point = forward*dv + position;
+	auto dv = glm::length(focal_point - position);
+	auto forward = glm::rotate(get_forward_direction(), diff, up);
+	focal_point = forward * dv + position;
 }
 
 void OrbitCam::pan_vertical(float diff) {
-    // TODO: make this do something
-    vertical_rotation += diff;
+	// TODO: make this do something
+	vertical_rotation += diff;
 }
-} // namespace engine
+
+} // namespace engine::render

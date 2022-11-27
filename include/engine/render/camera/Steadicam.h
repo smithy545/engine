@@ -28,15 +28,16 @@ SOFTWARE.
 #include "Camera.h"
 
 
-namespace engine {
-struct Steadicam : public Camera {
-    USING_PTR(Steadicam);
+namespace engine::render {
 
-    glm::vec3 position;
+struct Steadicam : public Camera {
+	USING_PTR(Steadicam);
+
+	glm::vec3 position;
 
 	Steadicam(glm::vec3 position, glm::vec3 forward, glm::vec3 up);
 
-    glm::vec3 get_mouse_world_coords(glm::vec2 pos) override;
+	glm::vec3 get_mouse_world_coords(glm::vec2 pos) override;
 
     glm::vec3 get_forward_direction() const override;
 
@@ -48,16 +49,18 @@ struct Steadicam : public Camera {
 
     void pan_vertical(float diff) override;
 
-    void move_forward(float scale) override;
+	void move_forward(float scale) override;
 
-    void move_left(float scale) override;
+	void move_left(float scale) override;
 
-    void move_up(float scale) override;
+	void move_up(float scale) override;
+
 protected:
-    glm::vec3 forward;
-    glm::vec3 up;
+	glm::vec3 forward;
+	glm::vec3 up;
 };
-} // namespace engine
+
+} // namespace engine::render
 
 
 #endif //ENGINE_STEADICAM_H

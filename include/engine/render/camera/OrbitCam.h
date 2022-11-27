@@ -22,22 +22,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_ORBITCAMERA_H
-#define ENGINE_ORBITCAMERA_H
+#ifndef ENGINE_ORBITCAM_H
+#define ENGINE_ORBITCAM_H
 
 #include "Camera.h"
 
 
-namespace engine {
+namespace engine::render {
+
 struct OrbitCam : public Camera {
-    USING_PTR(OrbitCam);
+	USING_PTR(OrbitCam);
 
-    glm::vec3 position;
-    glm::vec3 focal_point;
+	glm::vec3 position;
+	glm::vec3 focal_point;
 
-    OrbitCam(glm::vec3 position, glm::vec3 focal_point);
+	OrbitCam(glm::vec3 position, glm::vec3 focal_point);
 
-    glm::vec3 get_mouse_world_coords(glm::vec2 pos) override;
+	glm::vec3 get_mouse_world_coords(glm::vec2 pos) override;
 
     glm::vec3 get_forward_direction() const override;
 
@@ -51,16 +52,18 @@ struct OrbitCam : public Camera {
 
     void move_left(float scale) override;
 
-    void move_up(float scale) override;
+	void move_up(float scale) override;
 
-    void pan_horizontal(float diff) override;
+	void pan_horizontal(float diff) override;
 
-    void pan_vertical(float diff) override;
+	void pan_vertical(float diff) override;
+
 protected:
-    glm::vec3 up{0, 1, 0};
-    float vertical_rotation{0};
+	glm::vec3 up{0, 1, 0};
+	float vertical_rotation{0};
 };
-} // namespace engine
+
+} // namespace engine::render
 
 
-#endif //ENGINE_ORBITCAMERA_H
+#endif //ENGINE_ORBITCAM_H

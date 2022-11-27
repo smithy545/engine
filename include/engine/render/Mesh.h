@@ -25,7 +25,7 @@ SOFTWARE.
 #ifndef ENGINE_MESH_H
 #define ENGINE_MESH_H
 
-#include <engine/render/BufferObject.h>
+#include <engine/render/buffer_objects.h>
 #include <engine/render/VertexArrayObject.h>
 #include <engine/render/glm_attributes.h>
 #include <glm/glm.hpp>
@@ -37,15 +37,31 @@ namespace engine::render {
 
 class Mesh : public VertexArrayObject {
 public:
+	USING_PTR(Mesh);
+
 	Mesh() : VertexArrayObject(),
-	m_vertices(std::make_shared<Vec3Buffer>(GL_ARRAY_BUFFER)),
-	m_colors(std::make_shared<Vec3Buffer>(GL_ARRAY_BUFFER)),
-	m_indices{std::make_shared<ElementBuffer>()} {}
+	         m_vert_coords(std::make_shared<Vec3Buffer>()),
+	         m_colors(std::make_shared<Vec3Buffer>()),
+	         m_tex_coords(std::make_shared<Vec2Buffer>()),
+	         m_indices{std::make_shared<ElementBuffer>()} {}
+
+	Mesh(Vec3Buffer::Ptr vert_buffer, Vec3Buffer::Ptr color_buffer, ElementBuffer::Ptr index_buffer)
+			: m_vert_coords(std::move(vert_buffer)),
+			  m_colors(std::move(color_buffer)),
+			  m_tex_coords(std::make_shared<Vec2Buffer>()),
+			  m_indices(std::move(index_buffer)) {}
+
+	Mesh(Vec3Buffer::Ptr vert_buffer, Vec2Buffer::Ptr m_tex_coords, ElementBuffer::Ptr index_buffer)
+			: m_vert_coords(std::move(vert_buffer)),
+			  m_colors(std::make_shared<Vec3Buffer>()),
+			  m_tex_coords(std::move(m_tex_coords)),
+			  m_indices(std::move(index_buffer)) {}
 
 	std::vector<std::pair<BufferObject::Ptr, VertexAttribute>> get_attribute_buffers() override {
 		return {
-			std::pair<BufferObject::Ptr, VertexAttribute>{m_vertices, Vec3Attribute()},
-			std::pair<BufferObject::Ptr, VertexAttribute>{m_colors, Vec3Attribute()}
+				std::pair<BufferObject::Ptr, VertexAttribute>{m_vert_coords, Vec3Attribute()},
+				std::pair<BufferObject::Ptr, VertexAttribute>{m_colors, Vec3Attribute()},
+				std::pair<BufferObject::Ptr, VertexAttribute>{m_tex_coords, Vec2Attribute()}
 		};
 	}
 
@@ -54,17 +70,30 @@ public:
 	}
 
 	Vec3Buffer::Ptr get_vertex_buffer() {
-		return m_vertices;
+		return m_vert_coords;
 	}
 
 	Vec3Buffer::Ptr get_color_buffer() {
 		return m_colors;
 	}
-private:
-	GLuint m_id;
-	Vec3Buffer::Ptr m_vertices;
+
+	Vec2Buffer::Ptr get_uv_buffer() {
+		return m_tex_coords;
+	}
+
+	GLuint *get_texture() {
+		return &m_texture;
+	}
+
+protected:
+	Vec3Buffer::Ptr m_vert_coords;
 	Vec3Buffer::Ptr m_colors;
+	Vec2Buffer::Ptr m_tex_coords;
 	ElementBuffer::Ptr m_indices;
+	GLuint m_texture{0};
+
+private:
+	GLuint m_id{0};
 };
 
 } // namespace engine::render

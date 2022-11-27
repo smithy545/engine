@@ -22,17 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <engine/render/BufferObject.h>
-#include <engine/render/InstanceSet.h>
+#include <engine/render/buffer_objects.h>
+#include <engine/render/gl_helpers.h>
+#include <engine/render/instance_containers.h>
 #include <engine/render/Shader.h>
 #include <engine/render/glm_attributes.h>
-#include <engine/render/VertexArrayObject.h>
-#include <engine/render/mesh/Mesh.h>
+#include <engine/render/Mesh.h>
 #include <engine/render/renderer.h>
-#include <engine/render/RenderContext.h>
 #include <fmt/format.h>
 #include <glm/gtx/transform.hpp>
-#include <gsl/gsl>
 #include <iostream>
 #include <stdexcept>
 #include <utils/file_util.h>
@@ -44,29 +42,6 @@ namespace { // pseudo-member namespace
 
 entt::registry s_registry;
 entt::entity s_window_entity;
-
-
-void bind_gl_attribute(const VertexAttribute& info, GLuint index, GLuint divisor = 0) {
-	glEnableVertexAttribArray(index);
-	glVertexAttribPointer(
-			index,
-			info.get_num_components(),
-			info.get_data_type(),
-			info.normalized(),
-			info.get_stride(),
-			info.get_pointer_offset());
-	glVertexAttribDivisor(index, divisor);
-}
-
-void bind_instance_set(gsl::not_null<InstanceSet*> instances, GLuint index_offset = 0) {
-	auto index = index_offset;
-	auto attrs = instances->get_attributes();
-	auto divisor = instances->get_divisor();
-	for(const auto& attr: attrs) {
-		bind_gl_attribute(attr, index, divisor);
-		++index;
-	}
-}
 
 } // anonymous
 
@@ -87,16 +62,16 @@ bool init() {
 	register_entt_callbacks();
 
 	// cull triangles facing away from camera
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	// enable depth buffer
 	glEnable(GL_DEPTH_TEST);
 	// background color0
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+	auto &context = s_registry.get<RenderContext>(s_window_entity);
 	s_registry.emplace<render::Shader>(s_window_entity,
-	                                 "~/CLionProjects/guerra/res/shaders/vertex/tex_vert2d.glsl",
-	                                 "~/CLionProjects/guerra/res/shaders/fragment/tex_frag.glsl");
-
+	                                   "~/CLionProjects/guerra/res/shaders/vertex/generic_vertex.glsl",
+	                                   "~/CLionProjects/guerra/res/shaders/fragment/generic_frag.glsl");
 	return true;
 }
 
@@ -145,7 +120,7 @@ bool init_window() {
 		glfwTerminate();
 		return false;
 	}
-	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window);    // focus
 
 	// set window projection matrix
 	s_registry.emplace<glm::mat4>(
@@ -158,34 +133,39 @@ bool init_window() {
 void render(entt::entity scene_entity) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	auto& context = s_registry.get<RenderContext>(s_window_entity);
-	auto window = s_registry.get<GLFWwindow*>(s_window_entity);
+	auto &context = s_registry.get<RenderContext>(s_window_entity);
+	auto window = s_registry.get<GLFWwindow *>(s_window_entity);
+
+	// TODO: 2d render for background items
 
 	// scene render
-	if(scene_entity != entt::null) {
-		//auto projection = s_registry.get<glm::mat4>(scene_entity);
+	if (scene_entity != entt::null) {
+		auto projection = s_registry.get<glm::mat4>(scene_entity);
 		auto shader = s_registry.get<Shader>(scene_entity);
 		shader.use();
-		shader.uniform_mat4("projection", glm::perspective(
-				glm::radians(context.fovy),
-				((float) context.screen_width) /
-				((float) context.screen_height),
-				context.z_near, context.z_far));
+		shader.uniform_mat4("projection", projection);
 		auto view3d = s_registry.view<Mat4Instances>();
 		for (auto e: view3d) {
-			auto& instances = view3d.get<Mat4Instances>(e);
-			auto& mesh = s_registry.get<Mesh>(e);
+			auto &instances = view3d.get<Mat4Instances>(e);
+			auto &mesh = s_registry.get<Mesh>(e);
 			mesh.bind();
+			auto texture = *mesh.get_texture();
+			if (texture) {
+				shader.uniform_int("tex0", texture); // setup texture0
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, texture);
+			}
+			instances.bind();
 			glDrawElementsInstanced(instances.get_render_strategy(),
 			                        instances.num_indices(),
 			                        GL_UNSIGNED_INT,
-									nullptr,
+			                        nullptr,
 			                        instances.num_instances());
 		}
 	}
 
-	// interface render
-	auto projection = s_registry.get<glm::mat4>(s_window_entity);
+	// interface/foreground render
+	/*auto projection = s_registry.get<glm::mat4>(s_window_entity);
 	auto shader = s_registry.get<Shader>(s_window_entity);
 	shader.use();
 	shader.uniform_mat4("projection", projection);
@@ -198,7 +178,7 @@ void render(entt::entity scene_entity) {
 		                        GL_UNSIGNED_INT,
 		                        nullptr,
 		                        instances.num_instances());
-	}
+	}*/
 
 	glfwSwapBuffers(window);
 }
@@ -248,12 +228,24 @@ void update_mesh(entt::registry& registry, entt::entity entity) {
 	}
 	mesh.get_element_buffer()->bind();
 	mesh.get_element_buffer()->buffer();
-	s_registry.patch<Mat4Instances>(entity, [&](Mat4Instances& instances){
+	s_registry.patch<Mat4Instances>(entity, [&](Mat4Instances &instances) {
 		instances.set_num_indices(mesh.get_element_buffer()->count());
 	});
 }
 
-GLuint load_shader(const char *vertex_source, const char *fragment_source, const char* geometry_source) {
+void load_texture(GLuint *texture, unsigned int width, unsigned int height, int internalformat, int format, int type,
+                  void *data) {
+	glGenTextures(1, texture);
+	glBindTexture(GL_TEXTURE_2D, *texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, format, type, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+GLuint load_shader(const char *vertex_source, const char *fragment_source, const char *geometry_source) {
 	int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertex_shader, 1, &vertex_source, nullptr);
 	glCompileShader(vertex_shader);
@@ -331,21 +323,21 @@ std::map<unsigned long, Glyph> load_font(FT_Library ft,
 		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
 			std::cout << "ERROR::FREETYTPE: Failed to load Glyph '" << c << "'" << std::endl;
 			continue;
-			}
+		}
 		// generate texture
 		unsigned int texture;
 		glGenTextures(1, &texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glTexImage2D(
-		GL_TEXTURE_2D,
-		0,
-		GL_RED,
-		face->glyph->bitmap.width,
-		face->glyph->bitmap.rows,
-		0,
-		GL_RED,
-		GL_UNSIGNED_BYTE,
-		face->glyph->bitmap.buffer);
+				GL_TEXTURE_2D,
+				0,
+				GL_RED,
+				face->glyph->bitmap.width,
+				face->glyph->bitmap.rows,
+				0,
+				GL_RED,
+				GL_UNSIGNED_BYTE,
+				face->glyph->bitmap.buffer);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -364,12 +356,16 @@ std::map<unsigned long, Glyph> load_font(FT_Library ft,
 	return glyphs;
 }
 
-entt::registry& get_registry() {
+entt::registry &get_registry() {
 	return s_registry;
 }
 
-GLFWwindow* get_window() {
-	return s_registry.get<GLFWwindow*>(s_window_entity);
+GLFWwindow *get_window() {
+	return s_registry.get<GLFWwindow *>(s_window_entity);
+}
+
+const RenderContext &get_context() {
+	return s_registry.get<RenderContext>(s_window_entity);
 }
 
 } // namespace engine::render

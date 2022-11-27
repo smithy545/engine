@@ -26,6 +26,7 @@ SOFTWARE.
 #define ENGINE_RENDERER_H
 
 #include <engine/render/Glyph.h>
+#include <engine/render/RenderContext.h>
 #include <entt/entt.hpp>
 #include <ft2build.h>
 #include <freetype/freetype.h>
@@ -35,10 +36,9 @@ SOFTWARE.
 #include <string>
 #include <utils/macros.h>
 
-
+// essentially a singleton namespace. Private "member" variables/functions are in renderer.cpp anonymous namespace
+// Might switch away from this if I have  a good reason
 namespace engine::render {
-
-void render(entt::entity scene_entity = entt::null);
 
 bool init();
 
@@ -48,27 +48,34 @@ bool init_glfw();
 
 bool init_glew();
 
+void render(entt::entity scene_entity = entt::null);
+
 void register_entt_callbacks();
 
 void cleanup();
 
 // state access
-GLFWwindow* get_window();
+GLFWwindow *get_window();
 
-entt::registry& get_registry();
+entt::registry &get_registry();
+
+const RenderContext &get_context();
 
 // entt object lifecycles
-void construct_mesh(entt::registry& registry, entt::entity entity);
+void construct_mesh(entt::registry &registry, entt::entity entity);
 
-void update_mesh(entt::registry& registry, entt::entity entity);
+void update_mesh(entt::registry &registry, entt::entity entity);
 
-GLuint load_shader(const char* vertex_source, const char* frag_source, const char* geom_source = nullptr);
+void load_texture(GLuint *texture, unsigned int width, unsigned int height, int internalformat, int format, int type,
+                  void *data);
+
+GLuint load_shader(const char *vertex_source, const char *frag_source, const char *geom_source = nullptr);
 
 std::map<unsigned long, Glyph> load_font(
 		FT_Library ft,
-		const std::string& fontfile,
+		const std::string &fontfile,
 		unsigned int font_size,
-		const std::string& text =
+		const std::string &text =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,?!-:!@#$%^&*()_+|~");
 } // namespace engine::render
 
