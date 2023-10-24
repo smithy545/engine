@@ -59,7 +59,7 @@ struct OrbitCam : public Camera {
 	void pan_vertical(float diff) override;
 
 protected:
-	glm::vec3 up{0, 1, 0};
+	glm::vec3 up{0, 0, 1};
 	float vertical_rotation{0};
 };
 
