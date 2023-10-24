@@ -24,7 +24,7 @@ SOFTWARE.
 
 namespace engine::interface {
 
-CuteBounds::CuteBounds(c2x* transform) : m_type(C2_TYPE_NONE), m_transform(transform) {}
+CuteBounds::CuteBounds(c2x* transform) : m_transform(transform) {}
 
 CuteBounds::CuteBounds(c2Circle circle, c2x* transform) : m_type (C2_TYPE_CIRCLE), m_transform(transform) {
 	m_structure.circle = circle;

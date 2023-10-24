@@ -30,7 +30,7 @@ namespace engine::interface {
 
 class Widget : public entt::emitter<Widget> {
 public:
-	PTR(Widget);
+	USEPTR(Widget);
 
 	explicit Widget(const EnttMouseButtonCallback& click_cb = nullptr,
 		   const EnttMouseWheelCallback& scroll_cb = nullptr,

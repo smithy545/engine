@@ -31,7 +31,7 @@ SOFTWARE.
 namespace engine::render {
 
 struct OrbitCam : public Camera {
-	USING_PTR(OrbitCam);
+	USEPTR(OrbitCam);
 
 	glm::vec3 position;
 	glm::vec3 focal_point;

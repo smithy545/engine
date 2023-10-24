@@ -42,15 +42,7 @@ namespace engine::render {
 
 bool init();
 
-bool init_window();
-
-bool init_glfw();
-
-bool init_glew();
-
 void render(entt::entity scene_entity = entt::null);
-
-void register_entt_callbacks();
 
 void cleanup();
 
@@ -60,11 +52,6 @@ GLFWwindow *get_window();
 entt::registry &get_registry();
 
 const RenderContext &get_context();
-
-// entt object lifecycles
-void construct_mesh(entt::registry &registry, entt::entity entity);
-
-void update_mesh(entt::registry &registry, entt::entity entity);
 
 void load_texture(GLuint *texture, unsigned int width, unsigned int height, int internalformat, int format, int type,
                   void *data);

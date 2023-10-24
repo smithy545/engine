@@ -34,7 +34,7 @@ namespace engine::render {
 
 class BufferObject {
 public:
-	USING_PTR(BufferObject);
+	USEPTR(BufferObject);
 
 	explicit BufferObject(GLenum target) : m_target(target) {}
 
@@ -80,7 +80,7 @@ private:
 template <typename DataType>
 class VectoredBufferObject : public BufferObject {
 public:
-	USING_PTR(VectoredBufferObject);
+	USEPTR(VectoredBufferObject);
 
 	explicit VectoredBufferObject(GLenum target) : BufferObject(target) {}
 
@@ -105,17 +105,17 @@ protected:
 
 template<typename DataType>
 struct ArrayBuffer : public VectoredBufferObject<DataType> {
-	USING_PTR(ArrayBuffer<DataType>);
+	USEPTR(ArrayBuffer<DataType>);
 
-	ArrayBuffer() : VectoredBufferObject<DataType>(GL_ELEMENT_ARRAY_BUFFER) {}
+	ArrayBuffer() : VectoredBufferObject<DataType>(GL_ARRAY_BUFFER) {}
 
 	explicit ArrayBuffer(std::vector<DataType> initial_data)
-			: VectoredBufferObject<DataType>(GL_ELEMENT_ARRAY_BUFFER, std::move(initial_data)) {}
+			: VectoredBufferObject<DataType>(GL_ARRAY_BUFFER, std::move(initial_data)) {}
 };
 
 // Buffer data to be used as indices
 struct ElementBuffer : public VectoredBufferObject<unsigned int> {
-	USING_PTR(ElementBuffer);
+	USEPTR(ElementBuffer);
 
 	ElementBuffer() : VectoredBufferObject<unsigned int>(GL_ELEMENT_ARRAY_BUFFER) {}
 

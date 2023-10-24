@@ -56,7 +56,7 @@ public:
 
 	c2x get_transform();
 private:
-	C2_TYPE m_type{C2_TYPE_NONE};
+	C2_TYPE m_type{C2_TYPE_POLY};
 	union c2Data {
 		c2Circle circle;
 		c2AABB aabb;

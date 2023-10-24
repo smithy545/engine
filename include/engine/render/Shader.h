@@ -41,7 +41,7 @@ public:
 				auto geometry_src = utils::file::read_file_to_string(geometry_path);
 				m_id = load_shader(vertex_src.c_str(), fragment_src.c_str(), geometry_src.c_str());
 			}
-		} catch(std::exception e) {
+		} catch(std::runtime_error e) {
 			std::cerr << e.what() << std::endl;
 		}
 	}

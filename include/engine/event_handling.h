@@ -49,7 +49,7 @@ public:
 
 	class HandlerNode {
 	public:
-		USING_PTR(HandlerNode);
+		USEPTR(HandlerNode);
 
 		friend class HandlerChain<Event>;
 

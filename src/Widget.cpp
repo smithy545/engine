@@ -56,15 +56,15 @@ void Widget::attach_key_handler(const EnttKeyCallback& callback) {
 }
 
 bool Widget::is_clickable() {
-	return !this->empty<MouseButtonEvent>();
+	return this->contains<MouseButtonEvent>();
 }
 
 bool Widget::is_scrollable() {
-	return !this->empty<MouseWheelEvent>();
+	return this->contains<MouseWheelEvent>();
 }
 
 bool Widget::is_typable() {
-	return !this->empty<KeyEvent>();
+	return this->contains<KeyEvent>();
 }
 
 } // namespace engine::interface

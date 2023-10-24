@@ -49,7 +49,7 @@ bool init() {
 
 	state::register_key_input_handler([&](KeyEvent event) {
 		if(s_focus_entity != entt::null) {
-			s_loaded_widgets[s_focus_entity].publish<KeyEvent>(event);
+			s_loaded_widgets[s_focus_entity].publish<KeyEvent>(KeyEvent(event));
 			return false;
 		}
 		return true;
@@ -58,7 +58,7 @@ bool init() {
 		if(s_hover_entity != entt::null && event.button == GLFW_PRESS)
 			s_focus_entity = s_hover_entity;
 		if(s_focus_entity != entt::null) {
-			s_loaded_widgets[s_focus_entity].publish<MouseButtonEvent>(event);
+			s_loaded_widgets[s_focus_entity].publish<MouseButtonEvent>(MouseButtonEvent(event));
 			return false;
 		}
 		return true;
@@ -77,7 +77,7 @@ bool init() {
 	});
 	state::register_mouse_wheel_handler([&](MouseWheelEvent event) {
 		if(s_focus_entity != entt::null) {
-			s_loaded_widgets[s_focus_entity].publish<MouseWheelEvent>(event);
+			s_loaded_widgets[s_focus_entity].publish<MouseWheelEvent>(MouseWheelEvent(event));
 			return false;
 		}
 		return true;

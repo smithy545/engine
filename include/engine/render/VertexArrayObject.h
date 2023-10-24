@@ -32,7 +32,7 @@ namespace engine::render {
 
 class VertexArrayObject {
 public:
-	USING_PTR(VertexArrayObject);
+	USEPTR(VertexArrayObject);
 
 	virtual ~VertexArrayObject() {
 		if (m_id)

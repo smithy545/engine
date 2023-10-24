@@ -47,7 +47,7 @@ glm::vec3 OrbitCam::get_position() const {
 }
 
 glm::mat4 OrbitCam::get_view() const {
-    return  glm::lookAt(position, focal_point, up);
+    return glm::lookAt(position, focal_point, up);
 }
 
 void OrbitCam::move_toward(float scale) {

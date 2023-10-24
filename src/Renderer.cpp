@@ -23,7 +23,6 @@ SOFTWARE.
 */
 
 #include <engine/render/buffer_objects.h>
-#include <engine/render/gl_helpers.h>
 #include <engine/render/instance_containers.h>
 #include <engine/render/Shader.h>
 #include <engine/render/glm_attributes.h>
@@ -42,38 +41,6 @@ namespace { // pseudo-member namespace
 
 entt::registry s_registry;
 entt::entity s_window_entity;
-
-} // anonymous
-
-bool init() {
-	if (!init_glfw()) {
-		std::cerr << "Failed to init GLFW" << std::endl;
-		return false;
-	}
-	if (!init_window()) {
-		std::cerr << "Failed to init window" << std::endl;
-		return false;
-	}
-	if (!init_glew()) {
-		std::cerr << "Failed to init GLEW" << std::endl;
-		return false;
-	}
-
-	register_entt_callbacks();
-
-	// cull triangles facing away from camera
-	//glEnable(GL_CULL_FACE);
-	// enable depth buffer
-	glEnable(GL_DEPTH_TEST);
-	// background color0
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-	auto &context = s_registry.get<RenderContext>(s_window_entity);
-	s_registry.emplace<render::Shader>(s_window_entity,
-	                                   "~/CLionProjects/guerra/res/shaders/vertex/generic_vertex.glsl",
-	                                   "~/CLionProjects/guerra/res/shaders/fragment/generic_frag.glsl");
-	return true;
-}
 
 bool init_glfw() {
 	if (!glfwInit())
@@ -112,7 +79,7 @@ bool init_window() {
 	window = glfwCreateWindow(
 			context.screen_width,
 			context.screen_height,
-			"Civil War",
+			"My Window",
 			nullptr,
 			nullptr);
 	if (window == nullptr) {
@@ -120,7 +87,7 @@ bool init_window() {
 		glfwTerminate();
 		return false;
 	}
-	glfwMakeContextCurrent(window);    // focus
+	glfwMakeContextCurrent(window); // focus
 
 	// set window projection matrix
 	s_registry.emplace<glm::mat4>(
@@ -130,14 +97,97 @@ bool init_window() {
 	return true;
 }
 
+// entt object lifecycles
+void construct_mesh(entt::registry& registry, entt::entity entity) {
+	auto& mesh = registry.get<Mesh>(entity);
+	mesh.generate();
+	mesh.bind();
+	auto index = 0;
+	auto attribute_data = mesh.get_attribute_buffers();
+	for(const auto& pair: attribute_data) {
+		pair.first->generate();
+		pair.first->bind();
+		pair.first->buffer();
+		pair.second.bind(index); // divisor 0
+		++index;
+	}
+	mesh.get_element_buffer()->generate();
+	mesh.get_element_buffer()->bind();
+	mesh.get_element_buffer()->buffer();
+	auto& instances = s_registry.emplace<Mat4Instances>(entity, GL_TRIANGLES, mesh.get_element_buffer()->count());
+	instances.generate();
+	instances.bind_to_vao(index);
+	glBindVertexArray(0);
+}
+
+void update_mesh(entt::registry& registry, entt::entity entity) {
+	auto& mesh = registry.get<Mesh>(entity);
+	mesh.bind();
+	auto attribute_data = mesh.get_attribute_buffers();
+	for(const auto& pair: attribute_data) {
+		pair.first->bind();
+		pair.first->buffer();
+	}
+	mesh.get_element_buffer()->bind();
+	mesh.get_element_buffer()->buffer();
+	s_registry.patch<Mat4Instances>(entity, [&](Mat4Instances &instances) {
+		instances.set_num_indices(mesh.get_element_buffer()->count());
+	});
+	glBindVertexArray(0);
+}
+
+void update_mat4_instances(entt::registry& registry, entt::entity entity) {
+	auto& instances = registry.get<Mat4Instances>(entity);
+	auto& mesh = registry.get<Mesh>(entity);
+	mesh.bind();
+	instances.bind();
+	instances.buffer();
+	glBindVertexArray(0);
+}
+
+void register_entt_callbacks() {
+	s_registry.on_construct<Mesh>().connect<&construct_mesh>();
+	s_registry.on_update<Mesh>().connect<&update_mesh>();
+	s_registry.on_update<Mat4Instances>().connect<&update_mat4_instances>();
+}
+
+} // anonymous
+
+bool init() {
+	if (!init_glfw()) {
+		std::cerr << "Failed to init GLFW" << std::endl;
+		return false;
+	}
+	if (!init_window()) {
+		std::cerr << "Failed to init window" << std::endl;
+		return false;
+	}
+	if (!init_glew()) {
+		std::cerr << "Failed to init GLEW" << std::endl;
+		return false;
+	}
+
+	register_entt_callbacks();
+
+	// cull triangles facing away from camera
+	glEnable(GL_CULL_FACE);
+	// enable depth buffer
+	glEnable(GL_DEPTH_TEST);
+	// background color
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	auto &context = s_registry.get<RenderContext>(s_window_entity);
+
+	return true;
+}
+
 void render(entt::entity scene_entity) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	auto &context = s_registry.get<RenderContext>(s_window_entity);
-	auto window = s_registry.get<GLFWwindow *>(s_window_entity);
+	const auto &context = s_registry.get<RenderContext>(s_window_entity);
+	auto window = s_registry.get<GLFWwindow*>(s_window_entity);
 
 	// TODO: 2d render for background items
-
 	// scene render
 	if (scene_entity != entt::null) {
 		auto projection = s_registry.get<glm::mat4>(scene_entity);
@@ -148,21 +198,22 @@ void render(entt::entity scene_entity) {
 		for (auto e: view3d) {
 			auto &instances = view3d.get<Mat4Instances>(e);
 			auto &mesh = s_registry.get<Mesh>(e);
-			mesh.bind();
 			auto texture = *mesh.get_texture();
 			if (texture) {
 				shader.uniform_int("tex0", texture); // setup texture0
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, texture);
 			}
-			instances.bind();
+			mesh.bind();
 			glDrawElementsInstanced(instances.get_render_strategy(),
 			                        instances.num_indices(),
 			                        GL_UNSIGNED_INT,
-			                        nullptr,
+			                        (void*) 0,
 			                        instances.num_instances());
+			glBindVertexArray(0);
 		}
 	}
+
 
 	// interface/foreground render
 	/*auto projection = s_registry.get<glm::mat4>(s_window_entity);
@@ -183,54 +234,12 @@ void render(entt::entity scene_entity) {
 	glfwSwapBuffers(window);
 }
 
-void register_entt_callbacks() {
-	s_registry.on_construct<Mesh>().connect<&construct_mesh>();
-	s_registry.on_update<Mesh>().connect<&update_mesh>();
-}
-
 void cleanup() {
 	auto view = s_registry.view<Shader>();
 	for(auto e: view)
 		view.get<Shader>(e).destroy();
 	glfwTerminate();
 	s_registry.clear();
-}
-
-void construct_mesh(entt::registry& registry, entt::entity entity) {
-	auto &mesh = registry.get<Mesh>(entity);
-	mesh.generate();
-	mesh.bind();
-	auto index = 0;
-	auto attribute_data = mesh.get_attribute_buffers();
-	for(const auto& pair: attribute_data) {
-		pair.first->generate();
-		pair.first->bind();
-		pair.first->buffer();
-		bind_gl_attribute(pair.second, index);
-		++index;
-	}
-	mesh.get_element_buffer()->generate();
-	mesh.get_element_buffer()->bind();
-	mesh.get_element_buffer()->buffer();
-	auto& instances = s_registry.emplace<Mat4Instances>(entity, GL_TRIANGLES, mesh.get_element_buffer()->count());
-	instances.generate();
-	instances.bind();
-	bind_instance_set(&instances, index);
-}
-
-void update_mesh(entt::registry& registry, entt::entity entity) {
-	auto &mesh = registry.get<Mesh>(entity);
-	mesh.bind();
-	auto attribute_data = mesh.get_attribute_buffers();
-	for(const auto& pair: attribute_data) {
-		pair.first->bind();
-		pair.first->buffer();
-	}
-	mesh.get_element_buffer()->bind();
-	mesh.get_element_buffer()->buffer();
-	s_registry.patch<Mat4Instances>(entity, [&](Mat4Instances &instances) {
-		instances.set_num_indices(mesh.get_element_buffer()->count());
-	});
 }
 
 void load_texture(GLuint *texture, unsigned int width, unsigned int height, int internalformat, int format, int type,

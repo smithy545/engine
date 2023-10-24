@@ -37,7 +37,7 @@ namespace engine::render {
 
 class Mesh : public VertexArrayObject {
 public:
-	USING_PTR(Mesh);
+	USEPTR(Mesh);
 
 	Mesh() : VertexArrayObject(),
 	         m_vert_coords(std::make_shared<Vec3Buffer>()),

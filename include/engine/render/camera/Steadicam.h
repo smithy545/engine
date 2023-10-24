@@ -31,7 +31,7 @@ SOFTWARE.
 namespace engine::render {
 
 struct Steadicam : public Camera {
-	USING_PTR(Steadicam);
+	USEPTR(Steadicam);
 
 	glm::vec3 position;
 

@@ -28,7 +28,7 @@ namespace engine::render {
 // Attribute info storage class
 class VertexAttribute {
 public:
-	USING_PTR(VertexAttribute);
+	USEPTR(VertexAttribute);
 
 	explicit VertexAttribute(
 			GLint num_components,
@@ -60,6 +60,18 @@ public:
 
 	const void* get_pointer_offset() const {
 		return m_offset;
+	}
+
+	void bind(GLuint index, GLuint divisor = 0) const {
+		glEnableVertexAttribArray(index);
+		glVertexAttribPointer(
+				index,
+				m_size,
+				m_data_type,
+				m_normalized,
+				m_stride,
+				m_offset);
+		glVertexAttribDivisor(index, divisor);
 	}
 private:
 	GLint m_size;

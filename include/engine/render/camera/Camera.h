@@ -32,7 +32,7 @@ SOFTWARE.
 namespace engine::render {
 
 struct Camera {
-	USING_PTR(Camera);
+	USEPTR(Camera);
 
 	virtual glm::vec3 get_mouse_world_coords(glm::vec2 pos) = 0;
 

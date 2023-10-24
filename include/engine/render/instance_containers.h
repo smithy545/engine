@@ -32,7 +32,7 @@ SOFTWARE.
 namespace engine::render {
 
 struct InstanceSet {
-	USING_PTR(InstanceSet);
+	USEPTR(InstanceSet);
 
 	virtual std::size_t num_instances() const = 0;
 
@@ -48,10 +48,21 @@ struct InstanceSet {
 template <typename ElementType>
 class InstanceVector : public InstanceSet, public BufferObject {
 public:
-	USING_PTR(InstanceVector);
+	USEPTR(InstanceVector);
 
 	InstanceVector(GLuint render_strategy, GLsizeiptr index_count)
 			: BufferObject(GL_ARRAY_BUFFER), m_render_strategy(render_strategy), m_num_indices(index_count) {}
+
+	void bind_to_vao(GLuint index_offset = 0) {
+		bind();
+		buffer();
+		auto attrs = get_attributes();
+		auto divisor = get_divisor();
+		for (const auto &attr: attrs) {
+			attr.bind(index_offset, divisor);
+			++index_offset;
+		}
+	}
 
 	GLuint get_divisor() const override {
 		return 1;
@@ -70,17 +81,15 @@ public:
 	}
 
 	GLsizeiptr get_byte_size() override {
-		return sizeof(ElementType);
+		return m_transformations.size() * sizeof(ElementType);
 	}
 
 	const void* get_data() override {
-		return &m_transformations[0][0];
+		return &m_transformations[0];
 	}
 
 	void set_data(std::vector<ElementType> data) {
-		m_transformations = data;
-		bind();
-		buffer(); // update instance buffer
+		m_transformations = std::move(data);
 	}
 
 	void set_num_indices(GLuint count) {
@@ -115,13 +124,14 @@ struct Mat4Instances : public InstanceVector<glm::mat4> {
 		auto sizeof_vec4 = sizeof(glm::vec4);
 		auto stride = 4 * sizeof_vec4;
 		return {
-				Vec4Attribute(GL_FLOAT, false, stride, nullptr),
+				Vec4Attribute(GL_FLOAT, false, stride, (void*) 0),
 				Vec4Attribute(GL_FLOAT, false, stride, (void*) sizeof_vec4),
 				Vec4Attribute(GL_FLOAT, false, stride, (void*) (2 * sizeof_vec4)),
 				Vec4Attribute(GL_FLOAT, false, stride, (void*) (3 * sizeof_vec4)),
 		};
 	}
 };
+
 
 } // namespace engine::render
 
