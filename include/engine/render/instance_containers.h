@@ -88,6 +88,10 @@ public:
 		return &m_transformations[0];
 	}
 
+	const std::vector<ElementType>& get_data_vector() {
+		return m_transformations;
+	}
+
 	void set_data(std::vector<ElementType> data) {
 		m_transformations = std::move(data);
 	}

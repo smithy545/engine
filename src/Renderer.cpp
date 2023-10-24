@@ -181,39 +181,14 @@ bool init() {
 	return true;
 }
 
-void render(entt::entity scene_entity) {
+void renderFrame(entt::entity scene_entity) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	const auto &context = s_registry.get<RenderContext>(s_window_entity);
 	auto window = s_registry.get<GLFWwindow*>(s_window_entity);
 
-	// TODO: 2d render for background items
-	// scene render
-	if (scene_entity != entt::null) {
-		auto projection = s_registry.get<glm::mat4>(scene_entity);
-		auto shader = s_registry.get<Shader>(scene_entity);
-		shader.use();
-		shader.uniform_mat4("projection", projection);
-		auto view3d = s_registry.view<Mat4Instances>();
-		for (auto e: view3d) {
-			auto &instances = view3d.get<Mat4Instances>(e);
-			auto &mesh = s_registry.get<Mesh>(e);
-			auto texture = *mesh.get_texture();
-			if (texture) {
-				shader.uniform_int("tex0", texture); // setup texture0
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, texture);
-			}
-			mesh.bind();
-			glDrawElementsInstanced(instances.get_render_strategy(),
-			                        instances.num_indices(),
-			                        GL_UNSIGNED_INT,
-			                        (void*) 0,
-			                        instances.num_instances());
-			glBindVertexArray(0);
-		}
-	}
+	if(scene_entity != entt::null)
+		render(scene_entity);
 
+	glfwSwapBuffers(window);
 
 	// interface/foreground render
 	/*auto projection = s_registry.get<glm::mat4>(s_window_entity);
@@ -230,8 +205,31 @@ void render(entt::entity scene_entity) {
 		                        nullptr,
 		                        instances.num_instances());
 	}*/
+}
 
-	glfwSwapBuffers(window);
+void render(entt::entity entity) {
+	auto viewprojection = s_registry.get<glm::mat4>(entity);
+	auto shader = s_registry.get<Shader>(entity);
+	shader.use();
+	shader.uniform_mat4("vp", viewprojection);
+	auto view3d = s_registry.view<Mat4Instances>();
+	for (auto e: view3d) {
+		auto &instances = view3d.get<Mat4Instances>(e);
+		auto &mesh = s_registry.get<Mesh>(e);
+		auto texture = *mesh.get_texture();
+		if (texture) {
+			shader.uniform_int("tex0", texture); // setup texture0
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texture);
+		}
+		mesh.bind();
+		glDrawElementsInstanced(instances.get_render_strategy(),
+								instances.num_indices(),
+								GL_UNSIGNED_INT,
+								(void*) 0,
+								instances.num_instances());
+		glBindVertexArray(0);
+	}
 }
 
 void cleanup() {

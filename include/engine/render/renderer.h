@@ -42,7 +42,9 @@ namespace engine::render {
 
 bool init();
 
-void render(entt::entity scene_entity = entt::null);
+void renderFrame(entt::entity scene_entity = entt::null);
+
+void render(entt::entity entity);
 
 void cleanup();
 
