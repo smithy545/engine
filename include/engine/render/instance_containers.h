@@ -95,6 +95,10 @@ public:
 	void set_num_indices(GLuint count) {
 		m_num_indices = count;
 	}
+
+	void set_render_strategy(GLuint render_strategy) {
+		m_render_strategy = render_strategy;
+	}
 private:
 	std::vector<ElementType> m_transformations;
 	GLuint m_render_strategy;
