@@ -29,7 +29,7 @@ SOFTWARE.
 #include <gsl/gsl>
 #include <utils/macros.h>
 
-#include "events.h"
+#include "input_events.h"
 
 
 namespace engine {

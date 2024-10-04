@@ -5,7 +5,6 @@ My ongoing work on a small game engine with a focus of procedural generation and
 The following code will setup a blank window and exit on pressing escape:
 ```
 #include <chrono>
-#include <engine/execution.h>
 #include <engine/interface/interface.h>
 #include <engine/render/renderer.h>
 #include <engine/state.h>
@@ -32,9 +31,8 @@ int main() {
 		return 3;
 	}
 
-	execution::append_ticker([](std::chrono::nanoseconds dt) {
-	    std::cout << dt << " nanoseconds elapsed since last frame." << std::endl;
-	});
+	// YOUR GAME CLASS
+	Game game(render::get_registry());
 
 	state::start();
 	auto initial = std::chrono::system_clock::now();
@@ -42,7 +40,7 @@ int main() {
 	do {
 		auto dt = std::chrono::system_clock::now() - start;
 		start = std::chrono::system_clock::now();
-		execution::tick(dt);
+		game.tick(dt);
 		render::render();
 		state::poll();
 	} while (!state::is_stopped());

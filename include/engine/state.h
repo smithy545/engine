@@ -58,8 +58,6 @@ bool init();
 
 void poll();
 
-entt::registry& get_registry();
-
 double get_mouse_x();
 
 double get_mouse_y();
@@ -113,7 +111,6 @@ MouseWheelHandlerNode register_mouse_wheel_handler(MouseWheelCallback callback);
 void unregister_mouse_wheel_handler(MouseWheelHandlerNode node);
 
 } // namespace engine::state
-
 
 
 #endif //ENGINE_STATE_H

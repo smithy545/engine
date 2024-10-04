@@ -45,15 +45,15 @@ struct Steadicam : public Camera {
 
     glm::mat4 get_view() const override;
 
-    void pan_horizontal(float diff) override;
+    void turn_horizontal(float diff) override;
 
-    void pan_vertical(float diff) override;
+    void turn_vertical(float diff) override;
 
-	void move_forward(float scale) override;
+	void pan_forward(float scale) override;
 
-	void move_left(float scale) override;
+	void pan_left(float scale) override;
 
-	void move_up(float scale) override;
+	void pan_up(float scale) override;
 
 protected:
 	glm::vec3 forward;

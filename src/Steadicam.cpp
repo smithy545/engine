@@ -49,25 +49,24 @@ glm::mat4 Steadicam::get_view() const  {
     return glm::lookAt(position, position + forward, up);
 }
 
-void Steadicam::pan_horizontal(float diff)  {
+void Steadicam::turn_horizontal(float diff)  {
     forward = glm::normalize(glm::rotate(forward, 0.001f * diff, up));
 }
 
-void Steadicam::pan_vertical(float diff)  {
+void Steadicam::turn_vertical(float diff)  {
     auto left = glm::cross(up, forward);
-    forward = glm::normalize(glm::rotate(forward, 0.001f * diff, left));
+    forward = glm::normalize(glm::rotate(forward, diff, left));
 }
 
-void Steadicam::move_forward(float scale)  {
-    position.x += scale * forward.x;
-	position.z += scale * forward.z;
+void Steadicam::pan_forward(float scale)  {
+    position += scale * forward;
 }
 
-void Steadicam::move_left(float scale) {
+void Steadicam::pan_left(float scale) {
 	position -= scale * glm::cross(forward, up);
 }
 
-void Steadicam::move_up(float scale) {
+void Steadicam::pan_up(float scale) {
 	position += scale * up;
 }
 

@@ -42,15 +42,27 @@ struct Camera {
 
 	virtual glm::mat4 get_view() const = 0;
 
-	virtual void pan_horizontal(float diff) = 0;
+	virtual void turn_horizontal(float diff) = 0;
 
-	virtual void pan_vertical(float diff) = 0;
+	virtual void turn_vertical(float diff) = 0;
 
-	virtual void move_forward(float scale) = 0;
+	virtual void pan_forward(float scale) = 0;
 
-	virtual void move_left(float scale) = 0;
+	inline void pan_backward(float scale) {
+		pan_forward(-scale);
+	}
 
-	virtual void move_up(float scale) = 0;
+	virtual void pan_left(float scale) = 0;
+
+	inline void pan_right(float scale) {
+		pan_left(-scale);
+	}
+
+	virtual void pan_up(float scale) = 0;
+
+	inline void pan_down(float scale) {
+		pan_down(-scale);
+	}
 };
 
 } // namespace engine::render

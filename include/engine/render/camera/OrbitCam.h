@@ -48,15 +48,15 @@ struct OrbitCam : public Camera {
 
     void move_toward(float scale);
 
-    void move_forward(float scale) override;
+    void pan_forward(float scale) override;
 
-    void move_left(float scale) override;
+    void pan_left(float scale) override;
 
-	void move_up(float scale) override;
+	void pan_up(float scale) override;
 
-	void pan_horizontal(float diff) override;
+	void turn_horizontal(float diff) override;
 
-	void pan_vertical(float diff) override;
+	void turn_vertical(float diff) override;
 
 protected:
 	glm::vec3 up{0, 0, 1};

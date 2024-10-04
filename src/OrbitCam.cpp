@@ -55,28 +55,28 @@ void OrbitCam::move_toward(float scale) {
     position += scale * forward;
 }
 
-void OrbitCam::move_forward(float scale) {
+void OrbitCam::pan_forward(float scale) {
     auto forward = get_forward_direction();
     forward.y = 0;
     focal_point += scale * forward;
     position += scale * forward;
 }
 
-void OrbitCam::move_left(float scale) {
+void OrbitCam::pan_left(float scale) {
     position -= scale * glm::cross(get_forward_direction(), up);
 }
 
-void OrbitCam::move_up(float scale) {
+void OrbitCam::pan_up(float scale) {
     position += scale * up;
 }
 
-void OrbitCam::pan_horizontal(float diff) {
+void OrbitCam::turn_horizontal(float diff) {
 	auto dv = glm::length(focal_point - position);
 	auto forward = glm::rotate(get_forward_direction(), diff, up);
 	focal_point = forward * dv + position;
 }
 
-void OrbitCam::pan_vertical(float diff) {
+void OrbitCam::turn_vertical(float diff) {
 	// TODO: make this do something
 	vertical_rotation += diff;
 }
