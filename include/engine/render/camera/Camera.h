@@ -61,7 +61,7 @@ struct Camera {
 	virtual void pan_up(float scale) = 0;
 
 	inline void pan_down(float scale) {
-		pan_down(-scale);
+		pan_up(-scale);
 	}
 };
 
