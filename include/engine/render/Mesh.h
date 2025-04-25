@@ -35,25 +35,30 @@ SOFTWARE.
 
 namespace engine::render {
 
+template <typename VertexType = glm::vec3, typename ColorType = glm::vec3, typename TexCoordType = glm::vec2>
 class Mesh : public VertexArrayObject {
 public:
 	USEPTR(Mesh);
 
+	using VertexBufferType = ArrayBuffer<VertexType>;
+	using ColorBufferType = ArrayBuffer<ColorType>;
+	using TexCoordBufferType = ArrayBuffer<TexCoordType>;
+
 	Mesh() : VertexArrayObject(),
-	         m_vert_coords(std::make_shared<Vec3Buffer>()),
-	         m_colors(std::make_shared<Vec3Buffer>()),
-	         m_tex_coords(std::make_shared<Vec2Buffer>()),
+	         m_vert_coords(std::make_shared<VertexBufferType>()),
+	         m_colors(std::make_shared<ColorBufferType>()),
+	         m_tex_coords(std::make_shared<TexCoordBufferType>()),
 	         m_indices{std::make_shared<ElementBuffer>()} {}
 
-	Mesh(Vec3Buffer::Ptr vert_buffer, Vec3Buffer::Ptr color_buffer, ElementBuffer::Ptr index_buffer)
+	Mesh(VertexBufferType::Ptr vert_buffer, ColorBufferType::Ptr color_buffer, ElementBuffer::Ptr index_buffer)
 			: m_vert_coords(std::move(vert_buffer)),
 			  m_colors(std::move(color_buffer)),
-			  m_tex_coords(std::make_shared<Vec2Buffer>()),
+			  m_tex_coords(std::make_shared<TexCoordBufferType>()),
 			  m_indices(std::move(index_buffer)) {}
 
-	Mesh(Vec3Buffer::Ptr vert_buffer, Vec2Buffer::Ptr m_tex_coords, ElementBuffer::Ptr index_buffer)
+	Mesh(VertexBufferType::Ptr vert_buffer, TexCoordBufferType::Ptr m_tex_coords, ElementBuffer::Ptr index_buffer)
 			: m_vert_coords(std::move(vert_buffer)),
-			  m_colors(std::make_shared<Vec3Buffer>()),
+			  m_colors(std::make_shared<ColorBufferType>()),
 			  m_tex_coords(std::move(m_tex_coords)),
 			  m_indices(std::move(index_buffer)) {}
 
@@ -69,15 +74,15 @@ public:
 		return m_indices;
 	}
 
-	Vec3Buffer::Ptr get_vertex_buffer() {
+	VertexBufferType::Ptr get_vertex_buffer() {
 		return m_vert_coords;
 	}
 
-	Vec3Buffer::Ptr get_color_buffer() {
+	ColorBufferType::Ptr get_color_buffer() {
 		return m_colors;
 	}
 
-	Vec2Buffer::Ptr get_uv_buffer() {
+	TexCoordBufferType::Ptr get_uv_buffer() {
 		return m_tex_coords;
 	}
 
@@ -86,9 +91,9 @@ public:
 	}
 
 protected:
-	Vec3Buffer::Ptr m_vert_coords;
-	Vec3Buffer::Ptr m_colors;
-	Vec2Buffer::Ptr m_tex_coords;
+	VertexBufferType::Ptr m_vert_coords;
+	ColorBufferType::Ptr m_colors;
+	TexCoordBufferType::Ptr m_tex_coords;
 	ElementBuffer::Ptr m_indices;
 	GLuint m_texture{0};
 

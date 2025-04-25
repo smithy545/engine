@@ -21,27 +21,30 @@ SOFTWARE.
 #ifndef ENGINE_INTERFACE_H
 #define ENGINE_INTERFACE_H
 
-#include <engine/interface/Widget.h>
+#include <chrono>
+#include <engine/event_handling.h>
+#include <engine/interface/CuteBounds.h>
 #include <entt/entt.hpp>
 #include <gsl/gsl>
+#include <utils/macros.h>
 
 
 namespace engine::interface {
+
+// for updating widgets on game tick
+using TickCallback = EventCallback<std::chrono::nanoseconds>;
 
 bool init();
 
 void cleanup();
 
-entt::entity create_widget(const EnttMouseButtonCallback& click_cb = nullptr,
-						   const EnttMouseWheelCallback& scroll_cb = nullptr,
-						   const EnttKeyCallback& key_cb = nullptr,
-						   bool focus = false);
+entt::registry& get_registry();
+
+entt::entity get_focused_entity();
 
 void focus(entt::entity entity);
 
-void construct_bounds(entt::registry& registry, entt::entity entity);
-
-void destroy_bounds(entt::registry& registry, entt::entity entity);
+void tick(std::chrono::nanoseconds dt);
 
 } // namespace engine::interface
 

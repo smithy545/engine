@@ -25,6 +25,7 @@ SOFTWARE.
 #ifndef ENGINE_RENDERER_H
 #define ENGINE_RENDERER_H
 
+#include <chrono>
 #include <engine/render/Glyph.h>
 #include <engine/render/RenderContext.h>
 #include <entt/entt.hpp>
@@ -42,9 +43,11 @@ namespace engine::render {
 
 bool init();
 
-void renderFrame(entt::entity scene_entity = entt::null);
+void render(std::chrono::nanoseconds dt);
 
-void render(entt::entity entity);
+void swap_buffers();
+
+void clear_screen();
 
 void cleanup();
 
@@ -55,8 +58,11 @@ entt::registry &get_registry();
 
 const RenderContext &get_context();
 
-void load_texture(GLuint *texture, unsigned int width, unsigned int height, int internalformat, int format, int type,
-                  void *data);
+glm::mat4 get_projection();
+
+void load_texture(GLuint *texture, unsigned int width, unsigned int height, int internalformat, int format, int type, void *data);
+
+GLuint load_transform_shader(const char *vertex_source, const char *fragment_source, const char *geometry_source);
 
 GLuint load_shader(const char *vertex_source, const char *frag_source, const char *geom_source = nullptr);
 
@@ -66,6 +72,7 @@ std::map<unsigned long, Glyph> load_font(
 		unsigned int font_size,
 		const std::string &text =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,?!-:!@#$%^&*()_+|~");
+
 } // namespace engine::render
 
 #endif //ENGINE_RENDERER_H
