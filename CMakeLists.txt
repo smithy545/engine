@@ -9,7 +9,8 @@ add_library(engine
         src/state.cpp
         src/Steadicam.cpp
         src/interface.cpp
-        src/CuteBounds.cpp)
+        src/CuteBounds.cpp
+        src/Widget.cpp)
 target_link_libraries(engine freetype glfw glew fmt OpenGL::GL)
 target_link_directories(engine
         PUBLIC

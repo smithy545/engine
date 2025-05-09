@@ -18,8 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef ENGINE_CUTE_BOUNDS_H
-#define ENGINE_CUTE_BOUNDS_H
+#ifndef ENGINE_CUTEBOUNDS_H
+#define ENGINE_CUTEBOUNDS_H
 
 #include <cute_c2.h>
 #include <utils/math_util.h>
@@ -68,4 +68,4 @@ private:
 
 } // namespace engine::interface
 
-#endif //ENGINE_CUTE_BOUNDS_H
+#endif //ENGINE_CUTEBOUNDS_H

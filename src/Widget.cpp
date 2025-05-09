@@ -18,46 +18,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#define CUTE_C2_IMPLEMENTATION
-#include <engine/interface/CuteBounds.h>
+#include <engine/interface/Widget.h>
+#include <functional>
 
 
 namespace engine::interface {
 
-CuteBounds::CuteBounds(c2x* transform) : m_transform(transform) {}
-
-CuteBounds::CuteBounds(c2Circle circle, c2x* transform) : m_type (C2_TYPE_CIRCLE), m_transform(transform) {
-	m_structure.circle = circle;
+Widget::Widget(c2AABB bounds, c2x* transform) : CuteBounds(bounds, transform), m_id(interface::get_registry().create()) {
+    interface::get_registry().emplace_or_replace<CuteBounds>(m_id, *this);
 }
 
-CuteBounds::CuteBounds(c2AABB box, c2x* transform) : m_type (C2_TYPE_AABB), m_transform(transform) {
-	m_structure.aabb = box;
+Widget::~Widget() {
+    if(m_id != entt::null)
+        interface::get_registry().destroy(m_id);
 }
 
-CuteBounds::CuteBounds(c2Capsule capsule, c2x* transform) : m_type (C2_TYPE_CAPSULE), m_transform(transform) {
-	m_structure.capsule = capsule;
-}
-
-CuteBounds::CuteBounds(c2Poly polygon, c2x* transform) : m_type (C2_TYPE_POLY), m_transform(transform) {
-	m_structure.polygon = polygon;
-}
-
-bool CuteBounds::collides(float x, float y) {
-	c2Circle point{
-		c2v{x, y},
-		1.f
-	};
-	return c2Collided(&m_structure, m_transform, m_type, &point, nullptr, C2_TYPE_CIRCLE);
-}
-
-bool CuteBounds::collides(CuteBounds other) {
-	return c2Collided(&m_structure, m_transform, m_type, &other.m_structure, other.m_transform, other.m_type);
-}
-
-c2x CuteBounds::get_transform() {
-	if(m_transform == nullptr)
-		return c2xIdentity();
-	return *m_transform;
+void Widget::register_entt_callbacks(bool set_tick, bool set_button, bool set_motion, bool set_key) {
+    if(set_tick)
+        interface::get_registry().emplace_or_replace<interface::TickCallback>(m_id,
+            std::bind(&Widget::on_tick, this, std::placeholders::_1));
+    if(set_button)
+        interface::get_registry().emplace_or_replace<MouseButtonCallback>(m_id,
+            std::bind(&Widget::on_mouse_button, this, std::placeholders::_1));
+    if(set_motion)
+        interface::get_registry().emplace_or_replace<MouseMotionCallback>(m_id,
+            std::bind(&Widget::on_mouse_motion, this, std::placeholders::_1));
+    if(set_key)
+        interface::get_registry().emplace_or_replace<KeyCallback>(m_id,
+            std::bind(&Widget::on_key, this, std::placeholders::_1));
 }
 
 } // namespace engine::interface

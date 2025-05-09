@@ -33,7 +33,7 @@ namespace engine::interface {
 namespace {
 
 // EntityMap maps screen position to the nearest interface entity by object center
-// TODO: Overlapping objects or 3D objects require more complex collision detection
+// TODO: Check for collision upon adding object to entity map and keep track of overlapping entities
 EntityMap s_entity_locator;
 std::set<entt::entity> s_loaded_widgets;
 entt::entity s_nearest_entity{entt::null}, s_focused_entity{entt::null};
@@ -75,24 +75,28 @@ bool init() {
 
 	state::register_mouse_button_handler([&](MouseButtonEvent event) {
 		if(s_focused_entity != entt::null) {
+			// check collision
+			auto bounds = s_registry.get<CuteBounds>(s_focused_entity);
+			if(!bounds.collides(event.x, event.y))
+				return true;
+
+			// on collision call mouse button handler
 			auto cb = s_registry.try_get<MouseButtonCallback>(s_focused_entity);
 			if(cb)
-				(*cb)(MouseButtonEvent(event));
-			return false;
+				return (*cb)(MouseButtonEvent(event));
 		}
 		return true;
 	});
 
 	// use mouse motion to update nearest entities
 	state::register_mouse_motion_handler([&](MouseMotionEvent event) {
-		// TODO: handle edge cases where the center of the nearest entity does not correspond to the entity that is "nearest"
+		// TODO: handle case where the center of the nearest entity does not correspond to the entity that is "nearest"
 		s_nearest_entity = *s_entity_locator.at(event.x, event.y).begin();
 
 		if(s_focused_entity != entt::null) {
 			auto cb = s_registry.try_get<MouseMotionCallback>(s_focused_entity);
 			if(cb)
-				(*cb)(MouseMotionEvent(event));
-			return false;
+				return (*cb)(MouseMotionEvent(event));
 		}
 
 		return true;
@@ -102,8 +106,7 @@ bool init() {
 		if(s_focused_entity != entt::null) {
 			auto cb = s_registry.try_get<MouseWheelCallback>(s_focused_entity);
 			if(cb)
-				(*cb)(MouseWheelEvent(event));
-			return false;
+				return (*cb)(MouseWheelEvent(event));
 		}
 		return true;
 	});
@@ -114,8 +117,13 @@ bool init() {
 void cleanup() {
 	s_registry.clear();
 }
+
 entt::registry& get_registry() {
 	return s_registry;
+}
+
+entt::entity get_nearest_entity() {
+	return s_nearest_entity;
 }
 
 entt::entity get_focused_entity() {
